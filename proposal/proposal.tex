@@ -1,0 +1,43 @@
+%   CS 22 assignment handin
+%   todonne
+
+\newcommand{\longasgnname}{Final Project Proposal}
+\newcommand{\duedate}{5 April 2007}
+
+\input{/home/tim/course/cs036/common.tex}
+
+\begin{document}      
+
+\section*{Background}
+CS31 students learn MIPS assembly using a program called \textit{SPIM}. SPIM is `MIPS' spelled backwards, and it is backwards. The interface is obtuse; the debugger is difficult to use; there's no good preprocessor, and the entire experience seems designed to discourage experimentation.
+
+Yet, overall, SPIM is a success. Students learn a real-world assembly language while avoiding many hardware-level distractions. Even SPIM's pathetic debugger is enough to hunt down most problems. The develop-run-test loop is reasonably comfortable.
+
+\section*{Our Idea}
+We will implement a better SPIM using C++ and QT. Our application will be a MIPS IDE, incorporating a MIPS simulator and debugger, as well as a text-editor. It will be CS31's DrScheme.
+
+The interface and the debugger/executor will be in separate threads, so we'll have synchronization to deal with. We will heavily use the STL and QT. We'll support Windows, OS X, and Linux. We'll stick up a sourceforge site.
+
+The core features we will support are:
+
+\begin{itemize}
+\item A MIPS simulator.
+	\begin{itemize}
+	\item Our simulator will read and run MAL assembly source. We will not support TAL, nor compiled binaries.
+	\item A very extensible (possibly plugin-based) architecture for parsing, executing, and reversing\footnote{Our reversible debugger will need every instruction to `know' how to reverse itself.} instructions. Ideally, it will be extendable to support other assembly languages. These other back-ends will be written by Open Source developers in far-off lands.
+	\end{itemize}
+\item A reversible, very graphical debugger
+	\begin{itemize}
+	\item Users can set breakpoints, set watchpoints, step through the program, and edit code while program execution has paused.
+	\item If the user sees a problem, he/she can back-up to before the problem occurred, fix the error in the code, then continue.
+	\end{itemize}
+\item A great interface.
+	\begin{itemize}
+	\item We'll use QT to create an Eclipse-ish interface. Running, editing, and debugging will all be available in one window.
+	\end{itemize}
+\end{itemize}
+
+\end{document}
+
+
+

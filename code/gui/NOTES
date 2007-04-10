@@ -1,0 +1,6 @@
+
+Gui TODO: (stuff i'll forget, otherwise)
+   * after name of tab when m_modified is set; goes away when not modified (after save/load)
+
+For adding contextMenu to tabs:
+   http://lists.kde.org/?l=kde-core-devel&m=104658149501276&w=2

@@ -18,7 +18,7 @@
 
 TextEditor::TextEditor(EditorPane *parent, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
-   m_loaded(false), m_syntaxHighligher(NULL)
+   m_loaded(false), m_modified(false), m_syntaxHighligher(NULL)
 {
    setupEditor();
    
@@ -56,7 +56,10 @@ void TextEditor::setupEditor() {
 
 // Slot, notified every time text is changed in the parent TextEdit
 void TextEditor::codeChanged() {
-//   cout << "codeChanged\n";
+   if (!isModified())
+      resetTabText(false);
+   else if (!m_modified)
+      resetTabText(true);
 }
 
 // @overridden to deal w/ showing syntax help after typing an instruction
@@ -82,9 +85,10 @@ bool TextEditor::openFile(QFile *file) {
    if (file->open(QIODevice::ReadOnly | QFile::Text)) {
          setPlainText(file->readAll());
          file->close();
-
-         m_loaded = true;
+         
          m_file = file;
+         m_loaded = true;
+         resetTabText();
    } // else display error
    
    return true;
@@ -100,18 +104,85 @@ QString TextEditor::fileName() {
    int index = path.lastIndexOf('/');
    if (index < 0)
       return path;
-
+   
    return path.right(path.length() - index - 1);
 }
 
-void TextEditor::save() {
-   if (!document()->isModified())
-      return;
+void TextEditor::resetTabText(bool modified) {
+   const QString &name = fileName();
+   m_modified = modified;
+   
+   m_parent->setTabText(m_parent->indexOf(this), name + (m_modified ? "*" : ""));
+}
 
-   if (m_file == NULL) {
-      saveAs();
-      return;
+// returns true upon successful closure
+unsigned int TextEditor::close(bool promptForSave) {
+   unsigned int ret = 0;
+   m_parent->setActiveEditor(this);
+   
+   // Prompt the user to save any unsaved changes
+   if (promptForSave && isModified() && !((ret = promptUnsavedChanges()) & Accepted))
+      return ret;
+   
+   if (m_next != NULL)
+      m_next->m_prev = m_prev;
+   
+   if (m_prev != NULL)
+      m_prev->m_next = m_next;
+
+   m_parent->removeTab(m_parent->indexOf(this));
+
+   return ret;
+}
+
+// Returns true if, after executing, there are no pending changes
+// (prompts user chose to save pending changes)
+// returns false if file was not saved.
+unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
+   if (isModified()) {
+      m_parent->setActiveEditor(this);
+/*      QMessageBox prompt(QMessageBox::Warning, tr("Save changes?"), 
+            QString("The file '") + fileName() + QString(" has been modified.\n\n"
+               "Would you like to save your changes?"), 
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | 
+            extraButtons, this);*/
+      QString name = fileName();
+      QString text;
+      if (name == "")
+         text = "This file has not been saved";
+      else text = QString("The file '") + fileName() + QString("' has been modified");
+      
+      text += ".\n\nWould you like to save your changes?";
+      QMessageBox prompt(tr("Save changes?"), text, QMessageBox::Warning, 
+            QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel, this);
+      extraButtons = 0;
+//      if (extraButtons != 0)
+//         prompt.add
+      
+      unsigned int ret = prompt.exec();
+      
+      if (ret & (QMessageBox::Yes & QMessageBox::YesAll)) {
+         unsigned int result = save();
+
+         if (result & Accepted)
+            return ret;
+         
+         return result;
+      }
+      
+      return ret;
    }
+   
+   return QMessageBox::Yes;
+}
+
+// returns true if there are no pending changes after executing this method.
+unsigned int TextEditor::save() {
+   if (!isModified())
+      return Accepted;
+
+   if (m_file == NULL)
+      return saveAs();
    
    const QString &filename = fileName();
    QString text = toPlainText();
@@ -119,9 +190,9 @@ void TextEditor::save() {
       //cerr << "Could not write to file: '" << filename << "'" << endl;
       if (STATUS_BAR != NULL)
          STATUS_BAR->showMessage( QString("Could not write to %1").arg(fileName()),
-            2500 );
+            STATUS_DELAY );
       
-      return;
+      return QMessageBox::Abort;
    }
 
    QTextStream t(m_file);
@@ -130,20 +201,26 @@ void TextEditor::save() {
    
    m_loaded = true;
    document()->setModified(false);
-   m_parent->setTabText(m_parent->indexOf(this), fileName());
+   resetTabText(false);
    
    if (STATUS_BAR != NULL)
-      STATUS_BAR->showMessage( QString( "File %1 saved" ).arg(filename), 2500 );
+      STATUS_BAR->showMessage( QString( "File %1 saved" ).arg(filename), STATUS_DELAY );
+
+   return Accepted;
 }
 
-void TextEditor::saveAs() {
-   const QString &filename = QFileDialog::getSaveFileName(this, tr("Save File As"), 
+unsigned int TextEditor::saveAs() {
+   const QString &filename = QFileDialog::getSaveFileName(this, tr("Save As"), 
       /*m_lastDirectoryOpened*/QString(), FILE_FILTER);
    
    if (filename == "")
-      return; // user selected cancel?
-
+      return QMessageBox::Cancel; // user selected cancel?
+   
    m_file = new QFile(filename);
-   save();
+   return save();
+}
+
+bool TextEditor::isModified() {
+   return document()->isModified();
 }
 

@@ -55,6 +55,7 @@ void Gui::setupMenuBar() {
    
    m_fileMenu->addAction("&Save", this, SLOT(fileSaveAction()), tr("Ctrl+S"));
    m_fileMenu->addAction("&Save As..", this, SLOT(fileSaveAsAction()));
+   m_fileMenu->addAction("&Save All", this, SLOT(fileSaveAllAction()));
 
    m_fileMenu->addAction("&Exit", this, SLOT(fileExitAction()));
    
@@ -66,7 +67,7 @@ void Gui::setupStatusBar() {
    m_statusBar = statusBar();
    STATUS_BAR = m_statusBar;
 
-   m_statusBar->showMessage(tr("Welcome to "PROJECT_NAME), 2500);
+   m_statusBar->showMessage(tr("Welcome to "PROJECT_NAME), STATUS_DELAY);
 }
 
 // -----------------------
@@ -84,14 +85,37 @@ void Gui::fileOpenAction() {
 }
 
 void Gui::fileSaveAction() {
-   m_editorPane->m_activeEditor->save();
+   bool modified = m_editorPane->m_activeEditor->isModified();
+   unsigned int ret = m_editorPane->m_activeEditor->save();
+
+   if (modified && ret & Accepted) {
+      m_statusBar->showMessage(QString("File ") + m_editorPane->m_activeEditor->fileName() + 
+            QString(" saved successfully."), STATUS_DELAY);
+   }
 }
 
 void Gui::fileSaveAsAction() {
-   m_editorPane->m_activeEditor->saveAs();
+   unsigned int ret = m_editorPane->m_activeEditor->saveAs();
+
+   if (ret & Accepted) {
+      m_statusBar->showMessage(QString("File ") + m_editorPane->m_activeEditor->fileName() + 
+            QString(" saved successfully."), STATUS_DELAY);
+   }
 }
 
 void Gui::fileExitAction() {
-   // TODO: prompt user to save unsaved files
-   qApp->quit();
+   if (m_editorPane->closeAllTabs())
+      qApp->quit();
 }
+
+void Gui::fileSaveAllAction() {
+   m_editorPane->saveAllFiles(true); // do not prompt user
+}
+
+//@overridden
+void Gui::closeEvent(QCloseEvent *event) {
+   if (m_editorPane->closeAllTabs())
+      event->accept();
+   else event->ignore();
+}
+

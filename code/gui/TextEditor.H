@@ -7,11 +7,14 @@
 #ifndef __TEXTEDITOR_H__
 #define __TEXTEDITOR_H__
 #include <QTextEdit>
+#include <QMessageBox>
 
 class SyntaxHighlighter;
 class EditorPane;
 class QKeyEvent;
 class QFile;
+
+#define Accepted  (QMessageBox::Yes | QMessageBox::No | QMessageBox::NoAll | QMessageBox::YesAll)
 
 class TextEditor : public QTextEdit {
    
@@ -25,9 +28,17 @@ class TextEditor : public QTextEdit {
       
       void setupEditor();
       bool openFile(QFile *file);
-      void save();
-      void saveAs();
-      
+      void resetTabText(bool modified = false);
+
+      // returns true upon successful closure; false otherwise
+      unsigned int close(bool promptForSave = true);
+      unsigned int promptUnsavedChanges(unsigned int extraButtons = 0);
+      // returns true if no pending changes after executing this method
+      unsigned int save();
+      unsigned int saveAs();
+      // proxy for document()->isModified()
+      bool isModified();
+
 // returns actual filename of open file
       QString fileName();
 
@@ -43,7 +54,7 @@ class TextEditor : public QTextEdit {
       QFile *m_file;
       
       // true if a document has been loaded; false otherwise
-      bool m_loaded;
+      bool m_loaded, m_modified;
 
       SyntaxHighlighter *m_syntaxHighligher;
       

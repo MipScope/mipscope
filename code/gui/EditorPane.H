@@ -27,6 +27,10 @@ class EditorPane : public QTabWidget {
       void setActiveEditor(TextEditor *newlyActive);
       void openFile(const QString &fileName);
       
+      // Returns true if all tabs closed successfully
+      // May return false if user chooses to cancel the operation
+      bool closeAllTabs();
+      unsigned int saveAllFiles(bool yesToAll = false);
    //signals:
       
       

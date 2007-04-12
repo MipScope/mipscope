@@ -55,7 +55,6 @@ void EditorPane::setActiveEditor(TextEditor *newlyActive) {
    
    setCurrentWidget(m_activeEditor);
 //   m_highlighter->setDocument(newlyActive->document());
-   setTabText(indexOf(newlyActive), newlyActive->fileName());
 }
 
 void EditorPane::activeEditorChanged(int index) {
@@ -64,7 +63,6 @@ void EditorPane::activeEditorChanged(int index) {
    tabbar->setTabTextColor(index, Qt::blue);
    
    m_activeEditor = (TextEditor*) widget(index);
-   
 }
 
 void EditorPane::contextMenuRequested(const QPoint & pos) {
@@ -80,5 +78,66 @@ void EditorPane::contextMenuRequested(const QPoint & pos) {
          return;
       }
    }
+}
+
+// Returns true if all tabs closed successfully
+// May return false if user chooses to cancel the operation
+bool EditorPane::closeAllTabs() {
+   unsigned int ret = saveAllFiles();
+   
+   // Make sure all pending changes get saved if the user wants
+   if (ret == QMessageBox::Cancel)
+      return false;
+   
+   // Close all editors
+   while(m_activeEditor != NULL) {
+      m_activeEditor->close(false);
+      if (m_activeEditor->m_prev != NULL)
+         m_activeEditor = m_activeEditor->m_prev;
+      else m_activeEditor = m_activeEditor->m_next;
+   }
+   
+   return true;
+}
+
+unsigned int EditorPane::saveAllFiles(bool yesToAll) {
+   TextEditor *cur = m_activeEditor;
+   if (cur == NULL)
+      return Accepted;
+   
+   while(cur->m_prev != NULL) cur = cur->m_prev;
+   
+   unsigned int buttons = (QMessageBox::YesAll | QMessageBox::NoAll);
+   int noModified = 0;
+   if (count() > 1) {
+      TextEditor *orig = cur;
+
+      while(cur != NULL) {
+         noModified += cur->isModified();
+         cur = cur->m_next;
+      }
+      cur = orig;
+      if (noModified > 1)
+         buttons = 0;
+   }
+   
+   while(cur != NULL) {
+      if (cur->isModified()) {
+         if (yesToAll) {
+            cur->save();
+         } else {
+            unsigned int ret = cur->promptUnsavedChanges(buttons);
+
+            if (ret == QMessageBox::Cancel || ret == QMessageBox::NoAll)
+               return ret;
+
+            yesToAll = (ret == QMessageBox::YesAll);
+         }
+      }
+
+      cur = cur->m_next;
+   }
+   
+   return Accepted;
 }
 

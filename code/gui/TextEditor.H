@@ -14,7 +14,7 @@ class EditorPane;
 class QKeyEvent;
 class QFile;
 
-#define Accepted  (QMessageBox::Yes | QMessageBox::No | QMessageBox::NoAll | QMessageBox::YesAll)
+extern bool Accepted(unsigned int result);
 
 class TextEditor : public QTextEdit {
    
@@ -34,14 +34,14 @@ class TextEditor : public QTextEdit {
       unsigned int close(bool promptForSave = true);
       unsigned int promptUnsavedChanges(unsigned int extraButtons = 0);
       // returns true if no pending changes after executing this method
-      unsigned int save();
+      unsigned int save(bool forceSave = false);
       unsigned int saveAs();
       // proxy for document()->isModified()
       bool isModified();
 
 // returns actual filename of open file
       QString fileName();
-
+      QFile *file() { return m_file; }
 
    private slots:
       void codeChanged();

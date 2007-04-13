@@ -73,7 +73,8 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       c.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
       const QString &selectedText = c.selectedText();
       
-      match = m_syntaxHighligher->matches(selectedText);
+      match = //m_parent->m_highlighter->matches(selectedText);
+         m_syntaxHighligher->matches(selectedText);
    }
    
    if (match)
@@ -115,21 +116,30 @@ void TextEditor::resetTabText(bool modified) {
    m_parent->setTabText(m_parent->indexOf(this), name + (m_modified ? "*" : ""));
 }
 
+bool Accepted(unsigned int result) {
+   return (result == QMessageBox::Yes || result == QMessageBox::No || result == QMessageBox::NoAll || result == QMessageBox::YesAll);
+}
+
 // returns true upon successful closure
 unsigned int TextEditor::close(bool promptForSave) {
    unsigned int ret = 0;
-   m_parent->setActiveEditor(this);
+   if (m_parent->m_activeEditor != this) {
+      m_parent->setActiveEditor(this);
+      m_parent->update();
+   }
    
    // Prompt the user to save any unsaved changes
-   if (promptForSave && isModified() && !((ret = promptUnsavedChanges()) & Accepted))
+   if (promptForSave && isModified() && !Accepted(ret = promptUnsavedChanges()))
       return ret;
    
    if (m_next != NULL)
       m_next->m_prev = m_prev;
    
-   if (m_prev != NULL)
+   if (m_prev != NULL) {
       m_prev->m_next = m_next;
-
+      m_parent->setActiveEditor(m_parent->m_activeEditor->m_prev);
+   } else m_parent->setActiveEditor(m_parent->m_activeEditor->m_next);
+   
    m_parent->removeTab(m_parent->indexOf(this));
 
    return ret;
@@ -140,7 +150,11 @@ unsigned int TextEditor::close(bool promptForSave) {
 // returns false if file was not saved.
 unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
    if (isModified()) {
-      m_parent->setActiveEditor(this);
+      if (m_parent->m_activeEditor != this) {
+         m_parent->setActiveEditor(this);
+         m_parent->update();
+      }
+
 /*      QMessageBox prompt(QMessageBox::Warning, tr("Save changes?"), 
             QString("The file '") + fileName() + QString(" has been modified.\n\n"
                "Would you like to save your changes?"), 
@@ -161,10 +175,10 @@ unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
       
       unsigned int ret = prompt.exec();
       
-      if (ret & (QMessageBox::Yes & QMessageBox::YesAll)) {
+      if (ret == QMessageBox::Yes || ret == QMessageBox::YesAll) {
          unsigned int result = save();
 
-         if (result & Accepted)
+         if (Accepted(result))
             return ret;
          
          return result;
@@ -177,9 +191,9 @@ unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
 }
 
 // returns true if there are no pending changes after executing this method.
-unsigned int TextEditor::save() {
-   if (!isModified())
-      return Accepted;
+unsigned int TextEditor::save(bool forceSave) {
+   if (!forceSave && !isModified())
+      return QMessageBox::Yes;
 
    if (m_file == NULL)
       return saveAs();
@@ -206,7 +220,7 @@ unsigned int TextEditor::save() {
    if (STATUS_BAR != NULL)
       STATUS_BAR->showMessage( QString( "File %1 saved" ).arg(filename), STATUS_DELAY );
 
-   return Accepted;
+   return QMessageBox::Yes;
 }
 
 unsigned int TextEditor::saveAs() {
@@ -217,7 +231,7 @@ unsigned int TextEditor::saveAs() {
       return QMessageBox::Cancel; // user selected cancel?
    
    m_file = new QFile(filename);
-   return save();
+   return save(true); // force save even if document is unmodified
 }
 
 bool TextEditor::isModified() {

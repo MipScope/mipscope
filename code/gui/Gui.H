@@ -31,8 +31,6 @@ class Gui : public QMainWindow {
    private slots:
       // MenuBar
       void fileOpenAction();
-      void fileSaveAction();
-      void fileSaveAsAction();
       void fileSaveAllAction();
       void fileExitAction();
       

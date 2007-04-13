@@ -1,6 +1,10 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * fix saving on exit!
+   * be able to press cancel when prompted to save on close
 
 For adding contextMenu to tabs:
    http://lists.kde.org/?l=kde-core-devel&m=104658149501276&w=2
+
+setenvvar QMAKESPEC /course/cs036_projects/mipscope/qt4.3/mkspecs/linux-g++
+setenvvar QTDIR /course/cs036_projects/mipscope/qt4.3

@@ -12,19 +12,22 @@
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_editorPane(new EditorPane(this))
 {
+   QApplication::setStyle(new QPlastiqueStyle());
+   
    if (argc > 1) {
       int i = 1;
       
       // load multiple files via the command-line
       while(i < argc) {
-         if (!strcmp(argv[i++], "-f")) {
-            QString fileName(argv[i]);
+         if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "-file")) {
+            QString fileName(argv[++i]);
 
             if (!QFile::exists(fileName))
                cerr << "Error loading file '" << argv[i] << "'\n";
             else m_editorPane->openFile(fileName);
-            ++i;
          }
+
+         ++i;
       }
    }
    
@@ -53,8 +56,8 @@ void Gui::setupMenuBar() {
    action->setStatusTip(tr("Open an existing source file"));
    m_fileMenu->addAction(action);
    
-   m_fileMenu->addAction("&Save", this, SLOT(fileSaveAction()), tr("Ctrl+S"));
-   m_fileMenu->addAction("&Save As..", this, SLOT(fileSaveAsAction()));
+   m_fileMenu->addAction("&Save", m_editorPane, SLOT(saveAction()), tr("Ctrl+S"));
+   m_fileMenu->addAction("&Save As..", m_editorPane, SLOT(saveAsAction()));
    m_fileMenu->addAction("&Save All", this, SLOT(fileSaveAllAction()));
 
    m_fileMenu->addAction("&Exit", this, SLOT(fileExitAction()));
@@ -82,25 +85,6 @@ void Gui::fileOpenAction() {
       return;
 
    m_editorPane->openFile(fileName);
-}
-
-void Gui::fileSaveAction() {
-   bool modified = m_editorPane->m_activeEditor->isModified();
-   unsigned int ret = m_editorPane->m_activeEditor->save();
-
-   if (modified && ret & Accepted) {
-      m_statusBar->showMessage(QString("File ") + m_editorPane->m_activeEditor->fileName() + 
-            QString(" saved successfully."), STATUS_DELAY);
-   }
-}
-
-void Gui::fileSaveAsAction() {
-   unsigned int ret = m_editorPane->m_activeEditor->saveAs();
-
-   if (ret & Accepted) {
-      m_statusBar->showMessage(QString("File ") + m_editorPane->m_activeEditor->fileName() + 
-            QString(" saved successfully."), STATUS_DELAY);
-   }
 }
 
 void Gui::fileExitAction() {

@@ -134,8 +134,10 @@ QString TextEditor::fileName() const {
 void TextEditor::resetTabText(bool modified) {
    const QString &name = fileName();
    m_modified = modified;
+   int index = m_parent->indexOf(this);
    
-   m_parent->setTabText(m_parent->indexOf(this), name + (m_modified ? "*" : ""));
+   m_parent->setTabText(index, name);// + (m_modified ? "*" : ""));
+   m_parent->setTabIcon(index, (m_modified ? QIcon(IMAGES"/fileUnsaved.png") : QIcon(IMAGES"/fileSaved.png")));
 }
 
 bool Accepted(QMessageBox::StandardButton result) {

@@ -29,7 +29,7 @@ class TextEditor : public QTextEdit {
       void setupEditor();
       bool openFile(QFile *file);
       void resetTabText(bool modified = false);
-
+      
       // returns true upon successful closure; false otherwise
       unsigned int close(bool promptForSave = true);
       unsigned int promptUnsavedChanges(unsigned int extraButtons = 0);
@@ -37,14 +37,23 @@ class TextEditor : public QTextEdit {
       unsigned int save(bool forceSave = false);
       unsigned int saveAs();
       // proxy for document()->isModified()
-      bool isModified();
+      bool isModified() const;
 
+      // Utility methods
+      bool isModifiable() const;
+      bool copyIsAvailable() const;
+      bool undoIsAvailable() const;
+      bool redoIsAvailable() const;
+      
 // returns actual filename of open file
-      QString fileName();
-      QFile *file() { return m_file; }
+      QString fileName() const;
+      QFile *file() const { return m_file; }
 
    private slots:
       void codeChanged();
+      void modifiabilityChanged(bool);
+      void undoAvailabilityModified(bool);
+      void redoAvailabilityModified(bool);
       
    protected:
       EditorPane *m_parent;
@@ -54,7 +63,7 @@ class TextEditor : public QTextEdit {
       QFile *m_file;
       
       // true if a document has been loaded; false otherwise
-      bool m_loaded, m_modified;
+      bool m_loaded, m_modified, m_undoAvailable, m_redoAvailable;
 
       SyntaxHighlighter *m_syntaxHighligher;
       

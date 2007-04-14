@@ -31,17 +31,36 @@ class EditorPane : public QTabWidget {
 
       void setActiveEditor(TextEditor *newlyActive);
       void openFile(const QString &fileName);
+
+      bool isModifiable();
+      bool isReadOnly();
       
       // Returns true if all tabs closed successfully
       // May return false if user chooses to cancel the operation
       bool closeAllTabs();
       unsigned int saveAllFiles(bool yesToAll = false);
-   //signals:
-      
+   
+
+   signals:
+      void isModifiable(bool); // sent out upon read-only change
+      void copyAvailabile(bool);
+      void undoAvailabile(bool);
+      void redoAvailabile(bool);
+      void isModified(bool);
       
    private slots:
       void activeEditorChanged(int index);
       
+      // Proxy slots for active TextEditor
+      void cut();
+      void copy();
+      void paste();
+      void undo();
+      void redo();
+      void undoAvailabilityModified(bool);
+      void redoAvailabilityModified(bool);
+      void copyAvailabilityModified(bool);
+       
       // Context-menu related
       void contextMenuRequested(const QPoint & pos);
       void newBlankTabAction();
@@ -55,6 +74,9 @@ class EditorPane : public QTabWidget {
       SyntaxHighlighter *m_highlighter;
       EditorContextMenu *m_contextMenu;
       Gui *m_parent;
+      
+      bool m_modifiable; // opposite of being read-only
+      void setModifiable(bool);
 };
 
 class EditorContextMenu : public QObject {

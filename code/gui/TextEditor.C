@@ -9,16 +9,13 @@
 #include "EditorPane.H"
 #include "Utilities.H"
 #include "Gui.H"
-#include <QFileDialog>
-#include <QTextStream>
-#include <QTextCursor>
-#include <QKeyEvent>
-#include <QFile>
-#include <QFont>
+#include <QtGui>
+#include <QtCore>
 
 TextEditor::TextEditor(EditorPane *parent, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
-   m_loaded(false), m_modified(false), m_syntaxHighligher(NULL)
+   m_loaded(false), m_modified(false), m_undoAvailable(false), 
+   m_redoAvailable(false), m_syntaxHighligher(NULL)
 {
    setupEditor();
    
@@ -48,8 +45,17 @@ void TextEditor::setupEditor() {
    setAcceptRichText(false);
    setLineWrapMode(QTextEdit::NoWrap);
    
-   setContextMenuPolicy(Qt::NoContextMenu); // TODO:  temporary?
+   setContextMenuPolicy(Qt::NoContextMenu); // TODO: add custom context menu?
    connect(this, SIGNAL(textChanged()), this, SLOT(codeChanged()));
+   
+   // signals for enabling/disabling editing functionality
+   connect(this, SIGNAL(undoAvailable(bool)), this, SLOT(undoAvailabilityModified(bool)));
+   connect(this, SIGNAL(undoAvailable(bool)), this, SLOT(undoAvailabilityModified(bool)));
+
+   connect(this, SIGNAL(undoAvailable(bool)), m_parent, SLOT(undoAvailabilityModified(bool)));
+   connect(this, SIGNAL(redoAvailable(bool)), m_parent, SLOT(redoAvailabilityModified(bool)));
+   connect(this, SIGNAL(copyAvailable(bool)), m_parent, SLOT(copyAvailabilityModified(bool)));
+   connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
    
    m_syntaxHighligher = new SyntaxHighlighter(this);
 }
@@ -60,7 +66,10 @@ void TextEditor::codeChanged() {
       resetTabText(false);
    else if (!m_modified)
       resetTabText(true);
+   
+   m_parent->isModified(this->isModified());
 }
+
 
 // @overridden to deal w/ showing syntax help after typing an instruction
 void TextEditor::keyReleaseEvent(QKeyEvent *e) {
@@ -75,11 +84,24 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       
       match = //m_parent->m_highlighter->matches(selectedText);
          m_syntaxHighligher->matches(selectedText);
+      
+      if (match) {
+         //QTextCursor c = textCursor();
+         //int pos = c.position();
+         const QRect &rect = cursorRect(c);
+         const int top = rect.top();
+         const QPoint pos(rect.center().x(), top + ((rect.bottom() - top) >> 3));
+         
+         QToolTip::showText(mapToGlobal(pos), "<p style='white-space:pre'><b>add</b> $dest, $src1, $src2", this);
+         STATUS_BAR->showMessage(QString("Adds two signed integers, storing the result in $dest."));
+      }
+   } else if (e->key() == Qt::Key_Return) {
+      QToolTip::hideText();
+      STATUS_BAR->clearMessage();
    }
    
-   if (match)
-      cout << "space matched\n";
-   else QTextEdit::keyReleaseEvent(e);
+   if (!match)
+      QTextEdit::keyReleaseEvent(e);
 }
 
 bool TextEditor::openFile(QFile *file) {
@@ -96,7 +118,7 @@ bool TextEditor::openFile(QFile *file) {
 }
 
 // returns actual filename of open file
-QString TextEditor::fileName() {
+QString TextEditor::fileName() const {
    if (m_file == NULL)
       return QString();
 
@@ -215,6 +237,7 @@ unsigned int TextEditor::save(bool forceSave) {
    
    m_loaded = true;
    document()->setModified(false);
+   m_parent->isModified(false);
    resetTabText(false);
    
    if (STATUS_BAR != NULL)
@@ -234,7 +257,35 @@ unsigned int TextEditor::saveAs() {
    return save(true); // force save even if document is unmodified
 }
 
-bool TextEditor::isModified() {
+bool TextEditor::isModified() const {
    return document()->isModified();
+}
+
+void TextEditor::modifiabilityChanged(bool isModifiable) {
+   setReadOnly(!isModifiable);
+}
+
+bool TextEditor::isModifiable() const {
+   return !isReadOnly();
+}
+
+bool TextEditor::copyIsAvailable() const {
+   return (textCursor().hasSelection());
+}
+
+bool TextEditor::undoIsAvailable() const {
+   return m_undoAvailable;
+}
+
+bool TextEditor::redoIsAvailable() const {
+   return m_redoAvailable;
+}
+
+void TextEditor::undoAvailabilityModified(bool isAvailable) {
+   m_undoAvailable = isAvailable;
+}
+
+void TextEditor::redoAvailabilityModified(bool isAvailable) {
+   m_redoAvailable = isAvailable;
 }
 

@@ -11,7 +11,7 @@
 #include "Utilities.H"
 #include <QtGui>
 
-EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget()
+EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_modifiable(true)
 {
    m_activeEditor = new TextEditor(this);
    //m_highlighter = new SyntaxHighlighter(m_activeEditor->document());
@@ -42,7 +42,9 @@ void EditorPane::openFile(const QString &fileName) {
       
       // else error
    } else { // open a tab for a new TextEditor
-      setActiveEditor(new TextEditor(this, file, m_activeEditor));
+      TextEditor *editor = new TextEditor(this, NULL, m_activeEditor);
+      setActiveEditor(editor);
+      editor->openFile(file);
    }
 }
 
@@ -61,7 +63,6 @@ void EditorPane::setActiveEditor(TextEditor *newlyActive) {
       
       QTabBar *tabbar = tabBar();
       tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
-   
    }
    m_activeEditor = newlyActive;
    setCurrentWidget(m_activeEditor);
@@ -78,6 +79,14 @@ void EditorPane::activeEditorChanged(int index) {
    tabbar->setTabTextColor(index, Qt::blue);
    
    m_activeEditor = (TextEditor*) widget(index);
+   
+   // Send out signals to update (enable/disable) certain Gui Actions
+   copyAvailabile(m_activeEditor->copyIsAvailable());
+   undoAvailabile(m_activeEditor->undoIsAvailable());
+   redoAvailabile(m_activeEditor->redoIsAvailable());
+   isModifiable(m_activeEditor->isModifiable());
+   isModified(m_activeEditor->isModified());
+   
    //m_highlighter->setDocument(m_activeEditor->document());
 }
 
@@ -202,13 +211,12 @@ void EditorPane::saveAsAction() {
 
 void EditorPane::closeOtherTabsAction() {
    TextEditor *keep = m_contextMenu->m_editor;
-   const QString &f = keep->fileName();
    
    setUpdatesEnabled(false);
-   cerr << f.toStdString() << endl;
+//   const QString &f = keep->fileName();
+//   cerr << f.toStdString() << endl;
 
    while(m_activeEditor != NULL) {
-
       if (m_activeEditor == keep) {
          if (keep->m_prev != NULL)
             m_activeEditor = keep->m_prev;
@@ -240,14 +248,17 @@ void EditorPane::closeAction() {
 }
 
 // Right-click context-menu for tabs
+// ---------------------------------
 EditorContextMenu::EditorContextMenu(EditorPane *editorPane)
    : QObject(editorPane), m_editorPane(editorPane), m_index(0)
 {
    m_tabMenu = new QMenu(editorPane);
-
+   
    m_tabMenu->addAction("New Blank Tab", editorPane, SLOT(newBlankTabAction()));
+
    m_tabMenu->addSeparator();
-   m_tabMenu->addAction("Save", this, SLOT(saveAction()));
+   m_tabMenu->addAction(//"Save", this, SLOT(saveAction()));
+      editorPane->m_parent->getSaveAction());
    m_tabMenu->addAction("Save As..", this, SLOT(saveAsAction()));
    m_tabMenu->addSeparator();
 
@@ -260,6 +271,8 @@ EditorContextMenu::EditorContextMenu(EditorPane *editorPane)
    m_tabBarMenu->addAction("Save All", this, SLOT(saveAllAction()));
 }
 
+// Show the right-click menu for the tabbed area
+// ---------------------------------------------
 void EditorContextMenu::showAt(const QPoint &pos, int index) {
    m_index = index;
 
@@ -294,5 +307,56 @@ void EditorContextMenu::saveAsAction() {
 
 void EditorContextMenu::saveAllAction() {
    m_editorPane->saveAllFiles(true);
+}
+
+// Proxy slots for active TextEditor
+// ---------------------------------
+void EditorPane::cut() {
+   m_activeEditor->cut();
+}
+
+void EditorPane::copy() {
+   m_activeEditor->copy();
+}
+
+void EditorPane::paste() {
+   m_activeEditor->paste();
+}
+
+void EditorPane::undo() {
+   m_activeEditor->undo();
+}
+
+void EditorPane::redo(){
+   m_activeEditor->redo();
+}
+
+// Proxy signals from active TextEditor to Gui
+// -------------------------------------------
+void EditorPane::copyAvailabilityModified(bool isAvailable) {
+   copyAvailabile(isAvailable);
+}
+
+void EditorPane::undoAvailabilityModified(bool isAvailable) {
+   undoAvailabile(isAvailable);
+}
+
+void EditorPane::redoAvailabilityModified(bool isAvailable) {
+   redoAvailabile(isAvailable);
+}
+
+bool EditorPane::isModifiable() {
+   return m_modifiable;
+}
+
+bool EditorPane::isReadOnly() {
+   return !m_modifiable;
+}
+
+void EditorPane::setModifiable(bool modifiable) {
+   m_modifiable = modifiable;
+
+   // alert all listeners of change in read-only status
+   isModifiable(modifiable);
 }
 

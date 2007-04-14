@@ -56,9 +56,9 @@ curGenString2:       .asciiz           ": \n"
 # specifies that we're supposed to), it looks cooler to use other, obscure 
 # ascii characters to represent the different states.
 deadString:          .asciiz           "0"
-justDiedString:      .asciiz           "3" #¤
-aliveString:         .asciiz           "1" #§ Ü
-justBornString:      .asciiz           "2" #| £Æ
+justDiedString:      .asciiz           "3" #
+aliveString:         .asciiz           "1" # 
+justBornString:      .asciiz           "2" #| 
 
 newLine:             .asciiz           "\n"
 grid1:               .byte             0:GRID_SIZE

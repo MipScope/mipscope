@@ -14,7 +14,7 @@ class EditorPane;
 class QKeyEvent;
 class QFile;
 
-extern bool Accepted(unsigned int result);
+extern bool Accepted(QMessageBox::StandardButton result);
 
 class TextEditor : public QTextEdit {
    
@@ -31,11 +31,11 @@ class TextEditor : public QTextEdit {
       void resetTabText(bool modified = false);
       
       // returns true upon successful closure; false otherwise
-      unsigned int close(bool promptForSave = true);
-      unsigned int promptUnsavedChanges(unsigned int extraButtons = 0);
+      QMessageBox::StandardButton close(bool promptForSave = true);
+      QMessageBox::StandardButton promptUnsavedChanges(QMessageBox::StandardButtons extraButtons = 0);
       // returns true if no pending changes after executing this method
-      unsigned int save(bool forceSave = false);
-      unsigned int saveAs();
+      QMessageBox::StandardButton save(bool forceSave = false);
+      QMessageBox::StandardButton saveAs();
       // proxy for document()->isModified()
       bool isModified() const;
 

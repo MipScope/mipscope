@@ -12,7 +12,19 @@
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")
 #define STATUS_DELAY       (2500)
-#define IMAGES             "images/"
+#define IMAGES             "images"
+//#define LARGE_ICONS
+#define SMALL_ICONS
+
+#ifdef LARGE_ICONS
+   #define ICON_SIZE          (32)
+   #define ICON_DIR           "32x32"
+#else
+   #define ICON_SIZE          (22)
+   #define ICON_DIR           "22x22"
+#endif
+
+#define ICONS              IMAGES "/" ICON_DIR
 
 extern QStatusBar *STATUS_BAR;
 
@@ -32,6 +44,8 @@ class Gui : public QMainWindow {
 	   virtual ~Gui(void);
       
       QAction *getSaveAction();
+//      QAction *getSaveAsAction();
+      QAction *getSaveAllAction();
       
    //signals:
       
@@ -50,6 +64,7 @@ class Gui : public QMainWindow {
       QMenu *m_fileMenu, *m_editMenu;
       QString m_lastDirectoryOpened; // TODO
       QAction *m_fileSaveAction, 
+              *m_fileSaveAllAction, 
               *m_editUndoAction, 
               *m_editRedoAction, 
               *m_editCutAction, 

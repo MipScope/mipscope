@@ -37,8 +37,8 @@ class EditorPane : public QTabWidget {
       
       // Returns true if all tabs closed successfully
       // May return false if user chooses to cancel the operation
-      bool closeAllTabs();
-      unsigned int saveAllFiles(bool yesToAll = false);
+      bool closeAllTabs(TextEditor *ignore = NULL);
+      QMessageBox::StandardButton saveAllFiles(bool yesToAll = false, TextEditor *ignore = NULL);
    
 
    signals:
@@ -92,7 +92,6 @@ class EditorContextMenu : public QObject {
    private slots:
       void saveAction();
       void saveAsAction();
-      void saveAllAction();
 
    protected:
       EditorPane *m_editorPane;

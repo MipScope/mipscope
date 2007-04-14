@@ -117,52 +117,67 @@ void EditorPane::contextMenuRequested(const QPoint & pos) {
 
 // Returns true if all tabs closed successfully
 // May return false if user chooses to cancel the operation
-bool EditorPane::closeAllTabs() {
-   unsigned int ret = saveAllFiles();
+bool EditorPane::closeAllTabs(TextEditor *ignore) {
+   QMessageBox::StandardButton ret = saveAllFiles(false, ignore);
    
    // Make sure all pending changes get saved if the user wants
    if (ret == QMessageBox::Cancel)
       return false;
    
    // Close all editors
-   while(m_activeEditor != NULL)
+   while(m_activeEditor != NULL) {
+      // possibly allow one editor to stay open
+      // (for ex: see closeOtherTabsAction()
+      if (m_activeEditor == ignore) {
+         if (ignore->m_prev != NULL)
+            m_activeEditor = ignore->m_prev;
+         else if (ignore->m_next != NULL)
+            m_activeEditor = ignore->m_next;
+         else break;
+      }
+
       m_activeEditor->close(false);
+   }
    
    return true;
 }
 
-unsigned int EditorPane::saveAllFiles(bool yesToAll) {
+QMessageBox::StandardButton EditorPane::saveAllFiles(bool yesToAll, TextEditor *ignore) {
    TextEditor *cur = m_activeEditor;
    if (cur == NULL)
       return QMessageBox::Yes;
    
    while(cur->m_prev != NULL) cur = cur->m_prev;
    
-   unsigned int buttons = (QMessageBox::YesAll | QMessageBox::NoAll);
+   QMessageBox::StandardButtons buttons = (QMessageBox::YesToAll | QMessageBox::NoToAll);
    int noModified = 0;
    if (count() > 1) {
       TextEditor *orig = cur;
 
       while(cur != NULL) {
-         noModified += cur->isModified();
+         if (cur != ignore)
+            noModified += cur->isModified();
+
          cur = cur->m_next;
       }
+      
       cur = orig;
-      if (noModified > 1)
-         buttons = 0;
+      if (noModified <= 1)
+         buttons = QMessageBox::NoButton;
    }
    
    while(cur != NULL) {
-      if (cur->isModified()) {
+      if (cur != ignore && cur->isModified()) {
          if (yesToAll) {
             cur->save();
          } else {
-            unsigned int ret = cur->promptUnsavedChanges(buttons);
-
-            if (ret == QMessageBox::Cancel || ret == QMessageBox::NoAll)
+            QMessageBox::StandardButton ret = cur->promptUnsavedChanges(buttons);
+            
+            //cerr << ret << endl;
+            if (ret == QMessageBox::Cancel || ret == QMessageBox::NoToAll)
                return ret;
 
-            yesToAll = (ret == QMessageBox::YesAll);
+            yesToAll = (ret == QMessageBox::YesToAll);
          }
       }
 
@@ -190,7 +205,7 @@ void EditorPane::saveAction() {
       return;
    }
    
-   unsigned int ret = m_activeEditor->save();
+   QMessageBox::StandardButton ret = m_activeEditor->save();
 
    if (modified && Accepted(ret)) {
       STATUS_BAR->showMessage(QString("File ") + m_activeEditor->fileName() + 
@@ -201,7 +216,7 @@ void EditorPane::saveAction() {
 void EditorPane::saveAsAction() {
 //   TextEditor *editor = m_contextMenu->m_editor;
    
-   unsigned int ret = m_activeEditor->saveAs();
+   QMessageBox::StandardButton ret = m_activeEditor->saveAs();
    
    if (Accepted(ret)) {
       STATUS_BAR->showMessage(QString("File ") + m_activeEditor->fileName() + 
@@ -213,10 +228,12 @@ void EditorPane::closeOtherTabsAction() {
    TextEditor *keep = m_contextMenu->m_editor;
    
    setUpdatesEnabled(false);
+   closeAllTabs(keep);
+   
 //   const QString &f = keep->fileName();
 //   cerr << f.toStdString() << endl;
 
-   while(m_activeEditor != NULL) {
+   /*while(m_activeEditor != NULL) {
       if (m_activeEditor == keep) {
          if (keep->m_prev != NULL)
             m_activeEditor = keep->m_prev;
@@ -225,10 +242,10 @@ void EditorPane::closeOtherTabsAction() {
          else break;
       }
       
-      unsigned int ret = m_activeEditor->close();
+      QMessageBox::StandardButton ret = m_activeEditor->close();
       if (ret == QMessageBox::Cancel)
          break;
-   }
+   }*/
 
    //if (m_activeEditor != NULL)
       //m_highlighter->setDocument(m_activeEditor->document());
@@ -254,21 +271,22 @@ EditorContextMenu::EditorContextMenu(EditorPane *editorPane)
 {
    m_tabMenu = new QMenu(editorPane);
    
-   m_tabMenu->addAction("New Blank Tab", editorPane, SLOT(newBlankTabAction()));
-
+   QAction *fileNew = new QAction(QIcon(ICONS"/fileNew.png"), "New Blank Tab", editorPane);
+   connect(fileNew, SIGNAL(triggered()), editorPane, SLOT(newBlankTabAction()));
+   m_tabMenu->addAction(fileNew);
+   
    m_tabMenu->addSeparator();
-   m_tabMenu->addAction(//"Save", this, SLOT(saveAction()));
-      editorPane->m_parent->getSaveAction());
-   m_tabMenu->addAction("Save As..", this, SLOT(saveAsAction()));
+   m_tabMenu->addAction(editorPane->m_parent->getSaveAction());
+   m_tabMenu->addAction(QIcon(ICONS"/fileSave.png"), "Save As..", this, SLOT(saveAsAction()));
    m_tabMenu->addSeparator();
 
    m_closeOtherTabs =  m_tabMenu->addAction("Close Other Tabs", editorPane, SLOT(closeOtherTabsAction()));
-   m_close = m_tabMenu->addAction("Close", editorPane, SLOT(closeAction()));
+   m_close = m_tabMenu->addAction(QIcon(ICONS"/closeTab.png"), "Close", editorPane, SLOT(closeAction()));
    
    m_tabBarMenu = new QMenu(editorPane);
-   m_tabBarMenu->addAction("New Blank Tab", editorPane, SLOT(newBlankTabAction()));
+   m_tabBarMenu->addAction(fileNew);
    m_tabBarMenu->addSeparator();
-   m_tabBarMenu->addAction("Save All", this, SLOT(saveAllAction()));
+   m_tabBarMenu->addAction(editorPane->m_parent->getSaveAllAction());
 }
 
 // Show the right-click menu for the tabbed area
@@ -303,10 +321,6 @@ void EditorContextMenu::saveAction() {
 void EditorContextMenu::saveAsAction() {
    m_editorPane->setActiveEditor(m_editor);
    m_editorPane->saveAsAction();
-}
-
-void EditorContextMenu::saveAllAction() {
-   m_editorPane->saveAllFiles(true);
 }
 
 // Proxy slots for active TextEditor

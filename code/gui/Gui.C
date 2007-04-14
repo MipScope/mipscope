@@ -10,7 +10,8 @@
 #include <QtGui>
 #include <string.h>
 
-Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), m_editorPane(new EditorPane(this))
+Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
+   m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this))
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
@@ -39,7 +40,8 @@ Gui::~Gui(void) { }
 
 void Gui::setupGui() {
    setWindowTitle(tr("Spim sucks"));
-   setWindowIcon(QIcon(IMAGES"logo.png"));
+   setWindowIcon(QIcon(IMAGES"/logo.png"));
+   setIconSize(QSize(ICON_SIZE, ICON_SIZE));
    
    setupActions();
    setCentralWidget(m_editorPane);
@@ -84,19 +86,19 @@ void Gui::setupFileActions() {
    m_fileMenu = menuBar()->addMenu(tr("&File"));
    QMenu *menu = m_fileMenu;
    
-   addAction(tb, menu, new QAction(tr("&New"), this), m_editorPane, SLOT(newBlankTabAction()), QKeySequence(QKeySequence::New));
-   addAction(tb, menu, new QAction(tr("&Open"), this), this, SLOT(fileOpenAction()), QKeySequence::Open);
+   addAction(tb, menu, new QAction(QIcon(ICONS"/fileNew.png"), tr("&New"), this), m_editorPane, SLOT(newBlankTabAction()), QKeySequence(QKeySequence::New));
+   addAction(tb, menu, new QAction(QIcon(ICONS"/fileOpen.png"), tr("&Open"), this), this, SLOT(fileOpenAction()), QKeySequence::Open);
    
    menu->addSeparator();
 
    m_fileSaveAction = addAction(tb, menu, getSaveAction(), m_editorPane, SLOT(saveAction()), QKeySequence(QKeySequence::Save), false);
 
-   addAction(tb, menu, new QAction(tr("Save &As.."), this), m_editorPane, SLOT(saveAsAction()));
-   addAction(tb, menu, new QAction(tr("Save A&ll"), this), this, SLOT(fileSaveAllAction()));
+   addAction(tb, menu, new QAction(QIcon(ICONS"/fileSaveAs.png"), tr("Save &As.."), this), m_editorPane, SLOT(saveAsAction()));
+   m_fileSaveAllAction = addAction(tb, menu, getSaveAllAction(), this, SLOT(fileSaveAllAction()));
    
    menu->addSeparator();
 
-   addAction(tb, menu, new QAction(tr("&Print.."), this), this, SLOT(filePrintAction()), QKeySequence(QKeySequence::Print));
+   addAction(tb, menu, new QAction(QIcon(ICONS"/filePrint.png"), tr("&Print.."), this), this, SLOT(filePrintAction()), QKeySequence(QKeySequence::Print));
    
    menu->addSeparator();
 
@@ -113,14 +115,14 @@ void Gui::setupEditActions() {
    m_editMenu = menuBar()->addMenu(tr("&Edit"));
    QMenu *menu = m_editMenu;
    
-   m_editUndoAction = addAction(tb, menu, new QAction(tr("&Undo"), this), m_editorPane, SLOT(undo()), QKeySequence(QKeySequence::Undo), false);
-   m_editRedoAction = addAction(tb, menu, new QAction(tr("&Redo"), this), m_editorPane, SLOT(redo()), QKeySequence(QKeySequence::Redo), false);
+   m_editUndoAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editUndo.png"), tr("&Undo"), this), m_editorPane, SLOT(undo()), QKeySequence(QKeySequence::Undo), false);
+   m_editRedoAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editRedo.png"), tr("&Redo"), this), m_editorPane, SLOT(redo()), QKeySequence(QKeySequence::Redo), false);
    
    menu->addSeparator();
 
-   m_editCutAction   = addAction(tb, menu, new QAction(tr("Cu&t"), this), m_editorPane, SLOT(cut()), QKeySequence(QKeySequence::Cut), false);
-   m_editCopyAction  = addAction(tb, menu, new QAction(tr("&Copy"), this), m_editorPane, SLOT(copy()), QKeySequence(QKeySequence::Copy), false);
-   m_editPasteAction = addAction(tb, menu, new QAction(tr("&Paste"), this), m_editorPane, SLOT(paste()), QKeySequence(QKeySequence::Paste), !QApplication::clipboard()->text().isEmpty());
+   m_editCutAction   = addAction(tb, menu, new QAction(QIcon(ICONS"/editCut.png"), tr("Cu&t"), this), m_editorPane, SLOT(cut()), QKeySequence(QKeySequence::Cut), false);
+   m_editCopyAction  = addAction(tb, menu, new QAction(QIcon(ICONS"/editCopy.png"), tr("&Copy"), this), m_editorPane, SLOT(copy()), QKeySequence(QKeySequence::Copy), false);
+   m_editPasteAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editPaste.png"), tr("&Paste"), this), m_editorPane, SLOT(paste()), QKeySequence(QKeySequence::Paste), !QApplication::clipboard()->text().isEmpty());
    
    // Setup automatic enabling/disabling of different menu-items
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editUndoAction, SLOT(setEnabled(bool)));
@@ -131,6 +133,7 @@ void Gui::setupEditActions() {
    connect(m_editorPane, SIGNAL(undoAvailabile(bool)), m_editUndoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(redoAvailabile(bool)), m_editRedoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(copyAvailabile(bool)), m_editCutAction, SLOT(setEnabled(bool)));
+   connect(m_editorPane, SIGNAL(copyAvailabile(bool)), m_editCopyAction, SLOT(setEnabled(bool)));
    connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardModified()));
 }
 
@@ -216,9 +219,16 @@ void Gui::aboutMipScope() {
 
 QAction *Gui::getSaveAction() {
    if (m_fileSaveAction == NULL)
-      m_fileSaveAction = new QAction(tr("&Save"), this);
+      m_fileSaveAction = new QAction(QIcon(ICONS"/fileSave.png"), tr("&Save"), this);
    
    return m_fileSaveAction;
+}
+
+QAction *Gui::getSaveAllAction() {
+   if (m_fileSaveAllAction == NULL)
+      m_fileSaveAllAction = new QAction(QIcon(ICONS"/fileSaveAll.png"), tr("Save A&ll"), this);
+   
+   return m_fileSaveAllAction;
 }
 
 void Gui::clipboardModified() {

@@ -138,13 +138,14 @@ void TextEditor::resetTabText(bool modified) {
    m_parent->setTabText(m_parent->indexOf(this), name + (m_modified ? "*" : ""));
 }
 
-bool Accepted(unsigned int result) {
-   return (result == QMessageBox::Yes || result == QMessageBox::No || result == QMessageBox::NoAll || result == QMessageBox::YesAll);
+bool Accepted(QMessageBox::StandardButton result) {
+   return (result == QMessageBox::Yes || result == QMessageBox::YesToAll || 
+           result == QMessageBox::No || result == QMessageBox::NoToAll);
 }
 
 // returns true upon successful closure
-unsigned int TextEditor::close(bool promptForSave) {
-   unsigned int ret = 0;
+QMessageBox::StandardButton TextEditor::close(bool promptForSave) {
+   QMessageBox::StandardButton ret = QMessageBox::NoButton;
    if (m_parent->m_activeEditor != this) {
       m_parent->setActiveEditor(this);
       m_parent->update();
@@ -170,18 +171,13 @@ unsigned int TextEditor::close(bool promptForSave) {
 // Returns true if, after executing, there are no pending changes
 // (prompts user chose to save pending changes)
 // returns false if file was not saved.
-unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
+QMessageBox::StandardButton TextEditor::promptUnsavedChanges(QMessageBox::StandardButtons extraButtons) {
    if (isModified()) {
       if (m_parent->m_activeEditor != this) {
          m_parent->setActiveEditor(this);
          m_parent->update();
       }
 
-/*      QMessageBox prompt(QMessageBox::Warning, tr("Save changes?"), 
-            QString("The file '") + fileName() + QString(" has been modified.\n\n"
-               "Would you like to save your changes?"), 
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | 
-            extraButtons, this);*/
       QString name = fileName();
       QString text;
       if (name == "")
@@ -189,17 +185,22 @@ unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
       else text = QString("The file '") + fileName() + QString("' has been modified");
       
       text += ".\n\nWould you like to save your changes?";
-      QMessageBox prompt(tr("Save changes?"), text, QMessageBox::Warning, 
-            QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel, this);
-      extraButtons = 0;
-//      if (extraButtons != 0)
-//         prompt.add
       
-      unsigned int ret = prompt.exec();
+      //QMessageBox::StandardButton ret = 
+      QMessageBox prompt(QMessageBox::Question, tr("Save changes?"), text, 
+         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | 
+         extraButtons, this);
+      prompt.setDefaultButton(QMessageBox::Yes);
       
-      if (ret == QMessageBox::Yes || ret == QMessageBox::YesAll) {
-         unsigned int result = save();
-
+      //QMessageBox prompt(tr("Save changes?"), text, QMessageBox::Question, 
+      //      QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel, this);
+      //extraButtons = 0;
+      
+      QMessageBox::StandardButton ret = (QMessageBox::StandardButton) prompt.exec();
+      
+      if (ret == QMessageBox::Yes || ret == QMessageBox::YesToAll) {
+         QMessageBox::StandardButton result = save();
+         
          if (Accepted(result))
             return ret;
          
@@ -213,7 +214,7 @@ unsigned int TextEditor::promptUnsavedChanges(unsigned int extraButtons) {
 }
 
 // returns true if there are no pending changes after executing this method.
-unsigned int TextEditor::save(bool forceSave) {
+QMessageBox::StandardButton TextEditor::save(bool forceSave) {
    if (!forceSave && !isModified())
       return QMessageBox::Yes;
 
@@ -246,13 +247,13 @@ unsigned int TextEditor::save(bool forceSave) {
    return QMessageBox::Yes;
 }
 
-unsigned int TextEditor::saveAs() {
+QMessageBox::StandardButton TextEditor::saveAs() {
    const QString &filename = QFileDialog::getSaveFileName(this, tr("Save As"), 
       /*m_lastDirectoryOpened*/QString(), FILE_FILTER);
    
    if (filename == "")
-      return QMessageBox::Cancel; // user selected cancel?
-   
+      return QMessageBox::Cancel; // user selected cancel
+
    m_file = new QFile(filename);
    return save(true); // force save even if document is unmodified
 }

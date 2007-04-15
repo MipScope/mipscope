@@ -9,6 +9,7 @@
 #include <QTabWidget>
 #include "TextEditor.H"
 #include <QMenu>
+#include <QFont>
 
 class QAction;
 class QPoint;
@@ -47,6 +48,7 @@ class EditorPane : public QTabWidget {
       void undoAvailabile(bool);
       void redoAvailabile(bool);
       void isModified(bool);
+      void fontChanged(const QFont&);
       
    private slots:
       void activeEditorChanged(int index);
@@ -74,6 +76,7 @@ class EditorPane : public QTabWidget {
       SyntaxHighlighter *m_highlighter;
       EditorContextMenu *m_contextMenu;
       Gui *m_parent;
+      QFont *m_font; // font used by all TextEditors
       
       bool m_modifiable; // opposite of being read-only
       void setModifiable(bool);

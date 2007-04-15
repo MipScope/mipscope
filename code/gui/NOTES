@@ -1,7 +1,10 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * fix saving on exit!
-   * be able to press cancel when prompted to save on close
+   * Add line numbers on the left of EditorPane
 
-setenvvar QMAKESPEC /course/cs036_projects/mipscope/qt4.3/mkspecs/linux-g++
-setenvvar QTDIR /course/cs036_projects/mipscope/qt4.3
+Highlighting a line of Text:
+   QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )
+
+
+QTextBlock QTextDocument::findBlock ( int pos ) const
+    Returns the text block that contains the pos-th character.

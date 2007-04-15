@@ -12,12 +12,12 @@
 #include <QtGui>
 #include <QtCore>
 
-TextEditor::TextEditor(EditorPane *parent, QFile *file, TextEditor *prev)
+TextEditor::TextEditor(EditorPane *parent, QFont *font, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
    m_loaded(false), m_modified(false), m_undoAvailable(false), 
    m_redoAvailable(false), m_syntaxHighligher(NULL)
 {
-   setupEditor();
+   setupEditor(font);
    
    if (file != NULL)
       openFile(file);
@@ -33,18 +33,15 @@ TextEditor::TextEditor(EditorPane *parent, QFile *file, TextEditor *prev)
 
 TextEditor::~TextEditor(void) { }
 
-void TextEditor::setupEditor() {
-   QFont font;
-   font.setFamily("Courier");
-   font.setFixedPitch(true);
-   font.setPointSize(11);
-
-   setFont(font);
+void TextEditor::setupEditor(QFont *font) {
+   setFont(*font);
    
    // strip formatting when pasting rich-text
    setAcceptRichText(false);
    setLineWrapMode(QTextEdit::NoWrap);
-   
+  
+   m_syntaxTip = new SyntaxTip(this);
+
    setContextMenuPolicy(Qt::NoContextMenu); // TODO: add custom context menu?
    connect(this, SIGNAL(textChanged()), this, SLOT(codeChanged()));
    
@@ -56,6 +53,7 @@ void TextEditor::setupEditor() {
    connect(this, SIGNAL(redoAvailable(bool)), m_parent, SLOT(redoAvailabilityModified(bool)));
    connect(this, SIGNAL(copyAvailable(bool)), m_parent, SLOT(copyAvailabilityModified(bool)));
    connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
+   connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(setCurrentFont(const QFont&)));
    
    m_syntaxHighligher = new SyntaxHighlighter(this);
 }
@@ -70,38 +68,59 @@ void TextEditor::codeChanged() {
    m_parent->isModified(this->isModified());
 }
 
-
 // @overridden to deal w/ showing syntax help after typing an instruction
 void TextEditor::keyReleaseEvent(QKeyEvent *e) {
+   const int key = e->key();
    bool match = false;
    
    // check if previously typed word was an instruction, immediately after the 
    // user completes it by typing the space bar (for syntax-help)
-   if (e->key() == Qt::Key_Space) {
+   if (key == Qt::Key_Space && !textCursor().hasSelection()) {
       QTextCursor c = textCursor();
-      c.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+      c.movePosition(QTextCursor::StartOfLine/*PreviousWord*/, QTextCursor::KeepAnchor);
       const QString &selectedText = c.selectedText();
       
       match = //m_parent->m_highlighter->matches(selectedText);
          m_syntaxHighligher->matches(selectedText);
       
       if (match) {
-         //QTextCursor c = textCursor();
-         //int pos = c.position();
+         // move cursor to start of matched word
+         c = textCursor();
+         c.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
          const QRect &rect = cursorRect(c);
-         const int top = rect.top();
-         const QPoint pos(rect.center().x(), top + ((rect.bottom() - top) >> 3));
+//         const int top = rect.top();
+         const QPoint pos(rect.center().x() + 2, rect.bottom() + 1);
+               //top + ((rect.bottom() - top) >> 3));
          
-         QToolTip::showText(mapToGlobal(pos), "<p style='white-space:pre'><b>add</b> $dest, $src1, $src2", this);
-         STATUS_BAR->showMessage(QString("Adds two signed integers, storing the result in $dest."));
+         const QString text = "<p style='white-space:pre'><b>add</b> $dest, $src1, $src2";
+         const QString statusText = "Adds two signed integers, storing the result in $dest.";
+
+         m_syntaxTip->show(text, statusText, pos, c);
+//         QToolTip::showText(mapToGlobal(pos), text, this);
       }
-   } else if (e->key() == Qt::Key_Return) {
-      QToolTip::hideText();
-      STATUS_BAR->clearMessage();
-   }
+   } else if (key == Qt::Key_Return) {
+//      QToolTip::hideText();
+      m_syntaxTip->hide();
+   } else if (key == Qt::Key_Escape) {
+      m_syntaxTip->hide();
+   } /*else if (key == Qt::Key_Tab) {
+      if (m_lastTab->elapsed() > 200) {
+         m_lastTab->restart();
+         
+         QTextCursor c = textCursor();
+         insertPlainText("   ");
+      }
+      
+      e->accept();
+      return;
+   }*/
    
-   if (!match)
-      QTextEdit::keyReleaseEvent(e);
+//   cerr << textCursor().block().text().toStdString() << endl;
+   
+   cerr << currentLineNumber() << endl;
+   
+//   if (!match)
+   QTextEdit::keyReleaseEvent(e);
 }
 
 bool TextEditor::openFile(QFile *file) {
@@ -291,4 +310,105 @@ void TextEditor::undoAvailabilityModified(bool isAvailable) {
 void TextEditor::redoAvailabilityModified(bool isAvailable) {
    m_redoAvailable = isAvailable;
 }
+
+SyntaxTip::SyntaxTip(TextEditor *parent) : QLabel(parent), m_parent(parent) {
+   QPalette pal = palette();
+   QColor c(255, 255, 215); // light yellow
+   //c.setAlpha(100);
+
+   pal.setColor(QPalette::Window, c);
+   pal.setColor(QPalette::Foreground, Qt::black);
+   setPalette(pal);
+
+   setWordWrap(false);
+   setAutoFillBackground(true);
+   setMargin(-3);
+
+   //m_syntaxTip->setFrameShadow(QFrame::Raised);
+   setFrameShape(QFrame::StyledPanel);
+   setFocusPolicy(Qt::NoFocus);
+   hide();
+   
+
+   // TODO:  check if change is okay/bad from original!!!
+
+   
+   /*QFont font(currentFont());
+   font.setPointSize(12);
+   m_syntaxTip->setFont(font);*/
+}
+
+void SyntaxTip::mousePressEvent(QMouseEvent *e) {
+   this->hide();
+   
+   e->ignore();
+}
+
+void SyntaxTip::hide() {
+   if (STATUS_BAR != NULL)
+      STATUS_BAR->clearMessage();
+   
+   QLabel::hide();
+
+   disconnect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), 
+         this, SLOT(cursorPositionChanged(const QTextCursor&)));
+   disconnect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
+}
+
+void SyntaxTip::cursorPositionChanged(const QTextCursor &cursor) {
+   hide();
+}
+
+void SyntaxTip::testCursorPos() {
+   QTextCursor c = m_parent->textCursor();
+   int pos = c.position();
+   c.setPosition(m_startPos);
+   c.movePosition(QTextCursor::Down);
+   
+   if (pos < m_startPos || pos >= c.position())
+      hide();
+}
+
+void SyntaxTip::show(const QString &text, const QString &statusText, const QPoint &pos, const QTextCursor &c) {
+   m_cursor = new QTextCursor(c);
+   m_cursor->movePosition(QTextCursor::StartOfLine);
+   m_startPos = m_cursor->position();
+   
+   setText(text);
+   STATUS_BAR->showMessage(statusText);
+   
+  const QSize &hint = sizeHint();
+   setGeometry(pos.x(), pos.y(), hint.width(), hint.height());
+   
+   connect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), 
+         this, SLOT(cursorPositionChanged(const QTextCursor&)));
+   connect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
+
+   QLabel::show();
+}
+
+
+// ------------------------------------------------------
+// Utility Methods to make working with QTextEdit easier!
+// ------------------------------------------------------
+
+// returns the line number of the given text block
+int TextEditor::lineNumber(const QTextBlock &b) const {
+   // if you have a QTextCursor, easy to get blockNumber()
+   // if you have a QTextCursor, easy to get corresponding block(), position()
+   QTextCursor c = textCursor();
+   c.setPosition(b.position());
+   return lineNumber(c);
+}
+
+// Retursn the line number of the given cursor
+int TextEditor::lineNumber(const QTextCursor &c) const {
+   return c.blockNumber();
+}
+
+// Returns the line no of the current cursor
+int TextEditor::currentLineNumber() const {
+   return lineNumber(textCursor());
+}
+
 

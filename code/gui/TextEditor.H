@@ -8,11 +8,16 @@
 #define __TEXTEDITOR_H__
 #include <QTextEdit>
 #include <QMessageBox>
+#include <QLabel>
 
+class QTextBlock;
+class QFont;
 class SyntaxHighlighter;
 class EditorPane;
 class QKeyEvent;
 class QFile;
+class QPoint;
+class SyntaxTip;
 
 extern bool Accepted(QMessageBox::StandardButton result);
 
@@ -22,11 +27,12 @@ class TextEditor : public QTextEdit {
    
    public:
       friend class EditorPane;
+      friend class SyntaxTip;
       
-      TextEditor(EditorPane *parent = NULL, QFile *file = NULL, TextEditor *prev = NULL);
+      TextEditor(EditorPane *parent, QFont *font, QFile *file = NULL, TextEditor *prev = NULL);
 	   virtual ~TextEditor(void);
       
-      void setupEditor();
+      void setupEditor(QFont *font);
       bool openFile(QFile *file);
       void resetTabText(bool modified = false);
       
@@ -44,6 +50,10 @@ class TextEditor : public QTextEdit {
       bool copyIsAvailable() const;
       bool undoIsAvailable() const;
       bool redoIsAvailable() const;
+
+      int lineNumber(const QTextBlock &b) const;
+      int lineNumber(const QTextCursor &c) const;
+      int currentLineNumber() const;
       
 // returns actual filename of open file
       QString fileName() const;
@@ -61,6 +71,7 @@ class TextEditor : public QTextEdit {
       // double-linked list of TextEditors for EditorPane to keep track of
       TextEditor *m_prev, *m_next;
       QFile *m_file;
+      SyntaxTip *m_syntaxTip;
       
       // true if a document has been loaded; false otherwise
       bool m_loaded, m_modified, m_undoAvailable, m_redoAvailable;
@@ -69,6 +80,31 @@ class TextEditor : public QTextEdit {
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);
+};
+
+class SyntaxTip : public QLabel {
+   
+   Q_OBJECT
+   
+   public:
+      SyntaxTip(TextEditor *parent);
+       
+      void show(const QString &tipText, const QString &statusText, const QPoint &pos, const QTextCursor&);
+
+      // @overridden
+      void mousePressEvent(QMouseEvent*);
+
+   public slots:
+      void hide();
+
+   private slots:
+      void cursorPositionChanged(const QTextCursor&);
+      void testCursorPos();
+
+   protected:
+      TextEditor *m_parent;
+      QTextCursor *m_cursor;
+      int m_startPos;
 };
 
 #endif // __TEXTEDITOR_H__

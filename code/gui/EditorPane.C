@@ -11,9 +11,10 @@
 #include "Utilities.H"
 #include <QtGui>
 
-EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_modifiable(true)
+EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_font(new QFont("Courier", 11)), m_modifiable(true)
 {
-   m_activeEditor = new TextEditor(this);
+   m_font->setFixedPitch(true);
+   m_activeEditor = new TextEditor(this, m_font);
    //m_highlighter = new SyntaxHighlighter(m_activeEditor->document());
    m_parent = parent;
    m_contextMenu = new EditorContextMenu(this);
@@ -23,6 +24,7 @@ EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_modi
    connect(this, SIGNAL(currentChanged(int)), this, SLOT(activeEditorChanged(int)));
    
    addTab(m_activeEditor, "");
+   m_activeEditor->setFocus();
 
    if (fileName != NULL)
       openFile(QString(fileName));
@@ -42,7 +44,7 @@ void EditorPane::openFile(const QString &fileName) {
       
       // else error
    } else { // open a tab for a new TextEditor
-      TextEditor *editor = new TextEditor(this, NULL, m_activeEditor);
+      TextEditor *editor = new TextEditor(this, m_font, NULL, m_activeEditor);
       setActiveEditor(editor);
       editor->openFile(file);
    }
@@ -162,10 +164,11 @@ QMessageBox::StandardButton EditorPane::saveAllFiles(bool yesToAll, TextEditor *
       }
       
       cur = orig;
-      if (noModified <= 1)
-         buttons = QMessageBox::NoButton;
    }
    
+   if (noModified <= 1)
+      buttons = QMessageBox::NoButton;
+
    while(cur != NULL) {
       if (cur != ignore && cur->isModified()) {
          if (yesToAll) {
@@ -191,7 +194,7 @@ QMessageBox::StandardButton EditorPane::saveAllFiles(bool yesToAll, TextEditor *
 // Context-menu related
 // --------------------
 void EditorPane::newBlankTabAction() {
-   TextEditor *blank = new TextEditor(this, NULL, m_activeEditor);
+   TextEditor *blank = new TextEditor(this, m_font, NULL, m_activeEditor);
    setActiveEditor(blank);
 }
 
@@ -259,7 +262,7 @@ void EditorPane::closeAction() {
    m_activeEditor->close();
 
    if (m_activeEditor == NULL) {
-      m_activeEditor = new TextEditor(this);
+      m_activeEditor = new TextEditor(this, m_font);
       addTab(m_activeEditor, "");
    }
 }

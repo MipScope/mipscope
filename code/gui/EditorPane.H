@@ -16,6 +16,8 @@ class QPoint;
 class SyntaxHighlighter;
 class TextEditor;
 class EditorContextMenu;
+class LineNoPane;
+class LineNoDisplay;
 class Gui;
 
 class EditorPane : public QTabWidget {
@@ -26,6 +28,8 @@ class EditorPane : public QTabWidget {
       friend class Gui;
       friend class EditorContextMenu;
       friend class TextEditor;
+      friend class LineNoDisplay;
+      friend class LineNo;
       
       EditorPane(Gui *parent, const char *fileName = NULL);
 	   virtual ~EditorPane(void);
@@ -49,9 +53,12 @@ class EditorPane : public QTabWidget {
       void redoAvailabile(bool);
       void isModified(bool);
       void fontChanged(const QFont&);
+      void editorScrolled(TextEditor*, int);
+      void activeEditorChanged(TextEditor*);
       
    private slots:
       void activeEditorChanged(int index);
+      void editorScrolled(int);
       
       // Proxy slots for active TextEditor
       void cut();
@@ -62,7 +69,7 @@ class EditorPane : public QTabWidget {
       void undoAvailabilityModified(bool);
       void redoAvailabilityModified(bool);
       void copyAvailabilityModified(bool);
-       
+      
       // Context-menu related
       void contextMenuRequested(const QPoint & pos);
       void newBlankTabAction();
@@ -76,34 +83,11 @@ class EditorPane : public QTabWidget {
       SyntaxHighlighter *m_highlighter;
       EditorContextMenu *m_contextMenu;
       Gui *m_parent;
+      LineNoDisplay *m_lineNoDisplay;
       QFont *m_font; // font used by all TextEditors
       
       bool m_modifiable; // opposite of being read-only
       void setModifiable(bool);
-};
-
-class EditorContextMenu : public QObject {
-   
-   Q_OBJECT
-   
-   public:
-      EditorContextMenu(EditorPane *editorPane);
-      void showAt(const QPoint &pos, int index);
-      
-      TextEditor *m_editor;
-      
-   private slots:
-      void saveAction();
-      void saveAsAction();
-
-   protected:
-      EditorPane *m_editorPane;
-      QMenu *m_tabMenu;
-      QMenu *m_tabBarMenu;
-      QAction *m_closeOtherTabs;
-      QAction *m_close;
-      
-      int m_index;
 };
 
 #endif // __QEDITOR_PANE_H__

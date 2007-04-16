@@ -5,7 +5,9 @@
    date: 4/8/2007
 \* ---------------------------------------------- */
 #include "EditorPane.H"
+#include "EditorContextMenu.H"
 #include "SyntaxHighlighter.H"
+#include "LineNoPane.H"
 #include "TextEditor.H"
 #include "Gui.H"
 #include "Utilities.H"
@@ -17,6 +19,7 @@ EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_font
    m_activeEditor = new TextEditor(this, m_font);
    //m_highlighter = new SyntaxHighlighter(m_activeEditor->document());
    m_parent = parent;
+   m_lineNoDisplay = NULL;
    m_contextMenu = new EditorContextMenu(this);
 
    setContextMenuPolicy(Qt::CustomContextMenu);
@@ -80,9 +83,12 @@ void EditorPane::activeEditorChanged(int index) {
    tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    tabbar->setTabTextColor(index, Qt::blue);
    
+   cerr << "\tactive changed to: " << index << endl;
+
    m_activeEditor = (TextEditor*) widget(index);
    
    // Send out signals to update (enable/disable) certain Gui Actions
+   activeEditorChanged(m_activeEditor);
    copyAvailabile(m_activeEditor->copyIsAvailable());
    undoAvailabile(m_activeEditor->undoIsAvailable());
    redoAvailabile(m_activeEditor->redoIsAvailable());
@@ -97,9 +103,17 @@ void EditorPane::contextMenuRequested(const QPoint & pos) {
 
    int i, count = tabbar->count();
    
-   if (geometry().contains(pos))
-      return; // no friekin idea why this works; seems backwards to me.. huzzah!
+   bool inTabBar = (tabbar->geometry().contains(pos));
+   bool inBarOrTextEdit = (geometry().contains(pos));
+   bool inActive = m_activeEditor->geometry().contains(pos);
    
+   //cerr << inTabBar << ", " <<  inBarOrTextEdit << ", " << inActive << endl;
+   if (!inTabBar) {
+      if (inActive || !inBarOrTextEdit)
+         return;
+   }
+//   return; // no friekin idea why this works; seems backwards to me.. huzzah!
+
    for(i = count; i--;) {
       const QRect &bounds = tabbar->tabRect(i);
 
@@ -267,65 +281,6 @@ void EditorPane::closeAction() {
    }
 }
 
-// Right-click context-menu for tabs
-// ---------------------------------
-EditorContextMenu::EditorContextMenu(EditorPane *editorPane)
-   : QObject(editorPane), m_editorPane(editorPane), m_index(0)
-{
-   m_tabMenu = new QMenu(editorPane);
-   
-   QAction *fileNew = new QAction(QIcon(ICONS"/fileNew.png"), "New Blank Tab", editorPane);
-   connect(fileNew, SIGNAL(triggered()), editorPane, SLOT(newBlankTabAction()));
-   m_tabMenu->addAction(fileNew);
-   
-   m_tabMenu->addSeparator();
-   m_tabMenu->addAction(editorPane->m_parent->getSaveAction());
-   m_tabMenu->addAction(QIcon(ICONS"/fileSave.png"), "Save As..", this, SLOT(saveAsAction()));
-   m_tabMenu->addSeparator();
-
-   m_closeOtherTabs =  m_tabMenu->addAction("Close Other Tabs", editorPane, SLOT(closeOtherTabsAction()));
-   m_close = m_tabMenu->addAction(QIcon(ICONS"/closeTab.png"), "Close", editorPane, SLOT(closeAction()));
-   
-   m_tabBarMenu = new QMenu(editorPane);
-   m_tabBarMenu->addAction(fileNew);
-   m_tabBarMenu->addSeparator();
-   m_tabBarMenu->addAction(editorPane->m_parent->getSaveAllAction());
-}
-
-// Show the right-click menu for the tabbed area
-// ---------------------------------------------
-void EditorContextMenu::showAt(const QPoint &pos, int index) {
-   m_index = index;
-
-   if (index >= 0) {
-      m_editor = (TextEditor*)m_editorPane->widget(index);
-      int count = m_editorPane->count();
-      
-      m_close->setEnabled(true);
-      if (count <= 1) {
-         m_closeOtherTabs->setEnabled(false);
-
-         if (m_editor->file() == NULL && !m_editor->isModified())
-            m_close->setEnabled(false);
-      } else m_closeOtherTabs->setEnabled(true);
-      
-      m_tabMenu->popup(pos);
-   } else {
-      m_editor = NULL;
-      m_tabBarMenu->popup(pos);
-   }
-}
-
-void EditorContextMenu::saveAction() {
-   m_editorPane->setActiveEditor(m_editor);
-   m_editorPane->saveAction();
-}
-
-void EditorContextMenu::saveAsAction() {
-   m_editorPane->setActiveEditor(m_editor);
-   m_editorPane->saveAsAction();
-}
-
 // Proxy slots for active TextEditor
 // ---------------------------------
 void EditorPane::cut() {
@@ -375,5 +330,9 @@ void EditorPane::setModifiable(bool modifiable) {
 
    // alert all listeners of change in read-only status
    isModifiable(modifiable);
+}
+
+void EditorPane::editorScrolled(int val) {
+   editorScrolled(m_activeEditor, val);
 }
 

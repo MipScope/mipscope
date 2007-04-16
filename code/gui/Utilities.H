@@ -8,10 +8,29 @@
 #define __UTILITIES_H__
 
 #include <iostream>
+#include <QStatusBar>
 using namespace std;
 
 
 #define PROJECT_NAME       "MipScope"
+
+#define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")
+#define STATUS_DELAY       (2500)
+#define IMAGES             "images"
+//#define LARGE_ICONS
+#define SMALL_ICONS
+
+#ifdef LARGE_ICONS
+   #define ICON_SIZE          (32)
+   #define ICON_DIR           "32x32"
+#else
+   #define ICON_SIZE          (22)
+   #define ICON_DIR           "22x22"
+#endif
+
+#define ICONS              IMAGES "/" ICON_DIR
+
+extern QStatusBar *STATUS_BAR;
 
 
 #define safeDelete(p)         {if ((p)) { delete (p); (p) = NULL; }}

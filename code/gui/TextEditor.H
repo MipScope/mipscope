@@ -54,6 +54,7 @@ class TextEditor : public QTextEdit {
       int lineNumber(const QTextBlock &b) const;
       int lineNumber(const QTextCursor &c) const;
       int currentLineNumber() const;
+      int noLines() const; // returns the total number of lines
       
 // returns actual filename of open file
       QString fileName() const;

@@ -6,12 +6,14 @@
 \* ---------------------------------------------- */
 #include "Gui.H"
 #include "EditorPane.H"
+#include "LineNoPane.H"
 #include "Utilities.H"
 #include <QtGui>
 #include <string.h>
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
-   m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this))
+   m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
+   m_lineNoPane(new LineNoPane(this, m_editorPane))
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
@@ -44,7 +46,7 @@ void Gui::setupGui() {
    setIconSize(QSize(ICON_SIZE, ICON_SIZE));
    
    setupActions();
-   setCentralWidget(m_editorPane);
+   setCentralWidget(m_lineNoPane);
    setupStatusBar();
 
    resize(640, 640);

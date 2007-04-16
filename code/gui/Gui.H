@@ -10,30 +10,13 @@
 #include <QStatusBar>
 #include <QKeySequence>
 
-#define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")
-#define STATUS_DELAY       (2500)
-#define IMAGES             "images"
-//#define LARGE_ICONS
-#define SMALL_ICONS
-
-#ifdef LARGE_ICONS
-   #define ICON_SIZE          (32)
-   #define ICON_DIR           "32x32"
-#else
-   #define ICON_SIZE          (22)
-   #define ICON_DIR           "22x22"
-#endif
-
-#define ICONS              IMAGES "/" ICON_DIR
-
-extern QStatusBar *STATUS_BAR;
-
 class QMenu;
 class QAction;
 class EditorPane;
 class QCloseEvent;
 class QAction;
 class QToolBar;
+class LineNoPane;
 
 class Gui : public QMainWindow {
    
@@ -73,6 +56,7 @@ class Gui : public QMainWindow {
       
       // Central EditorPane
       EditorPane *m_editorPane;
+      LineNoPane *m_lineNoPane;
       QStatusBar *m_statusBar;
       
       //@overridden

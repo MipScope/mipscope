@@ -52,6 +52,7 @@ void TextEditor::setupEditor(QFont *font) {
    connect(this, SIGNAL(undoAvailable(bool)), m_parent, SLOT(undoAvailabilityModified(bool)));
    connect(this, SIGNAL(redoAvailable(bool)), m_parent, SLOT(redoAvailabilityModified(bool)));
    connect(this, SIGNAL(copyAvailable(bool)), m_parent, SLOT(copyAvailabilityModified(bool)));
+   connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_parent, SLOT(editorScrolled(int)));
    connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
    connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(setCurrentFont(const QFont&)));
    
@@ -117,7 +118,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
    
 //   cerr << textCursor().block().text().toStdString() << endl;
    
-   cerr << currentLineNumber() << endl;
+//   cerr << currentLineNumber() << endl;
    
 //   if (!match)
    QTextEdit::keyReleaseEvent(e);
@@ -377,7 +378,7 @@ void SyntaxTip::show(const QString &text, const QString &statusText, const QPoin
    setText(text);
    STATUS_BAR->showMessage(statusText);
    
-  const QSize &hint = sizeHint();
+   const QSize &hint = sizeHint();
    setGeometry(pos.x(), pos.y(), hint.width(), hint.height());
    
    connect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), 
@@ -411,4 +412,16 @@ int TextEditor::currentLineNumber() const {
    return lineNumber(textCursor());
 }
 
+// Returns the total number of lines
+int TextEditor::noLines() const {
+   QTextCursor sec = textCursor();
+   int pos;
+   
+   do {
+      pos = sec.position();
+      sec.movePosition(QTextCursor::Down);
+   } while (pos != sec.position());
+   
+   return sec.blockNumber();
+}
 

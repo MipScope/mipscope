@@ -1,10 +1,12 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * Add line numbers on the left of EditorPane
+   * Add Breakpoints -- more BlockStates; B_CURRENT_PC ORed w/ B_BREAKPOINT
+   * 
 
 Highlighting a line of Text:
    QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )
-
+   TextEditor::highlightLine(const QTextCursor &c, const QTextCharFormat &f);
 
 QTextBlock QTextDocument::findBlock ( int pos ) const
     Returns the text block that contains the pos-th character.
+

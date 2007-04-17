@@ -50,10 +50,13 @@ LineNoDisplay::LineNoDisplay(EditorPane *editorPane)
    updateLineNumbers();
 }
 
+QPixmap *m_breakPoint;
 
-LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), m_editorPane(editorPane)
+LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), m_editorPane(editorPane), m_lineNo(-1)
 {
    setFont(*m_editorPane->m_font);
+   if (m_breakPoint == NULL)
+      m_breakPoint = new QPixmap(QIcon(IMAGES"/breakPoint.png").pixmap(16, 16));
    
    setMargin(0);
    setWordWrap(false);
@@ -64,17 +67,67 @@ void LineNo::mousePressEvent(QMouseEvent *e) { e->ignore(); }
 
 void LineNo::mouseReleaseEvent(QMouseEvent *e) {
    if (rect().contains(e->pos())) {
-      
       cerr << text().toStdString() << " was pressed\n";
+
+//      QPixmap p = mergeSideBySide(*m_breakPoint, text());
+      
+      QTextBlock *b = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo);
+      if (b != NULL) {
+         cerr << b << " no null\n";
+
+         // Toggle display
+         if (b->userState() == B_BREAKPOINT) {
+            b->setUserState(B_NORMAL);
+         } else b->setUserState(B_BREAKPOINT);
+         //m_editorPane->m_activeEditor->highlightLine(
+      }
+      
+      resetDisplay(b);
    }
 }
 
 void LineNo::setLineNo(int val) {
    m_lineNo = val;
    
-   if (val < 10)
+   resetDisplay();
+}
+
+void LineNo::resetDisplay(QTextBlock *b) {
+   if (b == NULL && (b = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo)) == NULL) {
+      setText(QString("%1").arg(m_lineNo));
+      return;
+   }
+   
+   if (b->userState() == B_BREAKPOINT)
+      setPixmap(*m_breakPoint);
+   else if (m_lineNo < 10)
       setText(QString("%1  ").arg(m_lineNo));
    else setText(QString("%1").arg(m_lineNo));
+}
+
+QPixmap LineNo::mergeSideBySide(const QPixmap& pix, const QString &txt)
+{
+   QPainter p;
+//   cerr << m_editorPane->m_font << endl;
+   
+   int strWidth = p.fontMetrics().width( txt );
+   int strHeight = p.fontMetrics().height();
+   
+   int pixWidth = pix.width();
+   int pixHeight = pix.height();
+   int maxHeight = (strHeight > pixHeight ? strHeight : pixHeight);
+   
+   QPixmap res(strWidth + 3 + pixWidth, maxHeight);
+//   res.fill(Qt::white);
+   res.fill(QColor(255, 255, 255, 0));
+   
+   p.begin(&res);
+   p.setFont(font());
+   p.drawPixmap(pixWidth + 3, 0, pix);
+   p.drawText(QRect( 0, 0, strWidth, strHeight), 0, txt);
+   p.end();
+   
+   return res;
 }
 
 void LineNoDisplay::fontChanged(const QFont &font) {
@@ -124,7 +177,7 @@ void LineNoDisplay::updateLineNumbers() {
    int max = active->noLines();
    QLabel maxSized(QString("%1").arg(max > lastLineNo ? max : lastLineNo));
    maxSized.setFont(*m_editorPane->m_font);
-   int width = maxSized.sizeHint().width();
+   int width = maxSized.sizeHint().width();// + m_breakPoint->width();
    
    for(int i = 0; i < lastLineNo - firstLineNo + 1; i++) {
       int lineNo = firstLineNo + i;//active->lineNumber(cur);
@@ -137,7 +190,7 @@ void LineNoDisplay::updateLineNumbers() {
       QPoint p = rect.adjusted(0, offset, 0, 0).topLeft();
       QRect r(0, p.y(), width/*(*li)->sizeHint().width()*/, rect.height());
       (*li)->setGeometry(r);
-
+      
       bounds = bounds.united(r);
       (*li)->show();
       
@@ -149,8 +202,8 @@ void LineNoDisplay::updateLineNumbers() {
       if (cur.position() == oldPos) {
          rect.adjust(0, rect.height(), 0, rect.height());
          if (lastLineNo - firstLineNo + 1 >= i + 2) {
-            //lastLineNo = 200 + firstLineNo;
-            cerr << oldPos << endl;
+            lastLineNo = 200 + firstLineNo;
+            //cerr << oldPos << endl;
          }
       } else rect = active->cursorRect(cur);
    }

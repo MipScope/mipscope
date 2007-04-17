@@ -45,6 +45,10 @@ void Gui::setupGui() {
    setWindowIcon(QIcon(IMAGES"/logo.png"));
    setIconSize(QSize(ICON_SIZE, ICON_SIZE));
    
+   QPalette palette(qApp->palette());
+   palette.setColor(QPalette::Highlight, QColor(180, 201, 233));
+   qApp->setPalette(palette);
+   
    setupActions();
    setCentralWidget(m_lineNoPane);
    setupStatusBar();

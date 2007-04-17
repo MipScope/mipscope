@@ -105,14 +105,14 @@ void EditorPane::contextMenuRequested(const QPoint & pos) {
    
    bool inTabBar = (tabbar->geometry().contains(pos));
    bool inBarOrTextEdit = (geometry().contains(pos));
-   bool inActive = m_activeEditor->geometry().contains(pos);
+//   bool inActive = m_activeEditor->rect().contains(pos);
+   bool inY = (pos.y() < geometry().height() - m_activeEditor->rect().height());
    
-   //cerr << inTabBar << ", " <<  inBarOrTextEdit << ", " << inActive << endl;
-   if (!inTabBar) {
-      if (inActive || !inBarOrTextEdit)
-         return;
-   }
-//   return; // no friekin idea why this works; seems backwards to me.. huzzah!
+//   cerr << "(" << pos.x() << ", " << pos.y() << ")" << " \t" << geometry().height() << " \t" << m_activeEditor->rect().height() << endl;
+
+//   cerr << inTabBar << ", " <<  inBarOrTextEdit << ", " << inY << endl;
+   if (!inTabBar && (!inBarOrTextEdit || !inY))
+      return; // no friekin idea why this works; seems backwards to me.. huzzah!
 
    for(i = count; i--;) {
       const QRect &bounds = tabbar->tabRect(i);
@@ -125,7 +125,7 @@ void EditorPane::contextMenuRequested(const QPoint & pos) {
          
          m_contextMenu->showAt(mapToGlobal(pos), i);
          return;
-      }
+     }
    }
 
    m_contextMenu->showAt(mapToGlobal(pos), -1);

@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QLabel>
 #include <list>
+#include <QPixmap>
 using  namespace std;
 
 class QSize;
@@ -21,6 +22,7 @@ class QWidget;
 class LineNoDisplay;
 class QMouseEvent;
 class LineNo;
+class QTextBlock;
 
 typedef list<LineNo*> LineList;
 typedef LineList::iterator LineListIterator;
@@ -63,6 +65,7 @@ class LineNoDisplay : public QWidget {
       virtual QSize minimumSize() const;
 };
 
+extern QPixmap *m_breakPoint;
 class LineNo : public QLabel {
     
    Q_OBJECT
@@ -71,7 +74,10 @@ class LineNo : public QLabel {
       friend class LineNoDisplay;
       
       LineNo(EditorPane *editorPane, LineNoDisplay *parent);
+      
+      QPixmap mergeSideBySide(const QPixmap& pix, const QString &txt);
       void setLineNo(int);
+      void resetDisplay(QTextBlock *b = NULL);
       
    protected:
       EditorPane *m_editorPane;

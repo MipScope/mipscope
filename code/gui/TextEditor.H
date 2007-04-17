@@ -9,6 +9,7 @@
 #include <QTextEdit>
 #include <QMessageBox>
 #include <QLabel>
+#include <QList>
 
 class QTextBlock;
 class QFont;
@@ -18,8 +19,13 @@ class QKeyEvent;
 class QFile;
 class QPoint;
 class SyntaxTip;
+class QTextCharFormat;
 
 extern bool Accepted(QMessageBox::StandardButton result);
+
+// userState() in QTextBlock
+enum BlockStates { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1 };
+
 
 class TextEditor : public QTextEdit {
    
@@ -56,6 +62,13 @@ class TextEditor : public QTextEdit {
       int currentLineNumber() const;
       int noLines() const; // returns the total number of lines
       
+      // Returns the QTextBlock pertaining to the given line number
+      // Returns NULL if the given line number is invalid
+      QTextBlock *getBlockForLine(int lineNo) const;
+      
+      void highlightLine(const QTextCursor &c, const QColor &color);
+      //const QTextCharFormat &f);
+      
 // returns actual filename of open file
       QString fileName() const;
       QFile *file() const { return m_file; }
@@ -78,6 +91,7 @@ class TextEditor : public QTextEdit {
       bool m_loaded, m_modified, m_undoAvailable, m_redoAvailable;
 
       SyntaxHighlighter *m_syntaxHighligher;
+      QList<ExtraSelection> m_highlighted;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);

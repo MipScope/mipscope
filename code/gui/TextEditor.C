@@ -97,6 +97,8 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
          const QString statusText = "Adds two signed integers, storing the result in $dest.";
 
          m_syntaxTip->show(text, statusText, pos, c);
+
+//         highlightLine(c, Qt::red);
 //         QToolTip::showText(mapToGlobal(pos), text, this);
       }
    } else if (key == Qt::Key_Return) {
@@ -423,5 +425,37 @@ int TextEditor::noLines() const {
    } while (pos != sec.position());
    
    return sec.blockNumber();
+}
+
+// Returns the QTextBlock pertaining to the given line number
+// Returns NULL if the given line number is invalid
+QTextBlock *TextEditor::getBlockForLine(int lineNo) const {
+   QTextCursor c = textCursor();
+   c.movePosition(QTextCursor::Start);
+   
+//   cerr << c.blockNumber() << " vs " << lineNo << endl;
+
+   while(c.blockNumber() < lineNo) {
+//      cerr << c.blockNumber() << " vs " << lineNo << endl;
+
+      if (!c.movePosition(QTextCursor::NextBlock))
+         return NULL;
+   }
+
+   return new QTextBlock(c.block());
+}
+
+void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {
+      //const QTextCharFormat &f) {
+   QTextCharFormat format(currentCharFormat());
+   format.setBackground(color);
+   
+   const struct ExtraSelection newSelection = {
+      QTextCursor(c), 
+      format, //QTextCharFormat(f), 
+   };
+   
+   m_highlighted.push_back(newSelection);
+   setExtraSelections(m_highlighted);
 }
 

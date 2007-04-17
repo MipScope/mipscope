@@ -42,17 +42,37 @@ class Gui : public QMainWindow {
       void aboutMipScope();
       void clipboardModified();
       
+      // Debugger-Related
+      void debugRunAction();
+      void debugStopAction();
+      //void debugPauseAction(); // only have one run menuitem
+      // which switches automatically to 'pause' upon invocation.
+      void debugStepAction();
+      void debugBStepAction();
+      void debugRestartAction();
+
+      
    protected:
       // MenuBar
-      QMenu *m_fileMenu, *m_editMenu;
+      QMenu *m_fileMenu, *m_editMenu, *m_debugMenu;
       QString m_lastDirectoryOpened; // TODO
-      QAction *m_fileSaveAction, 
+      QAction // File-Related
+              *m_fileSaveAction, 
               *m_fileSaveAllAction, 
+              
+              // Editor-Related
               *m_editUndoAction, 
               *m_editRedoAction, 
               *m_editCutAction, 
               *m_editCopyAction, 
-              *m_editPasteAction;
+              *m_editPasteAction, 
+              
+              // Debugger-Related
+              *m_debugRunAction, 
+              *m_debugStopAction, 
+              *m_debugStepAction, 
+              *m_debugBStepAction, // Step backwards
+              *m_debugRestartAction;
       
       // Central EditorPane
       EditorPane *m_editorPane;
@@ -70,6 +90,7 @@ class Gui : public QMainWindow {
       void setupActions();
       void setupFileActions();
       void setupEditActions();
+      void setupDebugActions();
       void setupOptionsMenu();
 };
 

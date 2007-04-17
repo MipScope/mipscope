@@ -44,6 +44,7 @@ void TextEditor::setupEditor(QFont *font) {
 
    setContextMenuPolicy(Qt::NoContextMenu); // TODO: add custom context menu?
    connect(this, SIGNAL(textChanged()), this, SLOT(codeChanged()));
+   connect(this, SIGNAL(textChanged()), m_parent, SLOT(contentChangedProxy()));
    
    // signals for enabling/disabling editing functionality
    connect(this, SIGNAL(undoAvailable(bool)), this, SLOT(undoAvailabilityModified(bool)));

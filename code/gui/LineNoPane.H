@@ -51,7 +51,7 @@ class LineNoDisplay : public QWidget {
       void fontChanged(const QFont&);
       void editorScrolled(TextEditor*,int);
       void updateLineNumbers();
-      void activeEditorChanged(TextEditor *active);
+      void contentChanged(TextEditor *active);
       
    protected:
       EditorPane *m_editorPane;

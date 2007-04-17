@@ -60,6 +60,7 @@ void Gui::setupActions() {
    // TODO: add more (standard) menu options
    setupFileActions();
    setupEditActions();
+   setupDebugActions();
    setupOptionsMenu();
 
    {
@@ -86,7 +87,7 @@ QAction *Gui::addAction(QToolBar *tb, QMenu *menu, QAction *a, const QObject *re
 
 void Gui::setupFileActions() {
    QToolBar *tb = new QToolBar(this);
-   tb->setWindowTitle(tr("File Actions"));
+   tb->setWindowTitle(tr("File"));
    addToolBar(tb);
    
    m_fileMenu = menuBar()->addMenu(tr("&File"));
@@ -96,6 +97,7 @@ void Gui::setupFileActions() {
    addAction(tb, menu, new QAction(QIcon(ICONS"/fileOpen.png"), tr("&Open"), this), this, SLOT(fileOpenAction()), QKeySequence::Open);
    
    menu->addSeparator();
+   tb->addSeparator();
 
    m_fileSaveAction = addAction(tb, menu, getSaveAction(), m_editorPane, SLOT(saveAction()), QKeySequence(QKeySequence::Save), false);
 
@@ -103,10 +105,12 @@ void Gui::setupFileActions() {
    m_fileSaveAllAction = addAction(tb, menu, getSaveAllAction(), this, SLOT(fileSaveAllAction()));
    
    menu->addSeparator();
+   tb->addSeparator();
 
    addAction(tb, menu, new QAction(QIcon(ICONS"/filePrint.png"), tr("&Print.."), this), this, SLOT(filePrintAction()), QKeySequence(QKeySequence::Print));
    
    menu->addSeparator();
+   tb->addSeparator();
 
    addAction(NULL, menu, new QAction(tr("&Exit"), this), this, SLOT(fileExitAction()), QKeySequence(QKeySequence::Close));
    
@@ -115,7 +119,7 @@ void Gui::setupFileActions() {
 
 void Gui::setupEditActions() {
    QToolBar *tb = new QToolBar(this);
-   tb->setWindowTitle(tr("Edit Actions"));
+   tb->setWindowTitle(tr("Edit"));
    addToolBar(tb);
    
    m_editMenu = menuBar()->addMenu(tr("&Edit"));
@@ -125,6 +129,7 @@ void Gui::setupEditActions() {
    m_editRedoAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editRedo.png"), tr("&Redo"), this), m_editorPane, SLOT(redo()), QKeySequence(QKeySequence::Redo), false);
    
    menu->addSeparator();
+   tb->addSeparator();
 
    m_editCutAction   = addAction(tb, menu, new QAction(QIcon(ICONS"/editCut.png"), tr("Cu&t"), this), m_editorPane, SLOT(cut()), QKeySequence(QKeySequence::Cut), false);
    m_editCopyAction  = addAction(tb, menu, new QAction(QIcon(ICONS"/editCopy.png"), tr("&Copy"), this), m_editorPane, SLOT(copy()), QKeySequence(QKeySequence::Copy), false);
@@ -142,6 +147,40 @@ void Gui::setupEditActions() {
    connect(m_editorPane, SIGNAL(copyAvailabile(bool)), m_editCopyAction, SLOT(setEnabled(bool)));
    connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardModified()));
 }
+
+void Gui::setupDebugActions() {
+   QToolBar *tb = new QToolBar(this);
+   tb->setWindowTitle(tr("Debugger"));
+   addToolBar(tb);
+   
+   m_debugMenu = menuBar()->addMenu(tr("&Debug"));
+   QMenu *menu = m_debugMenu;
+   
+   m_debugRunAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRun.png"), tr("&Run"), this), this, SLOT(debugRunAction()), QKeySequence(QString("CTRL+F5")));
+   m_debugStopAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStop.png"), tr("S&top"), this), this, SLOT(debugStopAction()), QKeySequence(), false);
+  
+   m_debugRestartAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRestart.png"), tr("R&estart.."), this), this, SLOT(debugRestartAction()), QKeySequence(), false);
+  
+ //  m_debugPauseAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugPause.png"), tr("&Pause"), this), this, SLOT(debugPauseAction()));
+
+   menu->addSeparator();
+   tb->addSeparator();
+   
+   m_debugBStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugBStep.png"), tr("&Back"), this), this, SLOT(debugBStepAction()), QKeySequence(), false);
+   m_debugStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStep.png"), tr("&Step"), this), this, SLOT(debugStepAction()), QKeySequence(), false);
+ 
+   
+   // TODO!  Add appropriate signals/slots
+   
+   
+
+
+   
+}
+
+
+
+
 
 void Gui::setupOptionsMenu() {
    QMenu *menu = menuBar()->addMenu(tr("&Options"));
@@ -243,4 +282,31 @@ void Gui::clipboardModified() {
 
    m_editPasteAction->setEnabled(enabled);
 }
+      
+
+// ------------------
+// DEBUGGER - RELATED
+// ------------------
+void Gui::debugRunAction() {
+
+}
+
+void Gui::debugStopAction() {
+
+}
+
+//void debugPauseAction(); // only have one run menuitem
+// which switches automatically to 'pause' upon invocation.
+void Gui::debugStepAction() {
+
+}
+
+void Gui::debugBStepAction() {
+
+}
+
+void Gui::debugRestartAction() {
+
+}
+
 

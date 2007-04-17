@@ -45,7 +45,8 @@ LineNoDisplay::LineNoDisplay(EditorPane *editorPane)
    
    connect(m_editorPane, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    connect(m_editorPane, SIGNAL(editorScrolled(TextEditor*, int)), this, SLOT(editorScrolled(TextEditor*,int)));
-   connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(activeEditorChanged(TextEditor*)));
+   connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(contentChanged(TextEditor*)));
+   connect(m_editorPane, SIGNAL(contentChanged(TextEditor*)), this, SLOT(contentChanged(TextEditor*)));
    
    updateLineNumbers();
 }
@@ -67,15 +68,12 @@ void LineNo::mousePressEvent(QMouseEvent *e) { e->ignore(); }
 
 void LineNo::mouseReleaseEvent(QMouseEvent *e) {
    if (rect().contains(e->pos())) {
-      cerr << text().toStdString() << " was pressed\n";
-
+//      cerr << text().toStdString() << " was pressed\n";
 //      QPixmap p = mergeSideBySide(*m_breakPoint, text());
       
       QTextBlock *b = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo);
       if (b != NULL) {
-         cerr << b << " no null\n";
-
-         // Toggle display
+         // Toggle display of breakpoint
          if (b->userState() == B_BREAKPOINT) {
             b->setUserState(B_NORMAL);
          } else b->setUserState(B_BREAKPOINT);
@@ -93,12 +91,9 @@ void LineNo::setLineNo(int val) {
 }
 
 void LineNo::resetDisplay(QTextBlock *b) {
-   if (b == NULL && (b = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo)) == NULL) {
-      setText(QString("%1").arg(m_lineNo));
-      return;
-   }
+   bool possibleBP = !(b == NULL && (b = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo)) == NULL);
    
-   if (b->userState() == B_BREAKPOINT)
+   if (possibleBP && b->userState() == B_BREAKPOINT)
       setPixmap(*m_breakPoint);
    else if (m_lineNo < 10)
       setText(QString("%1  ").arg(m_lineNo));
@@ -142,7 +137,9 @@ void LineNoDisplay::editorScrolled(TextEditor *active, int val) {
    updateLineNumbers();
 }
 
-void LineNoDisplay::activeEditorChanged(TextEditor *active) {
+// called whenever active editor is switched or 
+// active editor's content is modified
+void LineNoDisplay::contentChanged(TextEditor *active) {
    active = NULL;
    updateLineNumbers();
 }
@@ -169,15 +166,19 @@ void LineNoDisplay::updateLineNumbers() {
    QRect bounds;
    rect = active->cursorRect(firstVisible);
    
-   if (firstLineNo == lastLineNo) {
-      lastLineNo = firstLineNo + 219; // hack, yippee :)
+   if (firstLineNo >= lastLineNo) {
+      lastLineNo = firstLineNo + 218; // hack, yippee :)
       rect.adjust(0, 2, 0, 2);
    }
    
    int max = active->noLines();
-   QLabel maxSized(QString("%1").arg(max > lastLineNo ? max : lastLineNo));
+   max = (max > lastLineNo ? max : lastLineNo);
+
+   QLabel maxSized(QString("%1").arg(max));
    maxSized.setFont(*m_editorPane->m_font);
    int width = maxSized.sizeHint().width();// + m_breakPoint->width();
+   
+   cerr << max << endl;
    
    for(int i = 0; i < lastLineNo - firstLineNo + 1; i++) {
       int lineNo = firstLineNo + i;//active->lineNumber(cur);
@@ -188,6 +189,10 @@ void LineNoDisplay::updateLineNumbers() {
       int offset = tabBar->contentsRect().height() + 2;
       
       QPoint p = rect.adjusted(0, offset, 0, 0).topLeft();
+
+      if ((*li)->sizeHint().width() > width)
+         cerr << (*li)->sizeHint().width() << " > " << width << endl;
+      
       QRect r(0, p.y(), width/*(*li)->sizeHint().width()*/, rect.height());
       (*li)->setGeometry(r);
       
@@ -201,9 +206,11 @@ void LineNoDisplay::updateLineNumbers() {
       
       if (cur.position() == oldPos) {
          rect.adjust(0, rect.height(), 0, rect.height());
-         if (lastLineNo - firstLineNo + 1 >= i + 2) {
+
+         if (lastLineNo - firstLineNo + 1 >= i + 1) {
             lastLineNo = 200 + firstLineNo;
-            //cerr << oldPos << endl;
+            
+      //      cerr << oldPos << endl;
          }
       } else rect = active->cursorRect(cur);
    }
@@ -212,7 +219,7 @@ void LineNoDisplay::updateLineNumbers() {
       (*li)->hide();
       li++;
    }
-   //cerr << "(" << firstLineNo << ", " << lastLineNo << ")\n";
+   cerr << "(" << firstLineNo << ", " << lastLineNo << ")\n";
    //cerr << lineNo.toStdString() << endl;
    
    m_rect = bounds.adjusted(4, 0, (lastLineNo - firstLineNo >= 200 ? 0 : 10), 0);

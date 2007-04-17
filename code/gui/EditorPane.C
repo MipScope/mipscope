@@ -83,8 +83,7 @@ void EditorPane::activeEditorChanged(int index) {
    tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    tabbar->setTabTextColor(index, Qt::blue);
    
-   cerr << "\tactive changed to: " << index << endl;
-
+//   cerr << "\tactive changed to: " << index << endl;
    m_activeEditor = (TextEditor*) widget(index);
    
    // Send out signals to update (enable/disable) certain Gui Actions
@@ -94,6 +93,7 @@ void EditorPane::activeEditorChanged(int index) {
    redoAvailabile(m_activeEditor->redoIsAvailable());
    isModifiable(m_activeEditor->isModifiable());
    isModified(m_activeEditor->isModified());
+   
    
    //m_highlighter->setDocument(m_activeEditor->document());
 }
@@ -334,5 +334,9 @@ void EditorPane::setModifiable(bool modifiable) {
 
 void EditorPane::editorScrolled(int val) {
    editorScrolled(m_activeEditor, val);
+}
+
+void EditorPane::contentChangedProxy() {
+   contentChanged(m_activeEditor);
 }
 

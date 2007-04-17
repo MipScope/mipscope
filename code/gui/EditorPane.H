@@ -55,10 +55,13 @@ class EditorPane : public QTabWidget {
       void fontChanged(const QFont&);
       void editorScrolled(TextEditor*, int);
       void activeEditorChanged(TextEditor*);
+      // emitted whenever content in current editor has changed
+      void contentChanged(TextEditor*);
       
    private slots:
       void activeEditorChanged(int index);
       void editorScrolled(int);
+      void contentChangedProxy();
       
       // Proxy slots for active TextEditor
       void cut();

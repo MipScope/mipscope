@@ -45,6 +45,7 @@ void EditorPane::openFile(const QString &fileName) {
       if (m_activeEditor->openFile(file))
          setActiveEditor(m_activeEditor);
       
+//      contentChanged(m_activeEditor);
       // else error
    } else { // open a tab for a new TextEditor
       TextEditor *editor = new TextEditor(this, m_font, NULL, m_activeEditor);
@@ -69,9 +70,10 @@ void EditorPane::setActiveEditor(TextEditor *newlyActive) {
       QTabBar *tabbar = tabBar();
       tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    }
+   
    m_activeEditor = newlyActive;
    setCurrentWidget(m_activeEditor);
-   
+  
    /*if (newEditor) {
       setUpdatesEnabled(true);
       update();
@@ -87,15 +89,25 @@ void EditorPane::activeEditorChanged(int index) {
    m_activeEditor = (TextEditor*) widget(index);
    
    // Send out signals to update (enable/disable) certain Gui Actions
+   if (!m_activeEditor->isModifiable()) {
+      isModifiable(m_activeEditor->isModifiable());
+   } else {
+      copyAvailabile(m_activeEditor->copyIsAvailable());
+      undoAvailabile(m_activeEditor->undoIsAvailable());
+      redoAvailabile(m_activeEditor->redoIsAvailable());
+   }
+
    activeEditorChanged(m_activeEditor);
-   copyAvailabile(m_activeEditor->copyIsAvailable());
-   undoAvailabile(m_activeEditor->undoIsAvailable());
-   redoAvailabile(m_activeEditor->redoIsAvailable());
-   isModifiable(m_activeEditor->isModifiable());
+   QTimer::singleShot(250, this, SLOT(resetModified()));
    isModified(m_activeEditor->isModified());
-   
+
+   cerr << m_activeEditor->isModified() << ", ";// << m_parent->m_editUndoAction->isEnabled() << endl;
    
    //m_highlighter->setDocument(m_activeEditor->document());
+}
+
+void EditorPane::resetModified() {
+   isModified(m_activeEditor->isModified());
 }
 
 void EditorPane::contextMenuRequested(const QPoint & pos) {
@@ -111,9 +123,12 @@ void EditorPane::contextMenuRequested(const QPoint & pos) {
 //   cerr << "(" << pos.x() << ", " << pos.y() << ")" << " \t" << geometry().height() << " \t" << m_activeEditor->rect().height() << endl;
 
 //   cerr << inTabBar << ", " <<  inBarOrTextEdit << ", " << inY << endl;
-   if (!inTabBar && (!inBarOrTextEdit || !inY))
+   if (!inTabBar && (!inBarOrTextEdit || !inY)) {
+      // Show context menu in active text editor
+      m_parent->getEditMenu()->exec(mapToGlobal(pos));
+      
       return; // no friekin idea why this works; seems backwards to me.. huzzah!
-
+   }
    for(i = count; i--;) {
       const QRect &bounds = tabbar->tabRect(i);
 
@@ -156,6 +171,11 @@ bool EditorPane::closeAllTabs(TextEditor *ignore) {
    }
    
    return true;
+}
+
+void EditorPane::showContextMenu(QContextMenuEvent *e) {
+   cerr << "Showing context menu\n";
+   m_parent->getEditMenu()->exec(e->globalPos());
 }
 
 QMessageBox::StandardButton EditorPane::saveAllFiles(bool yesToAll, TextEditor *ignore) {
@@ -301,6 +321,14 @@ void EditorPane::undo() {
 
 void EditorPane::redo(){
    m_activeEditor->redo();
+}
+
+void EditorPane::toggleComment(){
+   m_activeEditor->toggleComment();
+}
+
+void EditorPane::selectAll(){
+   m_activeEditor->selectAll();
 }
 
 // Proxy signals from active TextEditor to Gui

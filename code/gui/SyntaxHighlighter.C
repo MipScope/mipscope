@@ -50,8 +50,7 @@ void SyntaxHighlighter::setupHighlightingRules() {
    m_rules.append(rule);
 }
 
-void SyntaxHighlighter::addRules(const char *const list[], const char *regExpFormat, 
-      QTextCharFormat &format) {
+void SyntaxHighlighter::addRules(const char *const list[], const char *regExpFormat, QTextCharFormat &format) {
    HighlightingRule rule;
    QStringList patterns;
    char buf[512];
@@ -88,8 +87,10 @@ void SyntaxHighlighter::highlightBlock(const QString &text) {
 bool SyntaxHighlighter::matches(const QString &text) {
    foreach (HighlightingRule rule, m_rules) {
       QRegExp expression(rule.pattern);
+      //if (expression.exactMatch(text))
+      //   return true;
       int index = text.indexOf(expression);
-
+      
       if (index >= 0)
          return true;
    }

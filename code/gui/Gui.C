@@ -7,15 +7,16 @@
 #include "Gui.H"
 #include "EditorPane.H"
 #include "LineNoPane.H"
-#include "Utilities.H"
-#include <QtGui>
+#include "OutputConsole.H"
 #include <string.h>
+#include <QtGui>
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
-   m_lineNoPane(new LineNoPane(this, m_editorPane))
+   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(M_NORMAL)
 {
    QApplication::setStyle(new QPlastiqueStyle());
+   resize(800, 720);
    
    if (argc > 1) {
       int i = 1;
@@ -53,7 +54,6 @@ void Gui::setupGui() {
    setCentralWidget(m_lineNoPane);
    setupStatusBar();
 
-   resize(640, 640);
 }
 
 void Gui::setupActions() {
@@ -61,6 +61,7 @@ void Gui::setupActions() {
    setupFileActions();
    setupEditActions();
    setupDebugActions();
+   setupDockWidgets();
    setupOptionsMenu();
 
    {
@@ -135,17 +136,29 @@ void Gui::setupEditActions() {
    m_editCopyAction  = addAction(tb, menu, new QAction(QIcon(ICONS"/editCopy.png"), tr("&Copy"), this), m_editorPane, SLOT(copy()), QKeySequence(QKeySequence::Copy), false);
    m_editPasteAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editPaste.png"), tr("&Paste"), this), m_editorPane, SLOT(paste()), QKeySequence(QKeySequence::Paste), !QApplication::clipboard()->text().isEmpty());
    
+   menu->addSeparator();
+   tb->addSeparator();
+
+   m_editSelectAllAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editSelectAll.png"), tr("&Select All"), this), m_editorPane, SLOT(selectAll()), QKeySequence(tr("CTRL+A")), true);
+   m_editToggleCommentAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editToggleComment.png"), tr("&Toggle Comment"), this), m_editorPane, SLOT(toggleComment()), QKeySequence(tr("CTRL+D")), true);
+   
    // Setup automatic enabling/disabling of different menu-items
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editUndoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editRedoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editCutAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editPasteAction, SLOT(setEnabled(bool)));
+   connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editSelectAllAction, SLOT(setEnabled(bool)));
+   connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editToggleCommentAction, SLOT(setEnabled(bool)));
    
    connect(m_editorPane, SIGNAL(undoAvailabile(bool)), m_editUndoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(redoAvailabile(bool)), m_editRedoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(copyAvailabile(bool)), m_editCutAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(copyAvailabile(bool)), m_editCopyAction, SLOT(setEnabled(bool)));
    connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardModified()));
+}
+
+QMenu *Gui::getEditMenu() {
+   return m_editMenu;
 }
 
 void Gui::setupDebugActions() {
@@ -159,7 +172,7 @@ void Gui::setupDebugActions() {
    m_debugRunAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRun.png"), tr("&Run"), this), this, SLOT(debugRunAction()), QKeySequence(QString("CTRL+F5")));
    m_debugStopAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStop.png"), tr("S&top"), this), this, SLOT(debugStopAction()), QKeySequence(), false);
   
-   m_debugRestartAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRestart.png"), tr("R&estart.."), this), this, SLOT(debugRestartAction()), QKeySequence(), false);
+   m_debugRestartAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRestart.png"), tr("R&estart"), this), this, SLOT(debugRestartAction()), QKeySequence(), false);
   
  //  m_debugPauseAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugPause.png"), tr("&Pause"), this), this, SLOT(debugPauseAction()));
 
@@ -195,6 +208,20 @@ void Gui::setupStatusBar() {
 
    m_statusBar->showMessage(tr("Welcome to "PROJECT_NAME), STATUS_DELAY);
 }
+
+void Gui::setupDockWidgets() {
+   QMenu *menu = menuBar()->addMenu(tr("&View"));
+   m_output = new OutputConsole(this, m_editorPane);
+   
+   addDockWidget(Qt::BottomDockWidgetArea, m_output);
+   
+   m_viewOutputAction = m_output->toggleViewAction();
+   m_viewOutputAction->setIcon(QIcon(ICONS"/viewOutput.png"));
+   menu->addAction(m_viewOutputAction);
+
+   
+}
+
 
 // -----------------------
 // MenuBar-related Actions
@@ -288,25 +315,71 @@ void Gui::clipboardModified() {
 // DEBUGGER - RELATED
 // ------------------
 void Gui::debugRunAction() {
+   if (m_mode == M_NORMAL)
+      m_mode = M_RUNNING;
+   else if (m_mode == M_PAUSED)
+      m_mode = M_RUNNING;
+   else m_mode = M_PAUSED;
 
+   updateDebugActions();
+}
+
+void Gui::updateDebugActions() {
+   switch(m_mode) {
+      case M_RUNNING:
+         m_debugRunAction->setText(tr("&Pause"));
+         m_debugRunAction->setIcon(QIcon(ICONS"/debugPause.png"));
+         m_debugStopAction->setEnabled(true);
+         m_debugRestartAction->setEnabled(true);
+         m_debugStepAction->setEnabled(false);
+         m_debugBStepAction->setEnabled(false);
+         
+         break;
+      case M_PAUSED:
+         m_debugRunAction->setText(tr("&Run"));
+         m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
+         m_debugStopAction->setEnabled(true);
+         m_debugRestartAction->setEnabled(true);
+         m_debugStepAction->setEnabled(true);
+         m_debugBStepAction->setEnabled(true);
+ 
+         break;
+      case M_NORMAL:
+         m_debugRunAction->setText(tr("&Run"));
+         m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
+         m_debugStopAction->setEnabled(false);
+         m_debugRestartAction->setEnabled(false);
+         m_debugStepAction->setEnabled(false);
+         m_debugBStepAction->setEnabled(false);
+         
+      default:
+         break;
+   }
 }
 
 void Gui::debugStopAction() {
+   m_mode = M_NORMAL;
 
+   updateDebugActions();
 }
 
 //void debugPauseAction(); // only have one run menuitem
 // which switches automatically to 'pause' upon invocation.
 void Gui::debugStepAction() {
-
+   
+   // TODO
 }
 
 void Gui::debugBStepAction() {
-
+   
+   // TODO
 }
 
 void Gui::debugRestartAction() {
-
+   
+   // TODO
+   m_mode = M_RUNNING;
+   updateDebugActions();
 }
 
 

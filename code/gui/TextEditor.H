@@ -10,6 +10,8 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QList>
+#include <map>
+using namespace std;
 
 class QTextBlock;
 class QFont;
@@ -20,12 +22,17 @@ class QFile;
 class QPoint;
 class SyntaxTip;
 class QTextCharFormat;
+class QShortcut;
+class QContextMenuEvent;
+
+typedef map<int, int> LineToPosMap;
+typedef LineToPosMap::const_iterator LineToMapIterator;
 
 extern bool Accepted(QMessageBox::StandardButton result);
 
 // userState() in QTextBlock
 enum BlockStates { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1 };
-
+#define UNTITLED     "Untitled"
 
 class TextEditor : public QTextEdit {
    
@@ -64,7 +71,7 @@ class TextEditor : public QTextEdit {
       
       // Returns the QTextBlock pertaining to the given line number
       // Returns NULL if the given line number is invalid
-      QTextBlock *getBlockForLine(int lineNo) const;
+      QTextBlock *getBlockForLine(int lineNo, QTextBlock *last = NULL);
       
       void highlightLine(const QTextCursor &c, const QColor &color);
       //const QTextCharFormat &f);
@@ -78,6 +85,7 @@ class TextEditor : public QTextEdit {
       void modifiabilityChanged(bool);
       void undoAvailabilityModified(bool);
       void redoAvailabilityModified(bool);
+      void toggleComment();
       
    protected:
       EditorPane *m_parent;
@@ -86,15 +94,18 @@ class TextEditor : public QTextEdit {
       TextEditor *m_prev, *m_next;
       QFile *m_file;
       SyntaxTip *m_syntaxTip;
+      QShortcut *m_commentLine;
       
       // true if a document has been loaded; false otherwise
       bool m_loaded, m_modified, m_undoAvailable, m_redoAvailable;
 
       SyntaxHighlighter *m_syntaxHighligher;
       QList<ExtraSelection> m_highlighted;
+      LineToPosMap m_lineToPosMap;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);
+      //virtual void contextMenuEvent(QContextMenuEvent *e);
 };
 
 class SyntaxTip : public QLabel {
@@ -111,6 +122,7 @@ class SyntaxTip : public QLabel {
 
    public slots:
       void hide();
+      void editorScrolled(int);
 
    private slots:
       void cursorPositionChanged(const QTextCursor&);
@@ -118,8 +130,9 @@ class SyntaxTip : public QLabel {
 
    protected:
       TextEditor *m_parent;
-      QTextCursor *m_cursor;
-      int m_startPos;
+//      QTextCursor *m_cursor;
+      QTextBlock *m_block;
+//      int m_startPos;
 };
 
 #endif // __TEXTEDITOR_H__

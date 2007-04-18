@@ -41,7 +41,11 @@ void TextEditor::setupEditor(QFont *font) {
    setLineWrapMode(QTextEdit::NoWrap);
   
    m_syntaxTip = new SyntaxTip(this);
-
+   
+//   m_commentLine = new QShortcut(QKeySequence(tr("CTRL+D")), this, SLOT(toggleComment()), SLOT(toggleComment()), Qt::WidgetShortcut);
+   
+   
+   //setContextMenuPolicy(Qt::CustomContextMenu);
    setContextMenuPolicy(Qt::NoContextMenu); // TODO: add custom context menu?
    connect(this, SIGNAL(textChanged()), this, SLOT(codeChanged()));
    connect(this, SIGNAL(textChanged()), m_parent, SLOT(contentChangedProxy()));
@@ -54,6 +58,7 @@ void TextEditor::setupEditor(QFont *font) {
    connect(this, SIGNAL(redoAvailable(bool)), m_parent, SLOT(redoAvailabilityModified(bool)));
    connect(this, SIGNAL(copyAvailable(bool)), m_parent, SLOT(copyAvailabilityModified(bool)));
    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_parent, SLOT(editorScrolled(int)));
+   connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_syntaxTip, SLOT(editorScrolled(int)));
    connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
    connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(setCurrentFont(const QFont&)));
    
@@ -73,7 +78,6 @@ void TextEditor::codeChanged() {
 // @overridden to deal w/ showing syntax help after typing an instruction
 void TextEditor::keyReleaseEvent(QKeyEvent *e) {
    const int key = e->key();
-   bool match = false;
    
    // check if previously typed word was an instruction, immediately after the 
    // user completes it by typing the space bar (for syntax-help)
@@ -81,9 +85,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       QTextCursor c = textCursor();
       c.movePosition(QTextCursor::StartOfLine/*PreviousWord*/, QTextCursor::KeepAnchor);
       const QString &selectedText = c.selectedText();
-      
-      match = //m_parent->m_highlighter->matches(selectedText);
-         m_syntaxHighligher->matches(selectedText);
+      bool match = m_syntaxHighligher->matches(selectedText);
       
       if (match) {
          // move cursor to start of matched word
@@ -107,7 +109,8 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       m_syntaxTip->hide();
    } else if (key == Qt::Key_Escape) {
       m_syntaxTip->hide();
-   } /*else if (key == Qt::Key_Tab) {
+   }
+   /*else if (key == Qt::Key_Tab) {
       if (m_lastTab->elapsed() > 200) {
          m_lastTab->restart();
          
@@ -120,21 +123,112 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
    }*/
    
 //   cerr << textCursor().block().text().toStdString() << endl;
-   
 //   cerr << currentLineNumber() << endl;
    
-//   if (!match)
    QTextEdit::keyReleaseEvent(e);
+}
+
+/*void TextEditor::contextMenuEvent(QContextMenuEvent *e) {
+   m_parent->showContextMenu(e);
+}*/
+
+void TextEditor::toggleComment() {
+//   cerr << "CTRL+D pressed\n";
+   
+   extern const char *CommentSyntax;
+
+   QRegExp comment(QString("\\s?") + QString(CommentSyntax));
+   QTextCursor c = textCursor();
+
+   // block toggle comment
+   if (c.hasSelection()) {
+      int start = c.selectionStart(), end = c.selectionEnd(), i = start;
+      QTextCursor c2 = textCursor();
+      c2.setPosition(end);
+      if (c2.atBlockStart())
+         end += 2;
+      
+      bool inComment = true;
+      c.setPosition(i);
+      c.movePosition(QTextCursor::StartOfLine);
+      
+      do {
+         
+         if (!comment.exactMatch(c.block().text())) { // line is not already commented
+            //cerr << "Line no: " << lineNumber(c) << ";  " << c.position() << " vs " << end << endl;
+            
+            inComment = false;
+            break;
+         }
+
+         c.movePosition(QTextCursor::NextBlock);
+         c.movePosition(QTextCursor::StartOfLine);
+      } while(c.position() <= end);
+      
+      c.beginEditBlock();
+      i = start;
+      c.setPosition(i);
+      c.movePosition(QTextCursor::StartOfLine);
+      if (inComment) { // all lines are in comment
+         do {
+            c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+
+            if (c.selectedText() == QString("#"))
+               c.removeSelectedText();
+
+            c.movePosition(QTextCursor::NextBlock);
+            c.movePosition(QTextCursor::StartOfLine);
+         } while(c.position() <= end);
+
+      } else { // not all lines are in comment
+         
+         do {
+//            int pos = c.position();
+//            c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+            
+            //if (c.selectedText().remove(QChar(' ')) != "\n")
+            //   c.setPosition(pos);
+            c.insertText("#");
+
+            c.movePosition(QTextCursor::NextBlock);
+            c.movePosition(QTextCursor::StartOfLine);
+         } while(c.position() <= end);
+
+         //cerr << "pos " << c.position() << " end " << end << endl;
+      }
+
+      c.endEditBlock();
+   } else { // only toggling comment on one line
+      c.movePosition(QTextCursor::StartOfLine);
+
+      if (comment.exactMatch(c.block().text())) { // line is already commented
+
+         c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+
+         if (c.selectedText() == QString("#"))
+            c.removeSelectedText();
+         //else cerr << "\n\nerror w/ regExp after CTRL+D\n\n";
+      } else c.insertText("#");
+   }
 }
 
 bool TextEditor::openFile(QFile *file) {
    if (file->open(QIODevice::ReadOnly | QFile::Text)) {
-         setPlainText(file->readAll());
-         file->close();
-         
-         m_file = file;
-         m_loaded = true;
-         resetTabText();
+//      setUpdatesEnabled(false);
+      m_lineToPosMap.clear();
+
+      setPlainText(file->readAll());
+      file->close();
+
+      m_file = file;
+      m_loaded = true;
+      resetTabText();
+      
+      // hack to get this shit to display right.. fuck!
+      QTimer::singleShot(250, m_parent, SLOT(contentChangedProxy()));
+      QTimer::singleShot(750, m_parent, SLOT(contentChangedProxy()));
+   
+//      setUpdatesEnabled(true);
    } // else display error
    
    return true;
@@ -143,7 +237,7 @@ bool TextEditor::openFile(QFile *file) {
 // returns actual filename of open file
 QString TextEditor::fileName() const {
    if (m_file == NULL)
-      return QString();
+      return QString(UNTITLED);
 
    QString path = m_file->fileName();
    
@@ -315,7 +409,7 @@ void TextEditor::redoAvailabilityModified(bool isAvailable) {
    m_redoAvailable = isAvailable;
 }
 
-SyntaxTip::SyntaxTip(TextEditor *parent) : QLabel(parent), m_parent(parent) {
+SyntaxTip::SyntaxTip(TextEditor *parent) : QLabel(parent), m_parent(parent), m_block(NULL) {
    QPalette pal = palette();
    QColor c(255, 255, 215); // light yellow
    //c.setAlpha(100);
@@ -332,10 +426,7 @@ SyntaxTip::SyntaxTip(TextEditor *parent) : QLabel(parent), m_parent(parent) {
    setFrameShape(QFrame::StyledPanel);
    setFocusPolicy(Qt::NoFocus);
    hide();
-   
-
    // TODO:  check if change is okay/bad from original!!!
-
    
    /*QFont font(currentFont());
    font.setPointSize(12);
@@ -354,9 +445,10 @@ void SyntaxTip::hide() {
    
    QLabel::hide();
 
-   disconnect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), 
-         this, SLOT(cursorPositionChanged(const QTextCursor&)));
+   //disconnect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), this, SLOT(cursorPositionChanged(const QTextCursor&)));
    disconnect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
+
+   safeDelete(m_block);
 }
 
 void SyntaxTip::cursorPositionChanged(const QTextCursor &cursor) {
@@ -365,18 +457,40 @@ void SyntaxTip::cursorPositionChanged(const QTextCursor &cursor) {
 
 void SyntaxTip::testCursorPos() {
    QTextCursor c = m_parent->textCursor();
-   int pos = c.position();
+   if (c.block() != *m_block)
+      hide();
+   
+   /*int pos = c.position();
    c.setPosition(m_startPos);
    c.movePosition(QTextCursor::Down);
    
    if (pos < m_startPos || pos >= c.position())
-      hide();
+      hide();*/
+}
+
+void SyntaxTip::editorScrolled(int val) {
+   if (isVisible()) {
+      if (!m_block->isValid()) {
+         hide();
+      } else {
+         const QRect &geom = geometry();
+         //m_startPos = m_block->position();
+         QTextCursor c = m_parent->textCursor();
+         c.setPosition(m_block->position());//m_startPos);
+         const QRect &rect = m_parent->cursorRect(c);
+         val = 0;
+
+         setGeometry(geom.x(), rect.bottom() + 1, geom.width(), geom.height());
+      }
+   }
 }
 
 void SyntaxTip::show(const QString &text, const QString &statusText, const QPoint &pos, const QTextCursor &c) {
-   m_cursor = new QTextCursor(c);
-   m_cursor->movePosition(QTextCursor::StartOfLine);
-   m_startPos = m_cursor->position();
+   m_block = new QTextBlock(c.block());
+
+//   m_cursor = new QTextCursor(c);
+//   m_cursor->movePosition(QTextCursor::StartOfLine);
+//   m_startPos = m_cursor->position();
    
    setText(text);
    STATUS_BAR->showMessage(statusText);
@@ -384,8 +498,7 @@ void SyntaxTip::show(const QString &text, const QString &statusText, const QPoin
    const QSize &hint = sizeHint();
    setGeometry(pos.x(), pos.y(), hint.width(), hint.height());
    
-   connect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), 
-         this, SLOT(cursorPositionChanged(const QTextCursor&)));
+//   connect(m_parent->document(), SIGNAL(cursorPositionChanged(const QTextCursor&)), this, SLOT(cursorPositionChanged(const QTextCursor&)));
    connect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
 
    QLabel::show();
@@ -400,8 +513,12 @@ void SyntaxTip::show(const QString &text, const QString &statusText, const QPoin
 int TextEditor::lineNumber(const QTextBlock &b) const {
    // if you have a QTextCursor, easy to get blockNumber()
    // if you have a QTextCursor, easy to get corresponding block(), position()
+   if (!b.isValid())
+      return -1;
+
    QTextCursor c = textCursor();
    c.setPosition(b.position());
+   
    return lineNumber(c);
 }
 
@@ -417,7 +534,12 @@ int TextEditor::currentLineNumber() const {
 
 // Returns the total number of lines
 int TextEditor::noLines() const {
-   QTextCursor sec = textCursor();
+   return document()->blockCount() - 1;
+/* QTextCursor sec = textCursor();
+   sec.movePosition(QTextCursor::End);
+
+   return sec.blockNumber();*/
+   /*
    int pos;
    
    do {
@@ -425,24 +547,64 @@ int TextEditor::noLines() const {
       sec.movePosition(QTextCursor::Down);
    } while (pos != sec.position());
    
-   return sec.blockNumber();
+   return sec.blockNumber();*/
 }
 
 // Returns the QTextBlock pertaining to the given line number
 // Returns NULL if the given line number is invalid
-QTextBlock *TextEditor::getBlockForLine(int lineNo) const {
+QTextBlock *TextEditor::getBlockForLine(int lineNo, QTextBlock *last) {
    QTextCursor c = textCursor();
-   c.movePosition(QTextCursor::Start);
+//   cerr << c.position() << " entering getBlockForLine(" << lineNo << ", " << last << ");\n";
+
+   if (last != NULL && last->isValid()) {
+      c.setPosition(last->position());
+      
+      if (c.blockNumber() == lineNo) {
+   //      cerr << "\texiting last\n";
+         return last;
+      }
+   }
    
 //   cerr << c.blockNumber() << " vs " << lineNo << endl;
+   LineToMapIterator i = m_lineToPosMap.find(lineNo);
+   if (i != m_lineToPosMap.end()) {
+      int prospectPos = i->second;
 
-   while(c.blockNumber() < lineNo) {
-//      cerr << c.blockNumber() << " vs " << lineNo << endl;
-
-      if (!c.movePosition(QTextCursor::NextBlock))
-         return NULL;
+      c.setPosition(prospectPos);
+      if (c.blockNumber() == lineNo) {
+     //    cerr << "\texiting cached\n";
+         return new QTextBlock(c.block());
+      }
+      if (m_lineToPosMap.size() > 0)
+         m_lineToPosMap.clear();
+      //else cerr << "changed\n";
    }
+   
+   c.movePosition(QTextCursor::Start);
+   int before = c.position();
+   c.movePosition(QTextCursor::End);
+   int after = c.position(), blockNo;
 
+   if (c.blockNumber() != lineNo) {
+      int pos = -1, oldPos;
+
+      do {
+         c.setPosition((before + after) / 2);
+         blockNo = c.blockNumber();
+         oldPos = pos;
+         pos = c.position();
+
+         if (blockNo < lineNo)
+            before = pos;
+         else if (blockNo > lineNo)
+            after = pos;
+         //      cerr << c.blockNumber() << " vs " << lineNo << endl;
+      } while(blockNo != lineNo && before != after && oldPos != pos);
+   }
+   
+   m_lineToPosMap[lineNo] = c.position();
+   //cerr << "\t" << c.position() << " normal exit from getBlockForLine(" << lineNo << ", " << last << ");\n";
+   
    return new QTextBlock(c.block());
 }
 

@@ -82,6 +82,7 @@ class LineNo : public QLabel {
    protected:
       EditorPane *m_editorPane;
       int m_lineNo;
+      QTextBlock *m_last;
       
       // @override
       virtual void mousePressEvent(QMouseEvent *);

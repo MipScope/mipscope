@@ -32,6 +32,10 @@ using namespace std;
 
 extern QStatusBar *STATUS_BAR;
 
+enum DEBUG_MODE {
+   M_NORMAL = 0, M_DEBUGGING = 1, M_RUNNING = (M_DEBUGGING | 2), M_PAUSED = (M_DEBUGGING | 4), 
+};
+
 
 #define safeDelete(p)         {if ((p)) { delete (p); (p) = NULL; }}
 #define safeDeleteArray(p)    {if ((p)) { delete[] (p); (p) = NULL; }}

@@ -1,7 +1,9 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Add Breakpoints -- more BlockStates; B_CURRENT_PC ORed w/ B_BREAKPOINT
-   * 
+   * Add MemoryView, RegisterView, StackView, OutputConsole
+
+   * Add viewOutput.png and editSelectAll.png
 
 Highlighting a line of Text:
    QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )

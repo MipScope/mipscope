@@ -39,6 +39,8 @@ class EditorPane : public QTabWidget {
 
       bool isModifiable();
       bool isReadOnly();
+
+      void showContextMenu(QContextMenuEvent *e);
       
       // Returns true if all tabs closed successfully
       // May return false if user chooses to cancel the operation
@@ -62,6 +64,9 @@ class EditorPane : public QTabWidget {
       void activeEditorChanged(int index);
       void editorScrolled(int);
       void contentChangedProxy();
+      void toggleComment();
+      void selectAll();
+      void resetModified();
       
       // Proxy slots for active TextEditor
       void cut();

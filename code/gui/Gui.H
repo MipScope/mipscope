@@ -9,6 +9,7 @@
 #include <QMainWindow>
 #include <QStatusBar>
 #include <QKeySequence>
+#include "Utilities.H"
 
 class QMenu;
 class QAction;
@@ -17,6 +18,7 @@ class QCloseEvent;
 class QAction;
 class QToolBar;
 class LineNoPane;
+class OutputConsole;
 
 class Gui : public QMainWindow {
    
@@ -30,8 +32,7 @@ class Gui : public QMainWindow {
 //      QAction *getSaveAsAction();
       QAction *getSaveAllAction();
       
-   //signals:
-      
+      QMenu *getEditMenu();
       
    private slots:
       // MenuBar
@@ -66,22 +67,32 @@ class Gui : public QMainWindow {
               *m_editCutAction, 
               *m_editCopyAction, 
               *m_editPasteAction, 
+              *m_editSelectAllAction, 
+              *m_editToggleCommentAction, 
               
               // Debugger-Related
               *m_debugRunAction, 
               *m_debugStopAction, 
               *m_debugStepAction, 
               *m_debugBStepAction, // Step backwards
-              *m_debugRestartAction;
+              *m_debugRestartAction, 
+              
+              // View-Related
+              *m_viewOutputAction;
       
       // Central EditorPane
       EditorPane *m_editorPane;
       LineNoPane *m_lineNoPane;
       QStatusBar *m_statusBar;
+      OutputConsole *m_output;
       
       //@overridden
       void closeEvent(QCloseEvent *event);
       
+      // IMPORTANT:
+      //    Editing, Debugging, or Paused
+      DEBUG_MODE m_mode;
+
    private:  // methods
       void setupGui();
       void setupStatusBar();
@@ -92,6 +103,9 @@ class Gui : public QMainWindow {
       void setupEditActions();
       void setupDebugActions();
       void setupOptionsMenu();
+      void setupDockWidgets();
+
+      void updateDebugActions();
 };
 
 #endif // __QGUI_H__

@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "typedefs.H"
+class ParseNode;
 
 class State : public QObject {
 	Q_OBJECT
@@ -31,9 +32,9 @@ class State : public QObject {
 		
 		// undo
 		void undoUntilTimestamp(TIMESTAMP timestamp);
-		TIMESTAMP getCurrentTimestamp(void);
+//		TIMESTAMP getCurrentTimestamp(void);
 		
-	public signals:
+	signals:
 		
 		/* this is emitted whenever a word in memory is changed, even if only
 		 * one byte of this word was changed with a call to setMemoryByte. */

@@ -17,8 +17,9 @@ static bool Add::isValid(QString line, ParseNode* before) {
 static Statement* Add::factory(QString line, ParseNode* before) {
 	return new Statement(1, 2, 3);
 }
-				
-Add::Add(REGISTER src1, REGISTER src2, REGISTER dest) {		
+
+Add::Add(REGISTER src1, REGISTER src2, REGISTER dest) {	
+
 }
 void Add::execute(State* state) {
 }

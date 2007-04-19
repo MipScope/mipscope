@@ -3,8 +3,8 @@
 
 #include <QString>
 
-#include "Statement.H"
-#include "ParseNode.H"
+class Statement;
+class ParseNode;
 
 typedef int TIMESTAMP;
 typedef unsigned int ADDRESS;

@@ -6,9 +6,8 @@
 #include <QTextBlockUserData>
 
 #include "typedefs.H"
-#include "State.H"
-#include "Statement.H"
-#include "ParseNode.H"
+class State;
+class Statement;
 
 class ParseNode : private QTextBlockUserData {
 	

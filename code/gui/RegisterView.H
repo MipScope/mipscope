@@ -9,7 +9,10 @@
 #include <QDockWidget>
 #include <QLabel>
 
-#define REGISTER_HOVER_DELAY     (5)
+#define REGISTER_HOVER_DELAY     (0)
+#define NO_REGISTERS    (32 + 3)
+
+extern const char *const registerAliases[];
 
 class Gui;
 class EditorPane;
@@ -22,6 +25,7 @@ class QTime;
 class ExtendedView;
 class RegisterOptionsPane;
 extern QString getNoInBase(unsigned int no, int base);
+extern QString getRegisterText(int register, int displayType);
 
 class RegisterView : public QDockWidget {
    
@@ -32,7 +36,6 @@ class RegisterView : public QDockWidget {
       
       RegisterView(Gui *parent, EditorPane *editorPane);
    
-   signals:
       void displayTypeChanged();
       
    private slots:
@@ -62,17 +65,16 @@ class RegisterPane : public QWidget {
       
       RegisterPane(RegisterView *regView);
       
-      void showExtended(const QPoint &pos, const QString &text);
+      void showExtended(const QPoint &pos, const QString &text, RegisterLabel *orig);
       void reset();
       void testMouseMove(QMouseEvent *e, const QPoint &pos);
    
-   private slots:
       void displayTypeChanged();
 
    protected:
       RegisterView *m_parent;
       // View tab contains a 9x12 QGridLayout of RegViewLabels (generic)
-      IDLabel *m_registerLabels[32 + 4];
+      IDLabel *m_registerLabels[NO_REGISTERS];
       QRect m_bounds;
       ExtendedView *m_extended;
       
@@ -91,7 +93,7 @@ class RegisterLabel : public QLabel {
       RegisterLabel(RegisterPane *regPane);
       
       virtual void handleClick(QMouseEvent *e) = 0;
-      virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false) = 0;
+      virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL) = 0;
       virtual void testMouseMove(QMouseEvent *e, const QPoint &parentPos);
       
    protected slots:
@@ -125,7 +127,7 @@ class IDLabel : public RegisterLabel {
       
       void reset();
       void handleClick(QMouseEvent *e);
-      void showExtended(const QPoint &p, bool alreadyAdjusted = false);
+      void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
       void setValue(int value);
       
       ValueLabel *getValueLabel();
@@ -161,7 +163,7 @@ class ValueLabel : public RegisterLabel {
       ValueLabel(RegisterPane *regVew, IDLabel *idLabel);
       
       virtual void handleClick(QMouseEvent *e);
-      virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false);
+      virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
       void setValue(unsigned int newValue);
       
    protected:
@@ -175,12 +177,14 @@ class ExtendedView : public QLabel {
    public:
       ExtendedView(RegisterPane *parent);
        
-      void show(const QString &text, const QString &statusText, const QPoint &pos);
+      void show(const QString &text, const QString &statusText, const QPoint &pos, RegisterLabel *orig);
 
       // @overridden
       virtual void mousePressEvent(QMouseEvent*);
       virtual void mouseMoveEvent(QMouseEvent *);
       
+      RegisterLabel *m_orig;
+
    public slots:
       void hide();
 

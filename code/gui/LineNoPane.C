@@ -67,7 +67,7 @@ LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), 
 void LineNo::mousePressEvent(QMouseEvent *e) { e->ignore(); }
 
 void LineNo::mouseReleaseEvent(QMouseEvent *e) {
-   if (rect().contains(e->pos())) {
+   if (rect().contains(e->pos()) && (e->button() == Qt::LeftButton)) {
 //      cerr << text().toStdString() << " was pressed\n";
 //      QPixmap p = mergeSideBySide(*m_breakPoint, text());
       

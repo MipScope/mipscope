@@ -10,6 +10,24 @@
 #include "Gui.H"
 #include <QtGui>
 
+const char *const registerAliases[] = {
+   "r0", "at",       // $r0-1
+   "v0", "v1",       // $r2-3
+   "a0", "a1", "a2", "a3", // $r4-r7
+   "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", // $r8-15
+   "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", // $r16-23
+   "t8", "t9",       // $r24-25
+   "k0", "k1", "gp", // $r26-28
+   "sp",             // $r29
+   "s8",             // $r30
+   "ra",             // $r31
+   
+   // Special
+   "PC",             // 32
+   "HI",             // 33
+   "LO",             // 34
+};
+
 // Pseudo-Output terminal, capable of undoing/redoing output
 // ---------------------------------------------------------
 RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
@@ -17,13 +35,14 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
 {
    setObjectName(tr("Register View"));
    
+   // Default display types (unsigned base 10, and register aliases)
+   m_displayType = D_UNSIGNED_DECIMAL;
+   m_registerDisplayType = D_ALIAS;
+   
    // create a new qtabbedwidget holding View/Options, respectively
    m_tabWidget = new QTabWidget(this);
    m_registerPane = new RegisterPane(this);
    m_optionsPane  = new RegisterOptionsPane(this);
-   
-   m_displayType = D_UNSIGNED_DECIMAL;
-   m_registerDisplayType = D_ALIAS;
 
    m_tabWidget->addTab(m_registerPane, "View");
    m_tabWidget->addTab(m_optionsPane, "Options");
@@ -37,17 +56,27 @@ RegisterPane::RegisterPane(RegisterView *regView) : QWidget(),
    QWidget *m_widget = new QWidget(this);
    QGridLayout *l = new QGridLayout();
 
-   int max = 32 + 4;
+   int max = 32;// + 3;
    for(int i = max; i--;) {
-      m_registerLabels[i] = new IDLabel(this, i);
-      int col = (i / 9) * 3, row = (i % 9);
+      int col = (i >> 3) * 3, row = (i & 7);
       
+      m_registerLabels[i] = new IDLabel(this, i);
       l->addWidget(m_registerLabels[i], row, col);
       l->addWidget(m_registerLabels[i]->getValueLabel(), row, col + 1);
    }
+   
+   for(int i = NO_REGISTERS - max; i--;) {
+      int row = 10, col = i * 3, index = 32 + i;
+      
+      m_registerLabels[index] = new IDLabel(this, index);
+      l->addWidget(m_registerLabels[index], row, col);
+      l->addWidget(m_registerLabels[index]->getValueLabel(), row, col + 1);
+   }
+   
    for(int i = 3; i--;)
       l->setColumnMinimumWidth(2 + 3 * i, 14);
 
+   l->setRowMinimumHeight(9, 11);
 /*   QColor orange(255, 213, 141);
    QSize size(8, 8);
    for(int i = 10; i--;)
@@ -56,7 +85,7 @@ RegisterPane::RegisterPane(RegisterView *regView) : QWidget(),
 
    for(int i = 12; i--;)
       l->setColumnStretch(i, 1);
-   for(int i = 10; i--;)
+   for(int i = 11; i--;)
       l->setRowStretch(i, 1);
    
    l->setSpacing(0);
@@ -86,7 +115,7 @@ void RegisterView::reset() {
 
 // Clears all registers
 void RegisterPane::reset() {
-   for(int i = 32 + 4; i--;)
+   for(int i = NO_REGISTERS; i--;)
       m_registerLabels[i]->reset();
 }
 
@@ -96,9 +125,15 @@ void RegisterPane::leaveEvent(QEvent *e) {
 }
 
 void RegisterPane::testMouseMove(QMouseEvent *e, const QPoint &pos) {
-   for(int i = 32 + 4; i--;) {
+   for(int i = NO_REGISTERS; i--;) {
       if (m_registerLabels[i]->geometry().contains(pos)) {
          m_registerLabels[i]->testMouseMove(e, pos);
+         break;
+      }
+      ValueLabel *v = m_registerLabels[i]->getValueLabel();
+
+      if (v->geometry().contains(pos)) {
+         v->testMouseMove(e, pos);
          break;
       }
    }
@@ -110,22 +145,23 @@ void RegisterLabel::testMouseMove(QMouseEvent *e, const QPoint &parentPos) {
    m_time->restart();
 
    e->accept();
-   QTimer::singleShot(REGISTER_HOVER_DELAY + 5, this, SLOT(checkForExtended()));
+   checkForExtended();
+//   QTimer::singleShot(REGISTER_HOVER_DELAY + 1, this, SLOT(checkForExtended()));
 }
 
 // Updates display of modified register
 void RegisterView::registerChanged(int reg, int value) {
-   assert(reg < 32 + 4);
+   assert(reg < NO_REGISTERS);
 
    m_registerPane->m_registerLabels[reg]->setValue(value);
 }
 
-void RegisterPane::showExtended(const QPoint &pos, const QString &text) {
-   m_extended->show(text, "", pos);
+void RegisterPane::showExtended(const QPoint &pos, const QString &text, RegisterLabel *v) {
+   m_extended->show(text, "", pos, v);
 }
 
 void RegisterPane::displayTypeChanged() {
-   for(int i = 32 + 4; i--;)
+   for(int i = NO_REGISTERS; i--;)
       m_registerLabels[i]->updateDisplay();
 }
 
@@ -135,7 +171,6 @@ RegisterLabel::RegisterLabel(RegisterPane *regPane)
 {
    setMouseTracking(true);
    
-   // TODO: setup formatting/font
    setFont(QFont("Courier", 11));
    
    /*QPalette pal = palette();
@@ -161,19 +196,19 @@ void RegisterLabel::mouseReleaseEvent(QMouseEvent *e) {
 }
 
 void RegisterLabel::checkForExtended() {
-   int ms = m_time->elapsed();
+//   int ms = m_time->elapsed();
 //   cerr << m_isInside <<  " ms " << ms << endl;
    
    if (!m_isInside) {
-      if (!m_parent->m_extended->isVisible())
+      if (!m_parent->m_extended->isVisible())// || m_parent->m_extended->m_orig == this)
          return;
    }
    
-   if (ms >= REGISTER_HOVER_DELAY) {
+   //if (ms >= REGISTER_HOVER_DELAY) {
       showExtended(m_lastPos, true);
       
       m_time->restart();
-   }
+   //}
 }
 
 void RegisterLabel::mouseMoveEvent(QMouseEvent *e) {
@@ -221,13 +256,20 @@ void IDLabel::setValue(int value) {
 }
 
 void IDLabel::updateDisplay() {
-   // TODO: if m_registerDisplayType is D_ALIAS, lookup alias in table
-   
+   QString text = getRegisterText(m_register, m_registerDisplayType);
    if (m_register == 9)
-      setText(QString("r%1: ").arg(m_register));
-   else setText(QString("r%1:").arg(m_register));
-   
+      text += QString(": ");
+   else text += QString(":");
+   setText(text);
+
    m_valueLabel->setValue(m_value);
+}
+
+QString getRegisterText(int reg, int displayType) {
+   if (displayType == D_ALIAS || reg >= 32)
+      return QString(registerAliases[reg]);
+   
+   return QString("r%1").arg(reg);
 }
 
 void IDLabel::handleClick(QMouseEvent *e) {
@@ -241,14 +283,19 @@ void IDLabel::handleClick(QMouseEvent *e) {
 
 }
 
-void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted) {
+void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel *v) {
 //#define STYLE_LEFT   "style=\"clear: both;float: left; width: 40%;\""
 //#define STYLE_RIGHT  "style=\"float: left;width: 60%;padding-left: 2px;" 
    //
    //"border: 1px dotted #99BB57;\""
+   QString alias = getRegisterText(m_register, D_ALIAS);
+   QString regName = ((m_register >= 32) ? 
+      QString("<b>%1</b>").arg(alias) : 
+      QString("<b>r%1</b> (%2)").arg(QString::number(m_register), alias));
+   
    QString mText = QString(
-      "<span style=\"font-size: 12;\"><b>$r%1</b></span>"
-      "<pre>").arg(m_register);
+      "<span style=\"font-size: 12;\">%1</span>"
+      "<pre>").arg(regName);
 
    if (m_value == 0)
       mText += QString("Value = 0");
@@ -259,17 +306,17 @@ void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted) {
               four = getNoInBase(m_value, D_UNSIGNED_DECIMAL);
       
       mText += QString(
-         "Hex:      %2<br>"
-         "Binary:   %3<br>"
-         "Decimal:  %4<br>"
-         "UDecimal: %5")
-         .arg(m_register).arg(one, two, three, four);
+         "Hex:      %1<br>"
+         "Binary:   %2<br>"
+         "Decimal:  %3<br>"
+         "UDecimal: %4")
+         .arg(one, two, three, four);
    }
 
    mText += QString("</pre>");
    /*
       QString("");
-      ("Last modifed by<br>line: <b>%6</b>").arg(QString("N/A"));*/
+      ("Last modifed by<br>line: <b>%1</b>").arg(QString("N/A"));*/
     //"<ul style=\"list-style: none;\">"
          /*"<li "STYLE_LEFT">Hex</li><li "STYLE_RIGHT">%2</li>"
          "<li "STYLE_LEFT">Binary</li><li "STYLE_RIGHT">%3</li>"
@@ -281,7 +328,10 @@ void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted) {
    if (!alreadyAdjusted)
       p2 = mapTo(m_parent, p);
 
-   m_parent->showExtended(p2, mText);
+   if (v == NULL)
+      v = this;
+   
+   m_parent->showExtended(p2, mText, v);
 }
 
 ValueLabel *IDLabel::getValueLabel() {
@@ -299,8 +349,9 @@ void ValueLabel::handleClick(QMouseEvent *e) {
    m_idLabel->handleClick(e);
 }
 
-void ValueLabel::showExtended(const QPoint &p, bool alreadyAdjusted) {
-   m_idLabel->showExtended(mapTo(m_parent, p), true || alreadyAdjusted);
+void ValueLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel *v) {
+   v = NULL;
+   m_idLabel->showExtended(p, true || alreadyAdjusted, this);
 }
 
 void ValueLabel::setValue(unsigned int newValue) {
@@ -311,7 +362,7 @@ QString getNoInBase(unsigned int no, int base) {
    const int bases[] = { 16, 2, 10, 10 };
    int base2 = bases[base];
    
-   if (m_displayType == D_SIGNED_DECIMAL)
+   if (base == D_SIGNED_DECIMAL)
       return QString::number((signed int)no, base2);
    
    return QString::number(no, base2);
@@ -379,13 +430,16 @@ void ExtendedView::hide() {
    if (STATUS_BAR != NULL)
       STATUS_BAR->clearMessage();
    
+   m_orig = NULL;
    QLabel::hide();
 }
 
-void ExtendedView::show(const QString &text, const QString &statusText, const QPoint &pos) {
+void ExtendedView::show(const QString &text, const QString &statusText, 
+      const QPoint &pos, RegisterLabel *orig) {
 /*   if (isVisible())
       QLabel::hide();*/
 
+   m_orig = orig;
    setText(text);
    STATUS_BAR->showMessage(statusText);
    
@@ -417,8 +471,13 @@ RegisterOptionsPane::RegisterOptionsPane(RegisterView *parent)
 {
    QWidget *p = new QWidget();
    QGridLayout *l = new QGridLayout();
-   
-   l->addWidget(new QLabel("Register Display:"), 0, 0, Qt::AlignLeft);
+   QLabel *label;
+   QFont f(font());
+   f.setPointSizeF(11.2f);
+   setFont(f);
+
+   l->addWidget((label = new QLabel("Register Display:")), 0, 0, Qt::AlignLeft);
+   label->setToolTip("Change the way register names are displayed.");
    QComboBox *b = new QComboBox();
    b->addItem(QString("Numbers ($r0, $r1..)"));
    b->addItem(QString("Aliases ($v0, $t0..)"));
@@ -427,7 +486,8 @@ RegisterOptionsPane::RegisterOptionsPane(RegisterView *parent)
    
    l->addWidget(b, 1, 0, Qt::AlignRight);
    
-   l->addWidget(new QLabel("Default Base:"), 2, 0, Qt::AlignLeft);
+   l->addWidget((label = new QLabel("Default Base:")), 2, 0, Qt::AlignLeft);
+   label->setToolTip("Sets the base in which register values will be displayed.");
    b = new QComboBox();
    b->addItem(QString("Hex"));
    b->addItem(QString("Binary"));
@@ -452,14 +512,12 @@ RegisterOptionsPane::RegisterOptionsPane(RegisterView *parent)
 void RegisterOptionsPane::registerDisplayTypeChanged(int val) {
    m_registerDisplayType = (IDDisplay)val;
 
-   m_parent->displayTypeChanged();
-   // TODO: update all labels
+   m_parent->m_registerPane->displayTypeChanged();
 }
 
 void RegisterOptionsPane::defaultBaseChanged(int val) {
    m_displayType = (ValueDisplay)val;
-   
-   m_parent->displayTypeChanged();
-   // TODO: update all labels
+
+   m_parent->m_registerPane->displayTypeChanged();
 }
 

@@ -46,7 +46,8 @@ class EditorPane : public QTabWidget {
       // May return false if user chooses to cancel the operation
       bool closeAllTabs(TextEditor *ignore = NULL);
       QMessageBox::StandardButton saveAllFiles(bool yesToAll = false, TextEditor *ignore = NULL);
-   
+      
+      QFont *font() { return m_font; }
 
    signals:
       void isModifiable(bool); // sent out upon read-only change

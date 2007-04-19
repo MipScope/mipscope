@@ -8,7 +8,7 @@
 #include "EditorPane.H"
 #include "LineNoPane.H"
 #include "OutputConsole.H"
-#include <string.h>
+#include "RegisterView.H"
 #include <QtGui>
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
@@ -16,7 +16,6 @@ Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL),
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(M_NORMAL)
 {
    QApplication::setStyle(new QPlastiqueStyle());
-   resize(800, 720);
    
    if (argc > 1) {
       int i = 1;
@@ -53,7 +52,13 @@ void Gui::setupGui() {
    setupActions();
    setCentralWidget(m_lineNoPane);
    setupStatusBar();
+   resize(800, 720);
+   
+/*   QRect geom = m_output->geometry();
+   geom.setSize(m_output->minimumSize());
+   m_output->setGeometry(geom);*/
 
+   loadSettings();
 }
 
 void Gui::setupActions() {
@@ -89,6 +94,7 @@ QAction *Gui::addAction(QToolBar *tb, QMenu *menu, QAction *a, const QObject *re
 void Gui::setupFileActions() {
    QToolBar *tb = new QToolBar(this);
    tb->setWindowTitle(tr("File"));
+   tb->setObjectName(tr("File"));
    addToolBar(tb);
    
    m_fileMenu = menuBar()->addMenu(tr("&File"));
@@ -121,6 +127,7 @@ void Gui::setupFileActions() {
 void Gui::setupEditActions() {
    QToolBar *tb = new QToolBar(this);
    tb->setWindowTitle(tr("Edit"));
+   tb->setObjectName(tr("Edit"));
    addToolBar(tb);
    
    m_editMenu = menuBar()->addMenu(tr("&Edit"));
@@ -164,6 +171,7 @@ QMenu *Gui::getEditMenu() {
 void Gui::setupDebugActions() {
    QToolBar *tb = new QToolBar(this);
    tb->setWindowTitle(tr("Debugger"));
+   tb->setObjectName(tr("Debugger"));
    addToolBar(tb);
    
    m_debugMenu = menuBar()->addMenu(tr("&Debug"));
@@ -218,7 +226,13 @@ void Gui::setupDockWidgets() {
    m_viewOutputAction = m_output->toggleViewAction();
    m_viewOutputAction->setIcon(QIcon(ICONS"/viewOutput.png"));
    menu->addAction(m_viewOutputAction);
-
+   
+   m_registerView = new RegisterView(this, m_editorPane);
+   addDockWidget(Qt::RightDockWidgetArea, m_registerView);
+   
+   m_viewRegistersAction = m_registerView->toggleViewAction();
+   m_viewRegistersAction->setIcon(QIcon(ICONS"/viewRegisters.png"));
+   menu->addAction(m_viewRegistersAction);
    
 }
 
@@ -238,6 +252,8 @@ void Gui::fileOpenAction() {
 }
 
 void Gui::fileExitAction() {
+   saveSettings();
+   
    if (m_editorPane->closeAllTabs())
       qApp->quit();
 }
@@ -261,9 +277,12 @@ void Gui::filePrintAction() {
 
 //@overridden
 void Gui::closeEvent(QCloseEvent *event) {
-   if (m_editorPane->closeAllTabs())
+   if (m_editorPane->closeAllTabs()) {
+      saveSettings();
+
       event->accept();
-   else event->ignore();
+   } else // User cancelled close event
+      event->ignore();
 }
 
 const char *ABOUT_TEXT = 
@@ -309,7 +328,70 @@ void Gui::clipboardModified() {
 
    m_editPasteAction->setEnabled(enabled);
 }
+
+void Gui::saveSettings() {
+   QFile file(SETTINGS_FILE);
+
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+      cerr << PROJECT_NAME": error saving workspace settings\n";
+      cerr << file.errorString().toStdString() << endl;
+
+      return;
+   }
+
+   QByteArray geoData = saveGeometry();
+   QByteArray layoutData = saveState();
+
+   bool ok = file.putChar((uchar)geoData.size());
+   if (ok)
+      ok = (file.write(geoData) == geoData.size());
+   if (ok)
+      ok = (file.write(layoutData) == layoutData.size());
+
+   if (!ok) {
+      cerr << PROJECT_NAME": error saving workspace settings\n";
+      cerr << file.errorString().toStdString() << endl;
+   }
+   
+   file.close();
+}
+
+void Gui::loadSettings() {
+   QFile file(SETTINGS_FILE);
+   
+   if (!file.open(QIODevice::ReadOnly)) {
+      //cerr << PROJECT_NAME": error loading workspace settings\n";
+      //cerr << file.errorString().toStdString() << endl;
       
+      return;
+   }
+   
+   uchar geoSize;
+   QByteArray geoData = saveGeometry();
+   QByteArray layoutData = saveState();
+   
+   bool ok = file.getChar((char*)&geoSize);
+   if (ok) {
+      geoData = file.read(geoSize);
+      ok = (geoData.size() == geoSize);
+   }
+   if (ok) {
+      layoutData = file.readAll();
+      ok = (layoutData.size() > 0);
+   }
+
+   if (ok)
+      ok = restoreGeometry(geoData);
+   if (ok)
+     ok = restoreState(layoutData);
+ 
+   if (!ok) {
+      cerr << PROJECT_NAME": error saving workspace settings\n";
+      cerr << file.errorString().toStdString() << endl;
+   }
+
+   file.close();
+}
 
 // ------------------
 // DEBUGGER - RELATED

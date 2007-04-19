@@ -11,6 +11,8 @@
 #include <QKeySequence>
 #include "Utilities.H"
 
+#define SETTINGS_FILE      "."PROJECT_NAME".cfg"
+
 class QMenu;
 class QAction;
 class EditorPane;
@@ -19,6 +21,7 @@ class QAction;
 class QToolBar;
 class LineNoPane;
 class OutputConsole;
+class RegisterView;
 
 class Gui : public QMainWindow {
    
@@ -51,7 +54,7 @@ class Gui : public QMainWindow {
       void debugStepAction();
       void debugBStepAction();
       void debugRestartAction();
-
+      
       
    protected:
       // MenuBar
@@ -78,13 +81,15 @@ class Gui : public QMainWindow {
               *m_debugRestartAction, 
               
               // View-Related
-              *m_viewOutputAction;
+              *m_viewOutputAction, 
+              *m_viewRegistersAction;
       
-      // Central EditorPane
+      // Central EditorPane and Dockable Widgets
       EditorPane *m_editorPane;
       LineNoPane *m_lineNoPane;
       QStatusBar *m_statusBar;
       OutputConsole *m_output;
+      RegisterView *m_registerView;
       
       //@overridden
       void closeEvent(QCloseEvent *event);
@@ -104,8 +109,10 @@ class Gui : public QMainWindow {
       void setupDebugActions();
       void setupOptionsMenu();
       void setupDockWidgets();
-
+      
       void updateDebugActions();
+      void saveSettings();
+      void loadSettings();
 };
 
 #endif // __QGUI_H__

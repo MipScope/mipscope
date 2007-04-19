@@ -12,6 +12,7 @@
 class QTextEdit;
 class Gui;
 class EditorPane;
+class QFont;
 
 class OutputConsole : public QDockWidget {
    
@@ -19,11 +20,20 @@ class OutputConsole : public QDockWidget {
    
    public:
       OutputConsole(Gui *parent, EditorPane *editorPane);
-
+      
+      // Adds a new string to the output console's display
       void push(const QString &newOutput);
+      
+      // Removes (undoes) the last push of new output
       void pop();
-      void flush();
 
+   private slots:
+      // Clears the console's display
+      void flush();
+      
+      // Keeps the console's font in sync w/ that of the EditorPane
+      void fontChanged(const QFont &newFont);
+      
    protected:
       Gui *m_gui;
       EditorPane *m_editorPane;
@@ -31,6 +41,7 @@ class OutputConsole : public QDockWidget {
       
       QVector<QString> m_strings;
       
+      // Updates the QTextEdit used as a display after a change to m_strings
       void updateDisplay();
 };
 

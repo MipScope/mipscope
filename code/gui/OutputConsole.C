@@ -15,11 +15,15 @@
 OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
    : QDockWidget(tr("Output Console"), gui), m_gui(gui), m_editorPane(editorPane)
 {
+   setObjectName(tr("OutputConsole"));
+
    m_display = new QTextEdit(this);
    m_display->setReadOnly(true);
    m_display->setAcceptRichText(false);
+   m_display->setFont(*m_editorPane->font());
+   connect(m_editorPane, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    
-   m_display->setPlainText("\nText text.\nBah!\n");
+   m_display->setPlainText("\nExample output text.\nBah!\n");
    setWidget(m_display);
 }
 
@@ -39,6 +43,10 @@ void OutputConsole::flush() {
    m_strings.clear();
 
    updateDisplay();
+}
+
+void OutputConsole::fontChanged(const QFont &newFont) {
+   m_display->setFont(newFont);
 }
 
 void OutputConsole::updateDisplay() {

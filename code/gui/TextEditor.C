@@ -134,7 +134,6 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
 
 void TextEditor::toggleComment() {
 //   cerr << "CTRL+D pressed\n";
-   
    extern const char *CommentSyntax;
 
    QRegExp comment(QString("\\s?") + QString(CommentSyntax));
@@ -142,32 +141,36 @@ void TextEditor::toggleComment() {
 
    // block toggle comment
    if (c.hasSelection()) {
-      int start = c.selectionStart(), end = c.selectionEnd(), i = start;
+      int start = c.selectionStart(), end = c.selectionEnd(), prevPos, pos = start;
       QTextCursor c2 = textCursor();
       c2.setPosition(end);
       if (c2.atBlockStart())
          end += 2;
       
       bool inComment = true;
-      c.setPosition(i);
+      c.setPosition(start);;
       c.movePosition(QTextCursor::StartOfLine);
       
       do {
          
          if (!comment.exactMatch(c.block().text())) { // line is not already commented
-            //cerr << "Line no: " << lineNumber(c) << ";  " << c.position() << " vs " << end << endl;
+//            cerr << "Line no: " << lineNumber(c) << ";  " << c.position() << " vs " << end << endl;
             
             inComment = false;
             break;
          }
-
+         
          c.movePosition(QTextCursor::NextBlock);
          c.movePosition(QTextCursor::StartOfLine);
-      } while(c.position() <= end);
+         prevPos = pos;
+         pos = c.position();
+      } while(pos <= end && prevPos < pos);
       
+//      cerr << "done checking: " << inComment << endl;
+
       c.beginEditBlock();
-      i = start;
-      c.setPosition(i);
+      pos = start;
+      c.setPosition(pos);
       c.movePosition(QTextCursor::StartOfLine);
       if (inComment) { // all lines are in comment
          do {
@@ -175,12 +178,13 @@ void TextEditor::toggleComment() {
 
             if (c.selectedText() == QString("#"))
                c.removeSelectedText();
-
+            
             c.movePosition(QTextCursor::NextBlock);
             c.movePosition(QTextCursor::StartOfLine);
-         } while(c.position() <= end);
+         } while(pos <= --end);
 
       } else { // not all lines are in comment
+         int lastLine = noLines();
          
          do {
 //            int pos = c.position();
@@ -189,12 +193,17 @@ void TextEditor::toggleComment() {
             //if (c.selectedText().remove(QChar(' ')) != "\n")
             //   c.setPosition(pos);
             c.insertText("#");
+            
+            if (c.blockNumber() < lastLine) {
+               c.movePosition(QTextCursor::NextBlock);
+               c.movePosition(QTextCursor::StartOfLine);
+            } else break;
+            prevPos = pos;
+            pos = c.position();
+//            cerr << "\tLooping " << "pos " << c.position() << " end " << end << endl;
+         } while(pos <= ++end && prevPos < pos);
 
-            c.movePosition(QTextCursor::NextBlock);
-            c.movePosition(QTextCursor::StartOfLine);
-         } while(c.position() <= end);
-
-         //cerr << "pos " << c.position() << " end " << end << endl;
+//         cerr << "pos " << c.position() << " end " << end << endl;
       }
 
       c.endEditBlock();
@@ -202,7 +211,6 @@ void TextEditor::toggleComment() {
       c.movePosition(QTextCursor::StartOfLine);
 
       if (comment.exactMatch(c.block().text())) { // line is already commented
-
          c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
 
          if (c.selectedText() == QString("#"))
@@ -227,6 +235,7 @@ bool TextEditor::openFile(QFile *file) {
       // hack to get this shit to display right.. fuck!
       QTimer::singleShot(250, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(750, m_parent, SLOT(contentChangedProxy()));
+      QTimer::singleShot(1300, m_parent, SLOT(contentChangedProxy()));
    
 //      setUpdatesEnabled(true);
    } // else display error

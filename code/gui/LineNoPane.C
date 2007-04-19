@@ -140,8 +140,6 @@ void LineNoDisplay::editorScrolled(TextEditor *active, int val) {
    active = NULL;
    val = 0;
    updateLineNumbers();
-   
-   
 }
 
 // called whenever active editor is switched or 
@@ -180,7 +178,7 @@ void LineNoDisplay::updateLineNumbers() {
    QRect bounds;
    rect = active->cursorRect(firstVisible);
    
-   if (firstLineNo >= lastLineNo || lastLineNo < 50) {
+   if (firstLineNo >= lastLineNo/* || lastLineNo < 50*/) {
       lastLineNo = firstLineNo + 118; // hack, yippee :)
       rect.adjust(0, 2, 0, 2);
    }
@@ -193,8 +191,9 @@ void LineNoDisplay::updateLineNumbers() {
    QLabel maxSized(QString("%1").arg(max));
    maxSized.setFont(*m_editorPane->m_font);
    int width = maxSized.sizeHint().width();// + m_breakPoint->width();
-   
-//   cerr << max << endl;
+   if (width < m_breakPoint->width() + 2)
+      width = m_breakPoint->width() + 2;
+   //cerr << max << endl;
    
    int i;
    for(i = 0; i < lastLineNo - firstLineNo + 1; i++) {

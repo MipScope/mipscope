@@ -19,7 +19,7 @@ class Statement : public QObject {
 		
 	private:
 		static QHash<QString, StatementInfo>* s_statementInfoHash;
-}
+};
 
 /*
 class Add : public Statement {

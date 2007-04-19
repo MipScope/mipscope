@@ -20,5 +20,5 @@ Statement* Add::factory(QString line, ParseNode* before) {
 Add::Add(REGISTER src1, REGISTER src2, REGISTER dest) {	
 
 }
-void Add::execute(State* state) {
+void Add::execute(State* state) const {
 }

@@ -49,6 +49,6 @@ class DebuggerObserver : public QOBject {
 		ParseNode* m_pcPrevious;
 		ParseNode* m_pcCurrent;
 		
-}
+};
 
 #endif /*DEBUGGEROBSERVER_H_*/

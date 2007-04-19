@@ -1,11 +1,17 @@
 #ifndef TYPEDEFS_H_
 #define TYPEDEFS_H_
 
-typedef TIMESTAMP unsigned int;
-typedef ADDRESS unsigned int;
-typedef REGISTER unsigned int;
-typedef WORD uint32;
-typedef BYTE unsigned char;
-typedef LINENUMBER unsigned int;
+#include <QString>
+
+#include "Statement.H"
+#include "ParseNode.H"
+
+typedef int TIMESTAMP;
+typedef unsigned int ADDRESS;
+typedef unsigned int REGISTER;
+typedef unsigned int WORD;
+typedef unsigned char BYTE;
+typedef Statement*(*STATEMENT_FACTORY)(const QString&, ParseNode*);
+typedef bool(*STATEMENT_IS_VALID)(const QString&, ParseNode*);  
 
 #endif /*TYPEDEFS_H_*/

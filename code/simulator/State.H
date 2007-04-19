@@ -1,13 +1,15 @@
 #ifndef STATE_H_
 #define STATE_H_
 
+#include <QObject>
+
 #include "typedefs.H"
 
 class State : public QObject {
 	Q_OBJECT
 	
 	public:
-		State(unsigned int memorySize);		
+		State(ADDRESS memorySize);		
 		
 		/* updates the state's current caller, increments timestamp, returns
 		 * new timestamp. */
@@ -27,6 +29,10 @@ class State : public QObject {
 		void setPC(ParseNode* value);
 		ParseNode* getPC(void);
 		
+		// undo
+		void undoUntilTimestamp(TIMESTAMP timestamp);
+		TIMESTAMP getCurrentTimestamp(void);
+		
 	public signals:
 		
 		/* this is emitted whenever a word in memory is changed, even if only
@@ -38,12 +44,17 @@ class State : public QObject {
 		void pcChanged(ParseNode* who, ParseNode* previous, ParseNode* current);
 		
 	private:
-		Memory* m_memory;
-		Registers* m_registers;
+		char* m_memory;
+		ADDRESS m_size;
+		
+		WORD* m_registers;
+		
 		ParseNode* m_pc;
 		ParseNode* m_caller;
 		
-}
+		TIMESTAMP m_currentTimestamp;
+		
+};
 
 
 

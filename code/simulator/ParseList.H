@@ -1,24 +1,24 @@
 #ifndef PARSELIST_H_
 #define PARSELIST_H_
 
+#include <QObject>
+
 #include "typedefs.H"
 
-struct ParseNode {
-	LINENUMBER line;
-	Statement* statement;
-	TIMESTAMP first_executed;
-		
-}
+#include "../gui/TextEditor.H"
 
-class ParseList : public QOBject {
+class ParseList : public QObject {
 	
-	Q_OJBECT
+	Q_OBJECT
 	
 	public:
-		ParseList(void);
+		ParseList(TextEditor* textEditor);
 		
+		ParseNode* getFirst(void);				
 		
 	private:
-}
+		TextEditor* m_textEditor;
+	
+};
 
 #endif /*PARSELIST_H_*/

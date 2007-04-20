@@ -54,6 +54,7 @@ class Gui : public QMainWindow {
       void debugStepAction();
       void debugBStepAction();
       void debugRestartAction();
+      void debugRunXSpimAction();
       
       
    protected:
@@ -79,6 +80,7 @@ class Gui : public QMainWindow {
               *m_debugStepAction, 
               *m_debugBStepAction, // Step backwards
               *m_debugRestartAction, 
+              *m_debugRunXSpimAction, 
               
               // View-Related
               *m_viewOutputAction, 

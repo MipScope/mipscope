@@ -13,6 +13,7 @@
 #define NO_REGISTERS    (32 + 3)
 
 extern const char *const registerAliases[];
+extern QPixmap *watchPoint;
 
 class Gui;
 class EditorPane;
@@ -22,6 +23,7 @@ class IDLabel;
 class QTabWidget;
 class RegisterPane;
 class QTime;
+class QPixmap;
 class ExtendedView;
 class RegisterOptionsPane;
 extern QString getNoInBase(unsigned int no, int base);
@@ -62,12 +64,14 @@ class RegisterPane : public QWidget {
    public:
       friend class RegisterView;
       friend class RegisterLabel;
+      friend class IDLabel;
       
       RegisterPane(RegisterView *regView);
       
       void showExtended(const QPoint &pos, const QString &text, RegisterLabel *orig);
       void reset();
       void testMouseMove(QMouseEvent *e, const QPoint &pos);
+      void testMousePress(QMouseEvent *e, const QPoint &pos);
    
       void displayTypeChanged();
 
@@ -76,6 +80,7 @@ class RegisterPane : public QWidget {
       // View tab contains a 9x12 QGridLayout of RegViewLabels (generic)
       IDLabel *m_registerLabels[NO_REGISTERS];
       QRect m_bounds;
+      QWidget *m_widget;
       ExtendedView *m_extended;
       
       // @override
@@ -95,6 +100,7 @@ class RegisterLabel : public QLabel {
       virtual void handleClick(QMouseEvent *e) = 0;
       virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL) = 0;
       virtual void testMouseMove(QMouseEvent *e, const QPoint &parentPos);
+      void mousePressed(QMouseEvent *e, const QPoint &parentPos);
       
    protected slots:
       void checkForExtended();
@@ -130,6 +136,7 @@ class IDLabel : public RegisterLabel {
       void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
       void setValue(int value);
       
+      QPixmap merge(const QPixmap *pix, const QString &txt);
       ValueLabel *getValueLabel();
 
    public slots:
@@ -175,7 +182,7 @@ class ExtendedView : public QLabel {
    Q_OBJECT
    
    public:
-      ExtendedView(RegisterPane *parent);
+      ExtendedView(RegisterPane *regPane, QWidget *parent);
        
       void show(const QString &text, const QString &statusText, const QPoint &pos, RegisterLabel *orig);
 
@@ -189,7 +196,8 @@ class ExtendedView : public QLabel {
       void hide();
 
    protected:
-      RegisterPane *m_parent;
+      RegisterPane *m_registerPane;
+      QWidget *m_parent;
 };
 
 class RegisterOptionsPane : public QWidget {

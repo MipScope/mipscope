@@ -38,6 +38,7 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
    // Default display types (unsigned base 10, and register aliases)
    m_displayType = D_UNSIGNED_DECIMAL;
    m_registerDisplayType = D_ALIAS;
+   watchPoint = new QPixmap(IMAGES"/watchPoint.png");
    
    // create a new qtabbedwidget holding View/Options, respectively
    m_tabWidget = new QTabWidget(this);
@@ -51,9 +52,9 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
 }
 
 RegisterPane::RegisterPane(RegisterView *regView) : QWidget(), 
-   m_parent(regView), m_extended(new ExtendedView(this))
+   m_parent(regView), m_widget(new QWidget(this)), 
+   m_extended(new ExtendedView(this, m_widget))
 {
-   QWidget *m_widget = new QWidget(this);
    QGridLayout *l = new QGridLayout();
 
    int max = 32;// + 3;
@@ -89,10 +90,10 @@ RegisterPane::RegisterPane(RegisterView *regView) : QWidget(),
       l->setRowStretch(i, 1);
    
    l->setSpacing(0);
-   l->setMargin(0);
    m_widget->setLayout(l);
    
    l = new QGridLayout();
+   l->setMargin(0);
    l->addWidget(m_widget, 0, 0);//, Qt::AlignCenter);
    setLayout(l);
 
@@ -139,6 +140,21 @@ void RegisterPane::testMouseMove(QMouseEvent *e, const QPoint &pos) {
    }
 }
 
+void RegisterPane::testMousePress(QMouseEvent *e, const QPoint &pos) {
+   for(int i = NO_REGISTERS; i--;) {
+      if (m_registerLabels[i]->geometry().contains(pos)) {
+         m_registerLabels[i]->mousePressed(e, pos);
+         break;
+      }
+      ValueLabel *v = m_registerLabels[i]->getValueLabel();
+
+      if (v->geometry().contains(pos)) {
+         v->mousePressed(e, pos);
+         break;
+      }
+   }
+}
+
 void RegisterLabel::testMouseMove(QMouseEvent *e, const QPoint &parentPos) {
    m_lastPos = parentPos;
 
@@ -147,6 +163,10 @@ void RegisterLabel::testMouseMove(QMouseEvent *e, const QPoint &parentPos) {
    e->accept();
    checkForExtended();
 //   QTimer::singleShot(REGISTER_HOVER_DELAY + 1, this, SLOT(checkForExtended()));
+}
+
+void RegisterLabel::mousePressed(QMouseEvent *e, const QPoint &parentPos) {
+   handleClick(e);
 }
 
 // Updates display of modified register
@@ -212,7 +232,7 @@ void RegisterLabel::checkForExtended() {
 }
 
 void RegisterLabel::mouseMoveEvent(QMouseEvent *e) {
-   testMouseMove(e, mapTo(m_parent, e->pos()));
+   testMouseMove(e, mapToParent(e->pos()));
 }
 
 void RegisterLabel::enterEvent(QEvent *e) {
@@ -257,11 +277,14 @@ void IDLabel::setValue(int value) {
 
 void IDLabel::updateDisplay() {
    QString text = getRegisterText(m_register, m_registerDisplayType);
-   if (m_register == 9)
+   if (m_register == 9 && m_registerDisplayType != D_ALIAS)
       text += QString(": ");
    else text += QString(":");
-   setText(text);
 
+   if (m_watchPoint)
+      setPixmap(merge(watchPoint, text));
+   else setText(text);
+   
    m_valueLabel->setValue(m_value);
 }
 
@@ -272,18 +295,58 @@ QString getRegisterText(int reg, int displayType) {
    return QString("r%1").arg(reg);
 }
 
+QPixmap IDLabel::merge(const QPixmap *pix, const QString &txt)
+{
+   QPainter p;
+   QPixmap temp(1, 1);
+   p.begin(&temp);
+   p.setFont(font());
+ 
+   int strWidth = p.fontMetrics().width( txt );
+   int strHeight = p.fontMetrics().height();
+
+   p.end();
+
+   int pixWidth = pix->width(), pixExtra = (pixWidth << 1) / 3;
+   int pixHeight = pix->height();
+   int maxHeight = (strHeight > pixHeight ? strHeight + 2 : pixHeight);
+   
+   QPixmap res(strWidth + pixExtra, maxHeight);
+//   res.fill(Qt::white);
+   res.fill(QColor(253, 230, 153, 255));
+   
+   p.begin(&res);
+   p.setFont(font());
+   p.drawText(QRect( 0, 2, strWidth, strHeight), 0, txt);
+   p.drawPixmap(strWidth - (pixWidth - pixExtra), 0, *pix);
+   p.end();
+   
+   return res;
+}
+
+QPixmap *watchPoint = NULL;
 void IDLabel::handleClick(QMouseEvent *e) {
    m_watchPoint = !m_watchPoint;
    
    e->accept();
-   // TODO:  actually update icon oder etwas
-   
-   
+   updateDisplay();
 
-
+   // TODO: actually set watchpoint in debugger
 }
 
 void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel *v) {
+   QPoint p2 = p;
+   if (!alreadyAdjusted)
+      p2 = mapToParent(p);
+
+   if (v == NULL)
+      v = this;
+
+/*   if (m_parent->m_extended->m_orig == this || m_parent->m_extended->m_orig == v) {
+      m_parent->m_extended->move(p2);
+      return;
+   }*/
+
 //#define STYLE_LEFT   "style=\"clear: both;float: left; width: 40%;\""
 //#define STYLE_RIGHT  "style=\"float: left;width: 60%;padding-left: 2px;" 
    //
@@ -323,13 +386,6 @@ void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel 
          "<li "STYLE_LEFT">Decimal</li><li "STYLE_RIGHT">%4</li>"
          "<li "STYLE_LEFT">Unsigned</li><li "STYLE_RIGHT">%5</li>"*/
       //"</ul>"
-   
-   QPoint p2 = p;
-   if (!alreadyAdjusted)
-      p2 = mapTo(m_parent, p);
-
-   if (v == NULL)
-      v = this;
    
    m_parent->showExtended(p2, mText, v);
 }
@@ -392,7 +448,8 @@ QString getNoInBase(unsigned int no, int base) {
       QSize m_size;
 };*/
 
-ExtendedView::ExtendedView(RegisterPane *parent) : QLabel(parent), m_parent(parent)
+ExtendedView::ExtendedView(RegisterPane *regPane, QWidget *parent) 
+   : QLabel(parent), m_registerPane(regPane), m_parent(parent)
 {
    QPalette pal = palette();
    QColor c(255, 255, 215); // light yellow
@@ -418,9 +475,10 @@ ExtendedView::ExtendedView(RegisterPane *parent) : QLabel(parent), m_parent(pare
 }
 
 void ExtendedView::mousePressEvent(QMouseEvent *e) {
-   this->hide();
+//   this->hide();
    
-   e->accept();
+   e->ignore();
+   m_registerPane->testMousePress(e, mapTo(m_parent, e->pos()));
 }
 
 void ExtendedView::hide() {
@@ -462,7 +520,7 @@ void ExtendedView::show(const QString &text, const QString &statusText,
 
 void ExtendedView::mouseMoveEvent(QMouseEvent *e) {
    e->ignore();
-   m_parent->testMouseMove(e, mapTo(m_parent, e->pos()));
+   m_registerPane->testMouseMove(e, mapTo(m_parent, e->pos()));
 }
 
 IDDisplay m_registerDisplayType;

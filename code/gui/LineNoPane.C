@@ -57,7 +57,7 @@ LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), 
 {
    setFont(*m_editorPane->m_font);
    if (m_breakPoint == NULL)
-      m_breakPoint = new QPixmap(QIcon(IMAGES"/breakPoint.png").pixmap(16, 16));
+      m_breakPoint = new QPixmap(IMAGES"/breakPoint.png");
    
    setMargin(0);
    setWordWrap(false);

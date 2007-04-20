@@ -190,18 +190,10 @@ void Gui::setupDebugActions() {
    m_debugBStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugBStep.png"), tr("&Back"), this), this, SLOT(debugBStepAction()), QKeySequence(), false);
    m_debugStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStep.png"), tr("&Step"), this), this, SLOT(debugStepAction()), QKeySequence(), false);
  
-   
-   // TODO!  Add appropriate signals/slots
-   
-   
+   menu->addSeparator();
 
-
-   
+   m_debugRunXSpimAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugRunXSpim.png"), tr("Open in xspim"), this), this, SLOT(debugRunXSpimAction()), QKeySequence(QString("CTRL+F9")));
 }
-
-
-
-
 
 void Gui::setupOptionsMenu() {
    QMenu *menu = menuBar()->addMenu(tr("&Options"));
@@ -462,6 +454,44 @@ void Gui::debugRestartAction() {
    // TODO
    m_mode = M_RUNNING;
    updateDebugActions();
+}
+
+void Gui::debugRunXSpimAction() {
+   QString fileName;
+   bool load = true;
+   
+   if (m_editorPane->m_activeEditor->isModified()) {
+      QMessageBox::StandardButton ret = m_editorPane->m_activeEditor->promptUnsavedChanges();
+
+      if (ret == QMessageBox::Cancel)
+         return;
+      if (ret == QMessageBox::No) {
+         load = false;
+         
+         // TODO!!!
+      }
+   }
+   
+   if (load)
+      fileName = m_editorPane->m_activeEditor->file()->fileName();
+   
+   if (fileName == "" || fileName.isEmpty())
+      return;
+   
+   switch(fork()) {
+      case 0: // child
+         {
+         char *filename = fileName.toAscii().data();
+         cerr << "xspim -file " << filename << endl;
+         execl("/course/cs031/pro/spim/xspim", "xspim", "-file", filename, NULL);
+         }
+         break;
+      case -1: // error
+         break;
+      default: // parent
+         
+         break;
+   }
 }
 
 

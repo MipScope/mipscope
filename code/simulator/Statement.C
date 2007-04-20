@@ -3,7 +3,10 @@
 
 Statement::Statement(void) {}
 
-static QHash<QString, StatementInfo>* Statement::getStatementInfoHash(void) {
+QHash<QString, StatementInfo>* Statement::s_statementInfoHash = NULL;
+
+// static
+QHash<QString, StatementInfo>* Statement::getStatementInfoHash(void) {
 	
 	if (s_statementInfoHash == NULL) {
 		s_statementInfoHash = new QHash<QString, StatementInfo>();

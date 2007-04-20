@@ -5,7 +5,7 @@
 
 #include "typedefs.H"
 
-#include "../gui/TextEditor.H"
+class TextEditor;
 
 class ParseList : public QObject {
 	

@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QHash>
 
+class StatementInfo;
+
 #include "State.H"
 #include "StatementInfo.H"
 
@@ -13,6 +15,7 @@ class Statement : public QObject {
 	
 	public:
 		Statement(void);
+		
 		static QHash<QString, StatementInfo>* getStatementInfoHash(void);
 		
 		virtual void execute(State* state) const = 0;

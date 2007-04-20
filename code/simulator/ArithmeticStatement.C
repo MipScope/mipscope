@@ -13,7 +13,7 @@ bool Add::isValid(QString line, ParseNode* before) {
 
 //static 
 Statement* Add::factory(QString line, ParseNode* before) {
-	return new Add(1, 2, 3);
+	return new Add(s1, s2, s3);
 }
 
 //constructor

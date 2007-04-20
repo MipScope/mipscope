@@ -2,6 +2,7 @@
 #define STATE_H_
 
 #include <QObject>
+#include <QVector>
 
 #include "typedefs.H"
 class ParseNode;
@@ -10,7 +11,7 @@ class State : public QObject {
 	Q_OBJECT
 	
 	public:
-		State(ADDRESS memorySize);		
+		State(ADDRESS memorySize = 1024);		
 		
 		/* updates the state's current caller, increments timestamp, returns
 		 * new timestamp. */
@@ -18,7 +19,7 @@ class State : public QObject {
 		
 		// memory
 		void setMemoryWord(ADDRESS address, WORD value);
-		void setMemoryByte(ADDRESS address, WORD value);
+		void setMemoryByte(ADDRESS address, BYTE value);
 		WORD getMemoryWord(ADDRESS address);
 		BYTE getMemoryByte(ADDRESS address);
 		
@@ -32,7 +33,7 @@ class State : public QObject {
 		
 		// undo
 		void undoUntilTimestamp(TIMESTAMP timestamp);
-//		TIMESTAMP getCurrentTimestamp(void);
+		TIMESTAMP getCurrentTimestamp(void);
 		
 	signals:
 		
@@ -45,10 +46,8 @@ class State : public QObject {
 		void pcChanged(ParseNode* who, ParseNode* previous, ParseNode* current);
 		
 	private:
-		char* m_memory;
-		ADDRESS m_size;
-		
-		WORD* m_registers;
+		QVector<char> m_memory;
+		QVector<WORD> m_registers;
 		
 		ParseNode* m_pc;
 		ParseNode* m_caller;

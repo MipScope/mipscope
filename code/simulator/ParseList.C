@@ -5,6 +5,7 @@
 #include "ParseList.H"
 #include "../gui/Gui.H"
 #include "../gui/TextEditor.H"
+#include "../gui/Utilities.H"
 
 ParseList::ParseList(TextEditor* textEditor) :
 	m_textEditor(textEditor) { }

@@ -23,6 +23,7 @@ enum REGISTER {	zero, at,
 	 			k0, k1,
 	 			gp, sp, fp, ra,
 	 			hi, lo, // users can't access these, maybe they don't belong here
+	 			pc,
 	 			register_count // dummy just to keep track of how many registers
 };
 

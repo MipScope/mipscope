@@ -319,15 +319,24 @@ void EditorPane::undo() {
    m_activeEditor->undo();
 }
 
-void EditorPane::redo(){
+void EditorPane::redo() {
    m_activeEditor->redo();
 }
 
-void EditorPane::toggleComment(){
+void EditorPane::toggleComment() {
    m_activeEditor->toggleComment();
 }
 
-void EditorPane::selectAll(){
+void EditorPane::gotoLine() {
+   int max = m_activeEditor->noLines();
+   bool okay = false;
+   
+   int lineNo = QInputDialog::getInteger(this, "Goto Line", "Line No:", 0, 0, max, 1, &okay);
+   if (okay)
+      m_activeEditor->gotoLine(lineNo);
+}
+
+void EditorPane::selectAll() {
    m_activeEditor->selectAll();
 }
 

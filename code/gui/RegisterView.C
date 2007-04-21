@@ -461,6 +461,10 @@ ExtendedView::ExtendedView(RegisterPane *regPane, QWidget *parent)
    
    setWordWrap(false);
    setAutoFillBackground(true);
+   setBackgroundRole(QPalette::Window);
+
+//   cerr << testAttribute(Qt::WA_NoMousePropagation) << endl;
+//   cerr << testAttribute(Qt::WA_NoSystemBackground) << endl;
    //setMargin(-1);
 
    setMouseTracking(false);
@@ -513,8 +517,10 @@ void ExtendedView::show(const QString &text, const QString &statusText,
       r.translate(0, container.bottom() - r.bottom());
    
    setGeometry(r);
+   if (isVisible())
+      update();
+   else QLabel::show();
 
-   QLabel::show();
    //connect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
 }
 

@@ -109,7 +109,16 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       m_syntaxTip->hide();
    } else if (key == Qt::Key_Escape) {
       m_syntaxTip->hide();
-   }
+   } /*else if (key == Qt::Key_Tab) {
+      QTextCursor c = textCursor();
+      c.deletePreviousChar();
+      c.insertText("   ");
+      setTextCursor(c);
+
+      e->accept();
+      return;
+      //insertPlainText("   ");
+   }*/
    /*else if (key == Qt::Key_Tab) {
       if (m_lastTab->elapsed() > 200) {
          m_lastTab->restart();
@@ -617,6 +626,22 @@ QTextBlock *TextEditor::getBlockForLine(int lineNo, QTextBlock *last) {
    //cerr << "\t" << c.position() << " normal exit from getBlockForLine(" << lineNo << ", " << last << ");\n";
    
    return new QTextBlock(c.block());
+}
+
+// Moves text cursor to given line, scrolling editor if necessary
+void TextEditor::gotoLine(int lineNo) {
+   int max = noLines();
+   if (lineNo > max) // cap to ensure lineNo is valid
+      lineNo = max;
+   else if (lineNo < 0)
+      lineNo = 0;
+   
+   QTextCursor c = textCursor();
+   QTextBlock *b = getBlockForLine(lineNo);
+   c.setPosition(b->position());
+   delete b;
+   setTextCursor(c);
+   ensureCursorVisible();
 }
 
 void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {

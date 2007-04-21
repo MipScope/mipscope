@@ -16,12 +16,12 @@ class Statement : public QObject {
 	public:
 		Statement(void);
 		
-		static QHash<QString, StatementInfo>* getStatementInfoHash(void);
+		static QHash<QString, StatementInfo*>* getStatementInfoHash(void);
 		
 		virtual void execute(State* state) const = 0;
 		
 	private:
-		static QHash<QString, StatementInfo>* s_statementInfoHash;
+		static QHash<QString, StatementInfo*>* s_statementInfoHash;
 };
 
 /*

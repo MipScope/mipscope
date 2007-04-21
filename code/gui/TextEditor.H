@@ -31,7 +31,10 @@ typedef LineToPosMap::const_iterator LineToMapIterator;
 extern bool Accepted(QMessageBox::StandardButton result);
 
 // userState() in QTextBlock
-enum BlockStates { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1 };
+enum BlockStates { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1, 
+   B_CURRENT_PC = 2, B_BREAKPOINT_CURRENT_PC = (B_BREAKPOINT | B_CURRENT_PC)
+};
+
 #define UNTITLED     "Untitled"
 
 class TextEditor : public QTextEdit {
@@ -63,11 +66,12 @@ class TextEditor : public QTextEdit {
       bool copyIsAvailable() const;
       bool undoIsAvailable() const;
       bool redoIsAvailable() const;
-
+      
       int lineNumber(const QTextBlock &b) const;
       int lineNumber(const QTextCursor &c) const;
       int currentLineNumber() const;
       int noLines() const; // returns the total number of lines
+      void gotoLine(int); // moves text cursor to given line, scrolling editor if necessary
       
       // Returns the QTextBlock pertaining to the given line number
       // Returns NULL if the given line number is invalid

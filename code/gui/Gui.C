@@ -148,6 +148,7 @@ void Gui::setupEditActions() {
 
    m_editSelectAllAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editSelectAll.png"), tr("&Select All"), this), m_editorPane, SLOT(selectAll()), QKeySequence(tr("CTRL+A")), true);
    m_editToggleCommentAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editToggleComment.png"), tr("&Toggle Comment"), this), m_editorPane, SLOT(toggleComment()), QKeySequence(tr("CTRL+D")), true);
+   m_editGotoLineAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editGotoLine.png"), tr("&Goto Line.."), this), m_editorPane, SLOT(gotoLine()), QKeySequence(tr("CTRL+G")), true);
    
    // Setup automatic enabling/disabling of different menu-items
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editUndoAction, SLOT(setEnabled(bool)));
@@ -191,8 +192,9 @@ void Gui::setupDebugActions() {
    m_debugStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStep.png"), tr("&Step"), this), this, SLOT(debugStepAction()), QKeySequence(), false);
  
    menu->addSeparator();
+   tb->addSeparator();
 
-   m_debugRunXSpimAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugRunXSpim.png"), tr("Open in xspim"), this), this, SLOT(debugRunXSpimAction()), QKeySequence(QString("CTRL+F9")));
+   m_debugRunXSpimAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRunXSpim.png"), tr("Open in xspim"), this), this, SLOT(debugRunXSpimAction()), QKeySequence(QString("CTRL+F9")));
 }
 
 void Gui::setupOptionsMenu() {
@@ -389,9 +391,16 @@ void Gui::loadSettings() {
 // DEBUGGER - RELATED
 // ------------------
 void Gui::debugRunAction() {
-   if (m_mode == M_NORMAL)
+   if (m_mode == M_NORMAL) {
+      if (m_editorPane->m_activeEditor->isModified()) {
+         QMessageBox::StandardButton ret = m_editorPane->m_activeEditor->promptUnsavedChanges();
+         
+         if (ret == QMessageBox::Cancel || ret == QMessageBox::No)
+            return;
+      }
+      
       m_mode = M_RUNNING;
-   else if (m_mode == M_PAUSED)
+   } else if (m_mode == M_PAUSED)
       m_mode = M_RUNNING;
    else m_mode = M_PAUSED;
 
@@ -456,6 +465,7 @@ void Gui::debugRestartAction() {
    updateDebugActions();
 }
 
+// Allow user to load file into a separate process running in xspim (cs31-version)
 void Gui::debugRunXSpimAction() {
    QString fileName;
    bool load = true;
@@ -468,28 +478,51 @@ void Gui::debugRunXSpimAction() {
       if (ret == QMessageBox::No) {
          load = false;
          
-         // TODO!!!
+         QFile file(".temp.s");
+         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            cerr << PROJECT_NAME": error creating temporary file to load into xspim\n" << "Save your file before running to avoid this error.\n";
+            cerr << file.errorString().toStdString() << endl;
+
+            return;
+         }
+
+         QTextStream t(&file);
+         t << m_editorPane->m_activeEditor->toPlainText();
+         file.close();
+
+         fileName = file.fileName();
       }
    }
    
-   if (load)
-      fileName = m_editorPane->m_activeEditor->file()->fileName();
+   if (load) {
+      QFile *file = m_editorPane->m_activeEditor->file();
+      if (file == NULL)
+         return;
+      
+      fileName = file->fileName();
+   }
    
    if (fileName == "" || fileName.isEmpty())
       return;
    
+   const char *path = "/course/cs031/pro/spim/xspim";
    switch(fork()) {
       case 0: // child
          {
          char *filename = fileName.toAscii().data();
-         cerr << "xspim -file " << filename << endl;
-         execl("/course/cs031/pro/spim/xspim", "xspim", "-file", filename, NULL);
+         cerr << path << " -file " << filename << endl;
+
+         execl(path, "xspim", "-file", filename, NULL);
+
+         cerr << "Error launching: " << path << endl;
+         exit(1);
          }
          break;
       case -1: // error
+         cerr << "Error launching: " << path << endl;
+         perror("fork()");
          break;
       default: // parent
-         
          break;
    }
 }

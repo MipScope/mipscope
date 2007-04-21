@@ -73,6 +73,7 @@ class Gui : public QMainWindow {
               *m_editPasteAction, 
               *m_editSelectAllAction, 
               *m_editToggleCommentAction, 
+              *m_editGotoLineAction, 
               
               // Debugger-Related
               *m_debugRunAction, 

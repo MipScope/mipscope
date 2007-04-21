@@ -75,6 +75,7 @@ class EditorPane : public QTabWidget {
       void paste();
       void undo();
       void redo();
+      void gotoLine();
       void undoAvailabilityModified(bool);
       void redoAvailabilityModified(bool);
       void copyAvailabilityModified(bool);

@@ -51,13 +51,17 @@ LineNoDisplay::LineNoDisplay(EditorPane *editorPane)
    updateLineNumbers();
 }
 
-QPixmap *m_breakPoint;
+QPixmap *m_breakPoint, *m_currentPC, *m_breakPointCurrentPC;
 
 LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), m_editorPane(editorPane), m_lineNo(-1), m_last(NULL)
 {
    setFont(*m_editorPane->m_font);
    if (m_breakPoint == NULL)
       m_breakPoint = new QPixmap(IMAGES"/breakPoint.png");
+   if (m_currentPC == NULL)
+      m_currentPC = new QPixmap(IMAGES"/currentPC.png");
+   if (m_breakPointCurrentPC == NULL)
+      m_breakPointCurrentPC = new QPixmap(IMAGES"/breakPointCurrentPC.png");
    
    setMargin(0);
    setWordWrap(false);
@@ -73,9 +77,13 @@ void LineNo::mouseReleaseEvent(QMouseEvent *e) {
       
       QTextBlock *b = m_last = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo, m_last);
       if (b != NULL) {
+         int state = b->userState();
+         
          // Toggle display of breakpoint
-         if (b->userState() == B_BREAKPOINT) {
+         if (state == B_BREAKPOINT) {
             b->setUserState(B_NORMAL);
+         } else if (state == B_BREAKPOINT_CURRENT_PC) {
+            b->setUserState(B_CURRENT_PC);
          } else b->setUserState(B_BREAKPOINT);
          //m_editorPane->m_activeEditor->highlightLine(
       }
@@ -92,11 +100,24 @@ void LineNo::setLineNo(int val) {
 
 void LineNo::resetDisplay(QTextBlock *b) {
    bool possibleBP = !(b == NULL && (b = m_last = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo, m_last)) == NULL);
+   bool bp = possibleBP;
    
-   if (possibleBP && b->userState() == B_BREAKPOINT)
-      setPixmap(*m_breakPoint);
+   if (possibleBP) {
+      int state = b->userState();
 
-   else if (m_lineNo < 10)
+      if (state == B_BREAKPOINT)
+         setPixmap(mergeSideBySide(*m_breakPoint, QString("177")));
+      else if (state == B_CURRENT_PC)
+         setPixmap(mergeSideBySide(*m_currentPC, text()));
+      else if (state == B_BREAKPOINT_CURRENT_PC)
+         setPixmap(mergeSideBySide(*m_breakPointCurrentPC, text()));
+      else bp = false;
+
+      if (bp)
+         return;
+   }
+   
+   if (m_lineNo < 10)
       setText(QString("%1  ").arg(m_lineNo));
    else {
       int max = m_editorPane->m_activeEditor->noLines();
@@ -108,23 +129,29 @@ void LineNo::resetDisplay(QTextBlock *b) {
 QPixmap LineNo::mergeSideBySide(const QPixmap& pix, const QString &txt)
 {
    QPainter p;
-//   cerr << m_editorPane->m_font << endl;
-   
+   QPixmap temp(1, 1);
+   p.begin(&temp);
+   p.setFont(font());
+ 
    int strWidth = p.fontMetrics().width( txt );
    int strHeight = p.fontMetrics().height();
+
+   p.end();
    
-   int pixWidth = pix.width();
+   int pixWidth  = pix.width();
    int pixHeight = pix.height();
    int maxHeight = (strHeight > pixHeight ? strHeight : pixHeight);
+   int maxWidth  = (strWidth  > pixWidth  ? strWidth  : pixWidth);
    
-   QPixmap res(strWidth + 3 + pixWidth, maxHeight);
+   QPixmap res(maxWidth, maxHeight);
+
 //   res.fill(Qt::white);
-   res.fill(QColor(255, 255, 255, 0));
+   res.fill(QColor(207, 207, 207, 255));
    
    p.begin(&res);
    p.setFont(font());
-   p.drawPixmap(pixWidth + 3, 0, pix);
-   p.drawText(QRect( 0, 0, strWidth, strHeight), 0, txt);
+   p.drawText(QRect(0, 0, strWidth, strHeight), 0, txt);
+   p.drawPixmap(maxWidth - pixWidth, 0, pix);
    p.end();
    
    return res;

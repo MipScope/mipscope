@@ -11,7 +11,6 @@
 #include <QStatusBar>
 using namespace std;
 
-
 #define PROJECT_NAME       "MipScope"
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")

@@ -6,36 +6,44 @@
 \* ---------------------------------------------- */
 #ifndef __IDENTIFIER_H__
 #define __IDENTIFIER_H__
+#include <QString>
 
 class ParseNode;
 
 class Identifier {
    public:
-      Identifier(QString id);
+      Identifier(const QString &id);
+      virtual ~Identifier() { }
       
       QString getID() const;
-      int getValue() const = 0;
+      virtual int getValue() const = 0;
+      
+      bool isImmediate() const;
+      bool isAddress() const;
       
    protected:
       QString m_id;
 };
 
-class AddressIdentifier : Identifier {
+class AddressIdentifier : public Identifier {
    public:
       AddressIdentifier(const QString &id, ParseNode*);
       
       // Returns the address of the ParseNode corresponding to this:
-      // Label or data label
+      // Label or data label  plus an optional offset (to handle label + imm)
       int getValue() const;
+      int getOffset() const;
+      void setOffset(int);
       
       void setLabelParseNode(ParseNode *p);
       
    protected:
       ParseNode *m_parseNode;
+      int m_offset;
 };
 
 // for something like li $r0, 0x1e   -- storing the 0x1e -> 31 mapping
-class ImmediateIdentifier : Identifier {
+class ImmediateIdentifier : public Identifier {
    public:
       ImmediateIdentifier(const QString &id, int value);
       

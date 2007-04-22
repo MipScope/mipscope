@@ -51,9 +51,56 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
    setWidget(m_tabWidget);
 }
 
+// TODO:  Temporary!!!
+/*class BackgroundWidget : public QTabWidget {
+   public:
+      BackgroundWidget(QString path, QWidget *parent = NULL) : QTabWidget(parent) {
+         m_pixMap = new QPixmap(path);
+         
+         setAutoFillBackground(false);
+//         tabBar()->setAutoFillBackground(false);
+      }
+
+   protected:
+      QPixmap *m_pixMap;
+      
+      // @overridden
+      void paintEvent(QPaintEvent *e) {
+         QTabWidget::paintEvent(e);
+         QPainter p(this);
+         QRect r(QPoint(0, 0), m_pixMap->size());
+
+         r.moveCenter(rect().center());
+         p.drawPixmap(r, *m_pixMap);
+      }
+};*/
+
+class BackgroundWidget : public QWidget {
+   public:
+      BackgroundWidget(QString path, QWidget *parent = NULL) : QWidget(parent) {
+         m_pixMap = new QPixmap(path);
+         
+/*         QPalette p = palette();
+         p.setBrush(QPalette::Window, *m_pixMap);
+         setPalette(p);*/
+         setAutoFillBackground(false);
+      }
+
+   protected:
+      QPixmap *m_pixMap;
+      
+      // @overridden
+      void paintEvent(QPaintEvent *e) {
+         QPainter p(this);
+         QRect r(QPoint(0, 0), m_pixMap->size());
+
+         r.moveCenter(rect().center());
+         p.drawPixmap(r, *m_pixMap);
+      }
+};
+
 RegisterPane::RegisterPane(RegisterView *regView) : QWidget(), 
-   m_parent(regView), m_widget(new QWidget(this)), 
-   m_extended(new ExtendedView(this, m_widget))
+   m_parent(regView), m_widget(new BackgroundWidget(QString(IMAGES"/registerBackground.jpg"), this)) 
 {
    QGridLayout *l = new QGridLayout();
 
@@ -92,11 +139,16 @@ RegisterPane::RegisterPane(RegisterView *regView) : QWidget(),
    l->setSpacing(0);
    m_widget->setLayout(l);
    
+   /*QPalette p = m_widget->palette();
+   p.setBrush(QPalette::Window, QPixmap(QString(IMAGES"/registerBackground.jpg")));
+   m_widget->setPalette(p);*/
+   
    l = new QGridLayout();
    l->setMargin(0);
    l->addWidget(m_widget, 0, 0);//, Qt::AlignCenter);
    setLayout(l);
 
+   m_extended = new ExtendedView(this, m_widget);
    m_extended->hide();
 }
 
@@ -449,64 +501,73 @@ QString getNoInBase(unsigned int no, int base) {
 };*/
 
 ExtendedView::ExtendedView(RegisterPane *regPane, QWidget *parent) 
-   : QLabel(parent), m_registerPane(regPane), m_parent(parent)
+   : QLabel(regPane), m_registerPane(regPane), m_parent(parent), 
+   m_timer(new QTimer(this)), m_state(S_Hidden)
 {
-   QPalette pal = palette();
+/*   QPalette pal = palette();
    QColor c(255, 255, 215); // light yellow
    //c.setAlpha(120);
    
    pal.setColor(QPalette::Window, c);
    pal.setColor(QPalette::Foreground, Qt::black);
-   setPalette(pal);
+   setPalette(pal);*/
    
    setWordWrap(false);
-   setAutoFillBackground(true);
+   setAutoFillBackground(false);
    setBackgroundRole(QPalette::Window);
-
+   
+   // timer to automatically repaint for fading effects
+   connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
+   
 //   cerr << testAttribute(Qt::WA_NoMousePropagation) << endl;
 //   cerr << testAttribute(Qt::WA_NoSystemBackground) << endl;
    //setMargin(-1);
 
    setMouseTracking(false);
-   setFrameShadow(QFrame::Raised);
-   setFrameShape(QFrame::StyledPanel);
+   //setFrameShadow(QFrame::Raised);
+   //setFrameShape(QFrame::StyledPanel);
    setFocusPolicy(Qt::NoFocus);
    QLabel::hide();
    
    QFont font("Courier New", 11);
    setFont(font);
-
 }
 
 void ExtendedView::mousePressEvent(QMouseEvent *e) {
 //   this->hide();
    
    e->ignore();
-   m_registerPane->testMousePress(e, mapTo(m_parent, e->pos()));
+   m_registerPane->testMousePress(e, mapTo(m_registerPane, e->pos()));
 }
 
 void ExtendedView::hide() {
    if (!isVisible())
       return;
+   
+   if (m_state == S_Fading || m_state == S_Hidden)
+      return;
+   
+   m_state = S_Fading;
+   m_alpha = 255;
+   m_timer->start(EXTENDED_FADE_INTERVAL);
 
    if (STATUS_BAR != NULL)
       STATUS_BAR->clearMessage();
    
    m_orig = NULL;
-   QLabel::hide();
+   //QLabel::hide();
 }
 
 void ExtendedView::show(const QString &text, const QString &statusText, 
-      const QPoint &pos, RegisterLabel *orig) {
-/*   if (isVisible())
-      QLabel::hide();*/
-
+      const QPoint &pos, RegisterLabel *orig)
+{
+   m_timer->stop();
    m_orig = orig;
    setText(text);
    STATUS_BAR->showMessage(statusText);
    
    const QSize &hint = sizeHint();
-   QRect r(pos.x(), pos.y(), hint.width(), hint.height());
+   QRect r(pos.x() + 6, pos.y() + 4, hint.width(), hint.height());
    QRect container = m_parent->rect();
    
    // force label to stay within bounds of container
@@ -517,16 +578,64 @@ void ExtendedView::show(const QString &text, const QString &statusText,
       r.translate(0, container.bottom() - r.bottom());
    
    setGeometry(r);
-   if (isVisible())
+   if (!isVisible()) {
+      m_state = S_Appearing;
+      m_alpha = 0;
+      QLabel::show();
+      m_timer->start(EXTENDED_FADE_INTERVAL);
+   } else if (m_state != S_Appearing) {
+      m_state = S_Normal;
       update();
-   else QLabel::show();
-
+   }
+//   if (isVisible())
+//      update();
+   //else QLabel::show();
+   
    //connect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
 }
 
 void ExtendedView::mouseMoveEvent(QMouseEvent *e) {
    e->ignore();
-   m_registerPane->testMouseMove(e, mapTo(m_parent, e->pos()));
+   m_registerPane->testMouseMove(e, mapTo(m_registerPane, e->pos()));
+}
+
+// @overridden
+void ExtendedView::paintEvent(QPaintEvent *e) {
+   QPainter p(this);
+   QRect r = rect();
+   
+   int alpha = 255;
+   int fading = -(m_state == S_Fading) + (m_state == S_Appearing);
+   if (fading) {
+      // 255 * interval / duration
+      m_alpha += fading * (255 * EXTENDED_FADE_INTERVAL) / EXTENDED_FADE_DURATION;
+      // cap interval
+      alpha = (m_alpha < 0 ? 0 : (m_alpha > 255 ? 255 : m_alpha));
+   }
+
+   QColor c(255, 255, 225, alpha); // light yellow
+   QColor c2(255, 255, 150, alpha); // light yellow
+   
+   QLinearGradient grad(0, 0, r.width(), r.height());
+   grad.setColorAt(0.0, c);
+   grad.setColorAt(1, c2);
+   p.setPen(QPen(QBrush(Qt::black), 2));
+   
+   p.fillRect(r, grad);
+   p.drawRoundRect(r, 10, 10);
+   p.end();
+   
+   if (fading < 0 && alpha <= 0) { // S_Fading
+      m_timer->stop();
+      m_state = S_Hidden;
+      QLabel::hide();
+      return;
+   } else if (fading > 0 && alpha >= 255) { // S_Appearing
+      m_timer->stop();
+      m_state = S_Normal;
+   }
+   
+   QLabel::paintEvent(e);
 }
 
 IDDisplay m_registerDisplayType;

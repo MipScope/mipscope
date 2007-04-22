@@ -52,7 +52,7 @@ BYTE State::getMemoryByte(ADDRESS address) {
 	return m_memory[address]; 
 }
 
-void State::setRegister(REGISTER reg, WORD value) {
+void State::setRegister(int reg, WORD value) {
 	
 	if (reg >= m_registers.size() || reg == zero ||
 				reg == hi || reg == lo || reg == register_count)
@@ -61,7 +61,7 @@ void State::setRegister(REGISTER reg, WORD value) {
 	m_registers[reg] = value;	
 }
 
-WORD State::getRegister(REGISTER reg) {
+WORD State::getRegister(int reg) {
 	
 	if (reg >= m_registers.size() ||
 				reg == hi || reg == lo || reg == register_count)

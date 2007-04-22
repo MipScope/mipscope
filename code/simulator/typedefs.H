@@ -2,10 +2,15 @@
 #define TYPEDEFS_H_
 
 #include <QString>
+#include <QHash>
+#include <stdio.h>
 
 class Statement;
 class ParseNode;
 class StatementArgList;
+class Instruction;
+class Directive;
+//class StatementInfo;
 
 #define CLEAN_TIMESTAMP    (0)
 
@@ -13,8 +18,17 @@ typedef unsigned int TIMESTAMP;
 typedef uint32_t ADDRESS;
 typedef uint32_t WORD;
 typedef unsigned char BYTE;
-typedef Statement*(*STATEMENT_FACTORY)(StatementArgList*);
-typedef bool(*STATEMENT_IS_VALID)(StatementArgList*);  
+//typedef Statement*(*STATEMENT_FACTORY)(StatementArgList*);
+//typedef bool(*STATEMENT_IS_VALID)(StatementArgList*) const;
+
+typedef QHash<QString, Instruction*> InstructionMap;
+typedef InstructionMap::iterator InstructionMapIterator;
+typedef QHash<QString, Directive*> DirectiveMap;
+typedef DirectiveMap::iterator DirectiveMapIterator;
+
+// Global QHashes containing representative instances (factories) of each supported Statement
+extern InstructionMap instructionMap;
+extern DirectiveMap directiveMap;
 
 /* these are in order so the n'th register is n'th in the list */
 enum REGISTER {	zero, at, 
@@ -33,4 +47,10 @@ enum REGISTER {	zero, at,
 // Strings indexed by the enum above
 extern const char *const registerAliases[];
 
-#endif /*TYPEDEFS_H_*/
+#define safeDelete(p)         {if ((p)) { delete (p); (p) = NULL; }}
+#define safeDeleteArray(p)    {if ((p)) { delete[] (p); (p) = NULL; }}
+
+#define safeFree(p)           {if ((p)) { free((p)); (p) = NULL; }}
+
+#endif // TYPEDEFS_H_
+

@@ -1,50 +1,62 @@
 #ifndef STATEMENT_H_
 #define STATEMENT_H_
+#include "typedefs.H"
 
-#include <QObject>
-#include <QHash>
+class StatementArgList;
+class State;
 
-class StatementInfo;
-
-#include "State.H"
-#include "StatementInfo.H"
-
-class Statement : public QObject {
-	
-	Q_OBJECT
-	
-	public:
-		Statement(void);
-		
-		static QHash<QString, StatementInfo*>* getStatementInfoHash(void);
-		
-		virtual void execute(State* state) const = 0;
-		
-	private:
-		static QHash<QString, StatementInfo*>* s_statementInfoHash;
+class Statement {
+   public:
+      Statement();
+      virtual ~Statement() { }
+      
+      static void InitializeStatementMaps();
+      
+      virtual const char *getName() const = 0;
+      virtual const char *getSyntax() const = 0;
+      virtual const char *getDescription() const = 0;
+      
+      bool isInstruction();
+      bool isDirective();
 };
 
-/*
-class Add : public Statement {
+class Instruction : public Statement {
+   public:
+      Instruction(StatementArgList *args = NULL);
+      virtual ~Instruction();
+      
+      static void InitializeInstructionMap();
+      
+      // Returns true if the arguments passed to this Instruction are valid
+      virtual bool isSyntacticallyValid(StatementArgList *args) const = 0;
 
-	public:
-		static bool isValid(QString line, ParseNode* before);
-		static Statement* factory(QString line, ParseNode* before);
-				
-		AddStatement(REGISTER src1, REGISTER src2, REGISTER dest);
-		void execute(State* state);
-		
-		static prefix = "add"
-		static description = "adds two registers, extends sign to width of register"
-		
-		
-	private:
-		REGISTER m_src1, m_src2, m_dest;
-	
-}
-*/
+      // Factory for creating more of this specific type of Instruction
+      virtual Instruction *create(StatementArgList *args) const = 0;
+      
+      // Executes this Instruction, modifying the given State accordingly
+      virtual void execute(State* state) const = 0;
 
+      virtual const char *getName() const = 0;
+      virtual const char *getSyntax() const = 0;
+      virtual const char *getDescription() const = 0;
+      
+   protected:
+      StatementArgList *m_args;
+};
 
+class Directive : public Statement {
+   public:
+      Directive();
+      
+      static void InitializeDirectiveMap();
+      
+      // Factory for creating more of this specific type of Directive
+      virtual Directive *create() const = 0;
 
+      virtual const char *getName() const = 0;
+      virtual const char *getSyntax() const = 0;
+      virtual const char *getDescription() const = 0;
+};
 
 #endif /*STATEMENT_H_*/
+

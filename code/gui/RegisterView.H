@@ -11,6 +11,9 @@
 
 #define REGISTER_HOVER_DELAY     (0)
 #define NO_REGISTERS    (32 + 3)
+#define EXTENDED_FADE_INTERVAL   (33)
+#define EXTENDED_FADE_DURATION   (EXTENDED_FADE_INTERVAL * 10)
+
 
 extern const char *const registerAliases[];
 extern QPixmap *watchPoint;
@@ -198,6 +201,13 @@ class ExtendedView : public QLabel {
    protected:
       RegisterPane *m_registerPane;
       QWidget *m_parent;
+
+      enum State { S_Hidden, S_Appearing, S_Fading, S_Normal };
+      QTimer *m_timer;
+      State m_state;
+      int m_alpha;
+      
+      void paintEvent(QPaintEvent *e);
 };
 
 class RegisterOptionsPane : public QWidget {

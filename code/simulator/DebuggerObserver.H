@@ -25,11 +25,11 @@ class DebuggerObserver : public QOBject {
 		~DebuggerObserver(void);
 	
 		ParseNode* getMemoryWordWho(ADDRESS address);
-		ParseNode* getRegisteWho(REGISTER reg);
+		ParseNode* getRegisteWho(int reg);
 		ParseNode* getPCWho(void);
 		
 		WORD getMemoryWordPrevious(ADDRESS address);
-		WORD getRegisterPrevious(REGISTER reg);
+		WORD getRegisterPrevious(int reg);
 		WORD getPCPrevious(void);
 		
 		WORD getMemoryWordCurrent(ADDRESS address);

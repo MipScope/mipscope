@@ -2,6 +2,7 @@
 #define STATEEXCEPTION_H_
 
 #include <QString>
+#include "typedefs.H"
 
 class StateException
 {
@@ -31,10 +32,11 @@ class BusError : public StateException {
 
 class InvalidRegister : public StateException {
 	public:
-		InvalidRegister(REGISTER attemptedRegister) : 
+		InvalidRegister(int attemptedRegister) : 
 			StateException("Attempt to access invalid register"),
 			m_attemptedRegister(attemptedRegister) {}
-		REGISTER m_attemptedRegister;
+		int m_attemptedRegister;
 };
 
-#endif /*STATEEXCEPTION_H_*/
+#endif // STATEEXCEPTION_H_
+

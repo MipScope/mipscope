@@ -1,34 +1,21 @@
 #ifndef ARITHMETICSTATEMENT_H_
 #define ARITHMETICSTATEMENT_H_
-
-#include <QString>
-
-class State;
-class ParseNode;
-
 #include "Statement.H"
 
-class ArithmeticStatement : public Statement {
-	virtual void execute(State* state) const = 0;
+class Add : public Instruction {
+   public:
+      Add(StatementArgList *args = NULL);
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const;
+      virtual Instruction *create(StatementArgList *args) const;
+      virtual void execute(State *state) const;
+      
+      // @overridden from Statement
+      virtual const char *getName() const;
+      virtual const char *getSyntax() const;
+      virtual const char *getDescription() const;
 };
 
-class Add : public Statement {
+#endif // ARITHMETICSTATEMENT_H_
 
-	public:
-		static QString prefix;
-		static QString description;
-		
-		void execute(State* state) const;
-		Add(REGISTER src1, REGISTER src2, REGISTER dest);
-		
-		static Statement* factory(QString line, ParseNode* before);
-		static bool isValid(QString line, ParseNode* before);
-
-};
-
-
-//class Addu : public ArithmeticStatement {}
-
-
-
-#endif /*ARITHMETICSTATEMENT_H_*/

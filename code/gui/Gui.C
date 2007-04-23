@@ -22,13 +22,14 @@ Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL),
       
       // load multiple files via the command-line
       while(i < argc) {
-         if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "-file")) {
-            QString fileName(argv[++i]);
+//         if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "-file")) {
+            //QString fileName(argv[++i]);
+            QString fileName(argv[i]);
 
             if (!QFile::exists(fileName))
                cerr << "Error loading file '" << argv[i] << "'\n";
             else m_editorPane->openFile(fileName);
-         }
+//         }
 
          ++i;
       }
@@ -46,7 +47,7 @@ void Gui::setupGui() {
    setIconSize(QSize(ICON_SIZE, ICON_SIZE));
    
    QPalette palette(qApp->palette());
-   palette.setColor(QPalette::Highlight, QColor(180, 201, 233));
+   palette.setColor(QPalette::Highlight, QColor(157, 187, 227));//180, 201, 233));
    qApp->setPalette(palette);
    
    setupActions();

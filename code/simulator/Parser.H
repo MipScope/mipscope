@@ -19,6 +19,12 @@ class AddressIdentifier;
 class ImmediateIdentifier;
 extern const char *const Registers[];
 
+// Controls how much debugging output gets sent to cerr (set via command-line)
+extern bool VERBOSE;
+
+#define PARSE_ERROR(d, u)        PARSE_ERRORL((d), (u), -1)
+#define PARSE_ERRORL(d, u, l)    {_tab = orig; throw ParseError((d), (u), (l)); return NULL; }
+
 class Parser {
 
    public:
@@ -27,8 +33,8 @@ class Parser {
       // ParseList is returned, or until one or more syntax errors are
       // found, in which case NULL is returned.
       //
-      // TODO:  Have SyntaxError class and make vector<SyntaxError> 
-      // available to show user where the error(s) occurred!
+      // @throws SyntaxError (vector containing one or more ParseErrors)
+      // to show user where the error(s) occurred.
       static ParseList *parseDocument(QTextDocument *document);
       
       // Parses one line of a QTextDocument
@@ -62,14 +68,24 @@ class Parser {
       static QString substring(QString s, int start, int length);
 };
 
-class ParseError : QString {
+class ParseError : public QString {
    public:
-      ParseError(const char *description, QTextBlock *b = NULL, int lineNo = -1);
+      ParseError(const QString &description, const QString &unrecognized, int length = -1, QTextBlock *b = NULL, int lineNo = -1);
       
+      int getPosition() const;
+      int getLength() const;
       int getLineNo() const;
       QTextBlock *getTextBlock() const;
       
+      void setPosition(int position);
+      void setLineNo(int lineNo);
+      void setTextBlock(QTextBlock *b);
+      
    protected:
+      int m_position; // position of parse error
+      int m_length;   // length (if available) of unrecognized string
+      // string which couldn't be recognized by parser (probably a subset of m_textBlock->text())
+      QString m_unrecognized;
       QTextBlock *m_textBlock;
       int m_lineNo;
 };

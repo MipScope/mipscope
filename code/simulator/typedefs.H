@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QHash>
+#include <vector>
 #include <stdio.h>
 #include <iostream>
 using namespace std;
@@ -12,10 +13,13 @@ class ParseNode;
 class StatementArgList;
 class Instruction;
 class Directive;
+class ParseError;
 
 #define CLEAN_TIMESTAMP    (0)
 
 typedef unsigned int TIMESTAMP;
+
+typedef vector<ParseError> SyntaxErrors;
 
 typedef QHash<QString, Instruction*> InstructionMap;
 typedef InstructionMap::iterator InstructionMapIterator;

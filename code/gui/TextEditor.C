@@ -35,6 +35,7 @@ TextEditor::~TextEditor(void) { }
 
 void TextEditor::setupEditor(QFont *font) {
    setFont(*font);
+   setTabStopWidth(4 * QFontMetrics(*font).width(' '));
    
    // strip formatting when pasting rich-text
    setAcceptRichText(false);
@@ -49,6 +50,9 @@ void TextEditor::setupEditor(QFont *font) {
    setContextMenuPolicy(Qt::NoContextMenu); // TODO: add custom context menu?
    connect(this, SIGNAL(textChanged()), this, SLOT(codeChanged()));
    connect(this, SIGNAL(textChanged()), m_parent, SLOT(contentChangedProxy()));
+
+   // TODO:  temp?  optimize!
+   connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
    
    // signals for enabling/disabling editing functionality
    connect(this, SIGNAL(undoAvailable(bool)), this, SLOT(undoAvailabilityModified(bool)));
@@ -60,7 +64,7 @@ void TextEditor::setupEditor(QFont *font) {
    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_parent, SLOT(editorScrolled(int)));
    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_syntaxTip, SLOT(editorScrolled(int)));
    connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
-   connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(setCurrentFont(const QFont&)));
+   connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    
    m_syntaxHighligher = new SyntaxHighlighter(this);
 }
@@ -229,11 +233,31 @@ void TextEditor::toggleComment() {
    }
 }
 
+void TextEditor::updateCursorPosition() {
+   viewport()->update();
+}
+
+void TextEditor::paintEvent(QPaintEvent *e) {
+   QRect r(0, cursorRect().y(), viewport()->width(), fontMetrics().height());
+
+   QPainter p(viewport());
+   // good for highlighting line during paused execution:
+   //    255, 240, 117  -- yellow
+   p.fillRect(r, QBrush(QColor(215, 227, 255)));//palette().brush(QPalette::AlternateBase));
+   p.end();
+   //setTabStopWidth(4 * QFontMetrics(f).width(' '));
+   
+   QTextEdit::paintEvent(e);
+}
+
 bool TextEditor::openFile(QFile *file) {
    if (file->open(QIODevice::ReadOnly | QFile::Text)) {
 //      setUpdatesEnabled(false);
       m_lineToPosMap.clear();
-
+      
+//      QTextDocument *m = new QTextDocument();
+//      m->setPlainText(file->readAll());
+//      setDocument(m);
       setPlainText(file->readAll());
       file->close();
 
@@ -656,5 +680,11 @@ void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {
    
    m_highlighted.push_back(newSelection);
    setExtraSelections(m_highlighted);
+}
+
+void TextEditor::fontChanged(const QFont &f) {
+   setCurrentFont(f);
+
+   setTabStopWidth(4 * QFontMetrics(f).width(' '));
 }
 

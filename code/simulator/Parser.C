@@ -41,41 +41,56 @@ const char *const registerAliases[] = {
 string _tab;
 
 ParseList *Parser::parseDocument(QTextDocument *document) {
-   //ParseList *p = new ParseList(document);
-   int lineNo   = 0;
+   ParseList *parseList = new ParseList(document);
+   SyntaxErrors errors;
+   int lineNo = 0;
    
    _tab = "   ";
    for(QTextBlock cur = document->begin(); cur != document->end(); cur = cur.next(), lineNo++) {
-      ParseNode *n = Parser::parseLine(&cur);
+      ParseNode *n = NULL;
       
-      if (n == NULL) { // ParseError on current line
+      try {
+         n = Parser::parseLine(&cur);
+      } catch(ParseError &e) {
          cerr << "ParseError occurred on line: " << lineNo << endl;
+         e.setTextBlock(&cur);
+         e.setLineNo(lineNo);
+         errors.push_back(e);
+         
+         continue;
       }
-      // TODO:  add if valid; return NULL otherwise
+      
+      // TODO: add n to parseList
+      
    }
-
-   return NULL;
+   
+   if (errors.size() >= 1) {
+      delete parseList;
+      throw errors;  // (vector<ParseError>)
+   }
+   
+   return parseList;
 }
 
 // Returns NULL if b does not contain a syntactically-valid line
 ParseNode *Parser::parseLine(QTextBlock *b) {
    QString text = b->text().simplified(); // removed leading/trailing whitespace
-
+   
    cerr << "Parsing line: " << text.toStdString() << endl;
    string orig = _tab;
    _tab += "   ";
-
-   // remove commented parts
+   
+   // remove commented parts  TODO:  don't remove # if it appears in a string
    int commentIndex = text.indexOf('#'), index;
    bool comment;//, breakPoint = ((b->userState() & B_BREAKPOINT) != 0);
-
+   
    if ((comment = (commentIndex >= 0))) {
       text.truncate(commentIndex);
       text = text.simplified();
       
       cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
    }
-
+   
    if (text == "") {
       cerr << _tab << "Recognized as blank or comment\n";
       _tab = orig;
@@ -89,10 +104,8 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
 
    if ((index = text.indexOf(':')) >= 0) {
       // we have a label; possibly an instruction as well
-      if (index <= 0) {
-         _tab = orig;
-         return NULL;
-      }
+      if (index <= 0)
+         PARSE_ERRORL("misplaced ':'", text, 1);
       
       QString labelStr = text.section(':', 0, 0);
       if ((label = parseLabel(labelStr)) != NULL) {
@@ -108,11 +121,8 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
          }
       } else { // possibly colon w/out identifier
          // may also be a directive (.byte 0:100  or .ascii "colon:"
-         if (!text.contains('.')) {
-            _tab = orig;
-
-            return NULL;
-         }
+         if (!text.contains('.'))
+            PARSE_ERRORL("missing label before ':'", text, 1);
       }
    }
 
@@ -120,25 +130,36 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
    // Check for directive
    // -------------------
    if (text.contains('.')) {
-      ParseNode *p = parseDirective(b, text, label);
-
+      ParseNode *p = NULL;
+ 
+      try {
+         p = parseDirective(b, text, label);
+      } catch(ParseError &e) {
+         _tab = orig;
+         throw;
+      }
+      
       _tab = orig;
       return p;
    }
    
    int equalsIndex = text.indexOf('=');
-   if (equalsIndex == 0) {
-      _tab = orig;
-      return NULL;
-   }
+   if (equalsIndex == 0)
+      PARSE_ERRORL("const identifier must appear before '=' symbol", text, 1);
    
    // ------------------
    // Check for Constant
    // ------------------
    if (equalsIndex > 0) {
-      ParseNode *p = parseConstant(b, text, label, equalsIndex);
+      ParseNode *p = NULL;
+      
+      try {
+         p = parseConstant(b, text, label, equalsIndex);
+      } catch(ParseError &e) {
+         _tab = orig;
+         throw;
+      }
 
-      _tab = orig;
       return p;
    }
    
@@ -158,9 +179,7 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
 
    if (i == instructionMap.end()) {
       cerr << "instr " << instr.toStdString() << " not found in map\n";
-
-      _tab = orig;
-      return NULL; // instr not found in map
+      PARSE_ERRORL(QString("'") + instr + QString("' is not a valid instruction (expected)"), text, instr.length());
    }
 
    StatementArgList *argList;
@@ -177,10 +196,16 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
          if (arg == "")
             break;
          
-         if ((args[i] = parseArg(arg)) == NULL) {
-            _tab = orig;
-            return NULL; // invalid argument
+         try {
+            args[i] = parseArg(arg);
+         } catch(ParseError &e) {
+            e += QString("(in argument '%1' to instruction '%2')").arg(QString(i), instr);
+            throw;
          }
+//         if ((args[i] = parseArg(arg)) == NULL) {
+//            _tab = orig;
+//            return NULL; // invalid argument
+//         }
       } while(++i < 3);
    }
    
@@ -190,9 +215,7 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
    
    if (instrFactory == NULL) {
       cerr << _tab << ">>> Error: instruction '" << instr.toStdString() << "' has not been implemented yet! <<<\n";
-      
-      _tab = orig;
-      return NULL;
+      PARSE_ERRORL(QString("instruction '%1' has not been implemented yet!").arg(instr), text, instr.length());
    }
    
    // --------------------------------------------------------------
@@ -200,9 +223,8 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
    // --------------------------------------------------------------
    if (!instrFactory->isSyntacticallyValid(argList)) {
       cerr << _tab << "Error: arguments to instruction '" << instrFactory->getName() << "' are invalid!\n";
-      
-      _tab = orig;
-      return NULL;
+      PARSE_ERRORL(QString("invalid arguments to instruction '%1'\n"
+                  "Syntax: '%2'").arg(instr, instrFactory->getName() + QString(" ") + instrFactory->getSyntax()), text, text.length());
    }
    
    Instruction *instruction = instrFactory->create(argList);
@@ -216,12 +238,13 @@ ParseNode *Parser::parseLine(QTextBlock *b) {
 
 // Parses given text for one argument of an instruction
 StatementArg *Parser::parseArg(QString text) {
-   if (!Parser::simplify(text))
-      return NULL;
-   
    string orig = _tab;
    _tab += "   ";
 
+   QString copy = text;
+   if (!Parser::simplify(text))
+      PARSE_ERRORL(QString("missing argument?  '%1'").arg(copy), copy, copy.length());
+   
    int regIndex = text.indexOf('$');
    int len = text.length();
    
@@ -232,20 +255,16 @@ StatementArg *Parser::parseArg(QString text) {
       
       if (id == NULL) {
          id = parseLabelWithOffset(text);
-         if (id == NULL) {
-            _tab = orig;
-            return NULL;
-         }
+         if (id == NULL)
+            PARSE_ERRORL(QString("unrecognized argument: '%1'").arg(copy), copy, copy.length());
       }
       
       _tab = orig;
       return new StatementArg(id);
    }
    
-   if (regIndex + 1 >= len) {
-      _tab = orig;
-      return NULL;
-   }
+   if (regIndex + 1 >= len)
+      PARSE_ERRORL(QString("misplaced '$' token"), copy, copy.length());
    
    QString reg;
    QRegExp endOfReg("\\$[a-z0-9]+\\b");
@@ -264,11 +283,9 @@ StatementArg *Parser::parseArg(QString text) {
       
       bool okay = false;
       registerNo = reg.toInt(&okay, 10);
-      if (!okay || registerNo < zero || registerNo >= register_count) {
-         _tab = orig;
-         
-         return NULL;
-      }
+      if (!okay || registerNo < zero || registerNo >= register_count)
+         PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
+
    } else { // determine between aliases
       bool found = false;
 
@@ -283,10 +300,8 @@ StatementArg *Parser::parseArg(QString text) {
          }
       }
       
-      if (!found) {
-         _tab = orig;
-         return NULL;
-      }
+      if (!found)
+         PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
    }
    
    // at this point, should know register number
@@ -300,10 +315,8 @@ StatementArg *Parser::parseArg(QString text) {
    if (validParens) {
       int parenEnd = text.indexOf(')');
 
-      if (parenStart > regIndex || parenEnd <= parenStart + 3 || parenEnd < regIndex) {
-         _tab = orig;
-         return NULL; // parenthesis troubles
-      }
+      if (parenStart > regIndex || parenEnd <= parenStart + 3 || parenEnd < regIndex)
+         PARSE_ERROR(QString("parenthesis mismatch"), text);
       
       validParens = true;
       
@@ -313,8 +326,7 @@ StatementArg *Parser::parseArg(QString text) {
       
       if (parenEnd != len - 1) {
          cerr << _tab << "text after right paren!\n";
-         _tab = orig;
-         return NULL;
+         PARSE_ERROR(QString("invalid characters following right parenthesis"), text);
       }
       
       text = Parser::substring(text, 0, parenStart);
@@ -498,10 +510,8 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
    _tab += "   ";
    
    cerr << _tab << "Parsing directive: '" << text.toStdString() << "'\n";
-   if (text[0] != QChar('.')) {
-      _tab = orig;
-      return NULL;
-   }
+   if (text[0] != QChar('.'))
+      PARSE_ERROR(QString("error parsing directive"), text);
    
    text = text.right(text.length() - 1);
    
@@ -512,9 +522,10 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
    } while(directives[++type] != NULL);
    
    if (directives[type] == NULL) {
-      _tab = orig;
-      return NULL; // invalid directive
+      QString dir = text.section(' ', 0, 0);
+      PARSE_ERRORL(QString("invalid directive: '%1'").arg(dir), dir, dir.length());
    }
+   
    // shorten text to remove the directive identifier
    text = text.remove(0, QString(directives[type]).length()).simplified();
    
@@ -544,11 +555,8 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
             if (text != QString("")) {
                ImmediateIdentifier *imm = parseImmediate(text);
                
-               if (imm == NULL) {
-                  _tab = orig;
-
-                  return NULL;
-               }
+               if (imm == NULL)
+                  PARSE_ERRORL(QString("argument to directive '%1' is invalid: '%2'").arg(QString(directives[type]), text), text, text.length());
 
                offset = imm->getValue();
             }
@@ -569,35 +577,28 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                   directive = new AlignDirective(offset);
                else if (type == SPACE)
                   directive = new SpaceDirective(offset);
-            } // else invalid
+            } else // invalid
+               PARSE_ERRORL(QString("argument to directive '%1' is invalid: '%2'").arg(QString(directives[type]), text), text, text.length());
          }
          break;
       case ASCII:  // Parse strings
       case ASCIIZ:
          {
             int strIndex = text.indexOf('"');
-            if (strIndex != 0) {
-               _tab = orig;
-
-               return NULL; // str must start w/ a quotation mark
-            }
+            if (strIndex != 0)  // str must start w/ a quotation mark
+               PARSE_ERRORL(QString("directive '%1' takes a string").arg(QString(directives[type])), text, text.length());
+            
             text = text.remove(0, 1);
             
-
+            
             // TODO:  correctly handle backslashes in strings!
             
             
-            if ((strIndex = text.indexOf('"')) < 0) {
-               _tab = orig;
-               
-               return NULL; // no matching ending quotation
-            }
+            if ((strIndex = text.indexOf('"')) < 0) // no matching ending quotation
+               PARSE_ERRORL(QString("missing '\"' symbol"), text, text.length());
             
-            if (strIndex < text.length() - 1) {
-               _tab = orig;
-               
-               return NULL; // garbage after end of string?
-            }
+            if (strIndex < text.length() - 1) // garbage after end of string?
+               PARSE_ERRORL(QString("unrecognized characters following string"), text, text.length());
             
             text = text.left(strIndex);
             cerr << _tab << "Found String: " << text.toStdString() << endl;
@@ -621,10 +622,11 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                if (sizeInd < 0) {
                   if (commaInd < 0) {  // value
                      if ((imm = parseImmediate(text)) == NULL) {
-                        _tab = orig;
-
-                        return NULL;
+                        PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
+                                    "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
+                                    directives[type]), text, text.length());
                      }
+                     
                      int value = imm->getValue();
                      
                      cerr << _tab << "Reserving " << "1" << " '" << directives[type] << "' with initial value '" << value << "'\n";
@@ -650,9 +652,9 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                            break;
                         
                         if ((imm = parseImmediate(val)) == NULL) {
-                           _tab = orig;
-
-                           return NULL;
+                           PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
+                                       "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
+                                       directives[type]), val, val.length());
                         }
                         
                         values.push_back(imm->getValue());
@@ -660,8 +662,9 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                      }
                      
                      if (values.size() <= 0) {
-                        _tab = orig;
-                        return NULL;
+                        PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
+                                    "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
+                                    directives[type]), text, text.length());
                      }
                      
                      cerr << _tab << "Reserving " << values.size() << " '" << directives[type] << "'s with values listed\n";
@@ -676,16 +679,17 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                } else {       // value:size
                   QString valueStr = text.left(sizeInd).simplified();
                   if ((imm = parseImmediate(valueStr)) == NULL) {
-                     _tab = orig;
-                     return NULL;
+                     PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
+                                 "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
+                                 directives[type]), valueStr, valueStr.length());
                   }
-                  int value = imm->getValue(), size;
+                  int value = imm->getValue(), size = 0;
                   QString sizeStr = text.right(text.length() - sizeInd - 1).simplified();
-                  if ((imm = parseImmediate(sizeStr)) == NULL) {
-                     _tab = orig;
-                     return NULL;
+                  if ((imm = parseImmediate(sizeStr)) == NULL || ((size = imm->getValue()) <= 0)) {
+                     PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
+                                 "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]),
+                                 directives[type]), sizeStr, sizeStr.length());
                   }
-                  size = imm->getValue();
                   
                   cerr << _tab << "Reserving " << size << " '" << directives[type] << "'s with value '" << value << "'\n";
                   
@@ -702,11 +706,8 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
          break;
    }
    
-   if (directive == NULL) {
-      _tab = orig;
-      
-      return NULL; // invalid directive
-   }
+   if (directive == NULL) // invalid directive
+      PARSE_ERRORL(QString("error parsing directive '%1'").arg(QString(directives[type])), text, text.length());
    
    // .byte, .half, .word 
    // followed by:
@@ -718,11 +719,10 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
    // 
    // Ex. 'table:       .word    0:TABLE_SIZE'
    
+   _tab = orig;
+
    // Huzzah!  Hopefully we got here and it worked?!
    return new ParseNode(b, directive, label);
-   
-   _tab = orig;
-   return NULL;
 }
 
 ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier *label, int equalsIndex) {
@@ -735,20 +735,16 @@ ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier
    QString labelStr = substring(text, 0, equalsIndex).simplified();
    
    AddressIdentifier *name = parseLabel(labelStr);
-   if (name == NULL) {
-      _tab = orig;
-      return NULL; // invalid name for constant
-   }
+   if (name == NULL)
+      PARSE_ERRORL(QString("invalid identifier for constant: '%1'").arg(labelStr), labelStr, labelStr.length());
    
    QString valueStr = text.remove(0, equalsIndex + 1).simplified();
    ImmediateIdentifier *imm = parseImmediate(valueStr);
-   if (imm == NULL) {
-      _tab = orig;
-      return NULL; // invalid immediate value for constant
-   }
+   if (imm == NULL)
+      PARSE_ERRORL(QString("invalid value assigned to '%1'").arg(labelStr), valueStr, valueStr.length());
    
    cerr << _tab << "Const found: " << name->getID().toStdString() << " = " << imm->getValue() << endl;
-   
+    
    
    // TODO:  return new ParseNode( w/ label, b, name, imm as const)
 //   return new ParseNode(b, new ConstantStatement(name, imm), label); ???
@@ -758,9 +754,21 @@ ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier
    return NULL;
 }
 
-ParseError::ParseError(const char *description, QTextBlock *b, int lineNo)
-   : QString(description), m_textBlock(b), m_lineNo(lineNo)
-{ }
+ParseError::ParseError(const QString &description, const QString &unrecognized, int length, QTextBlock *b, int lineNo)
+   : QString(description), m_position(-1), m_length(length), m_unrecognized(unrecognized), 
+   m_textBlock(b), m_lineNo(lineNo)
+{
+   if (b != NULL)
+      setTextBlock(b);
+}
+
+int ParseError::getPosition() const {
+   return m_position;
+}
+
+int ParseError::getLength() const {
+   return m_length;
+}
 
 int ParseError::getLineNo() const {
    return m_lineNo;
@@ -768,6 +776,27 @@ int ParseError::getLineNo() const {
 
 QTextBlock *ParseError::getTextBlock() const {
    return m_textBlock;
+}
+
+void ParseError::setPosition(int position) {
+   m_position = position;
+}
+
+void ParseError::setLineNo(int lineNo) {
+   m_lineNo = lineNo;
+}
+
+void ParseError::setTextBlock(QTextBlock *b) {
+   m_textBlock = b;
+   
+   // look for string in text block and set position, length accordingly
+   if (b != NULL) {
+      const QString &text = b->text();
+      m_position = text.indexOf(m_unrecognized);
+      
+      if (m_position >= 0)
+         m_position += b->position();
+   }
 }
 
 // --------------------

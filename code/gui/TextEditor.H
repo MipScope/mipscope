@@ -24,6 +24,7 @@ class SyntaxTip;
 class QTextCharFormat;
 class QShortcut;
 class QContextMenuEvent;
+class QPaintEvent;
 
 typedef map<int, int> LineToPosMap;
 typedef LineToPosMap::const_iterator LineToMapIterator;
@@ -90,6 +91,8 @@ class TextEditor : public QTextEdit {
       void undoAvailabilityModified(bool);
       void redoAvailabilityModified(bool);
       void toggleComment();
+      void updateCursorPosition();
+      void fontChanged(const QFont&);
       
    protected:
       EditorPane *m_parent;
@@ -110,6 +113,8 @@ class TextEditor : public QTextEdit {
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);
       //virtual void contextMenuEvent(QContextMenuEvent *e);
+      // @overridden to provide custom highlighting
+      virtual void paintEvent(QPaintEvent *e);
 };
 
 class SyntaxTip : public QLabel {

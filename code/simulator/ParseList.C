@@ -17,12 +17,15 @@
 
 ParseList::ParseList(QTextDocument *document) :
    m_source(document)
-{
-   
-}
+{ }
 
-ParseNode* ParseList::getFirst(void) {
+ParseNode *ParseList::first() {
    return NULL;
    //	return static_cast<ParseNode*> (m_textEditor->getBlockForLine(0)->userData());	
 }
+
+ParseNode *ParseList::last() {
+   return NULL;
+}
+
 

@@ -1,6 +1,6 @@
+#include "Parser.H"
 #include "State.H"
 #include "Statement.H"
-#include "ParseList.H"
 #include "ParseNode.H"
 #include <iostream>
 using namespace std;
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
    
    // initialize Instruction and Directive maps
    Statement::InitializeStatementMaps();
-   ParseList::parseDocument(doc);
+   Parser::parseDocument(doc);
    
    return 0;
 }

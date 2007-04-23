@@ -53,7 +53,7 @@ LineNoDisplay::LineNoDisplay(EditorPane *editorPane)
 
 QPixmap *m_breakPoint, *m_currentPC, *m_breakPointCurrentPC;
 
-LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), m_editorPane(editorPane), m_lineNo(-1), m_last(NULL)
+LineNo::LineNo(EditorPane *editorPane, LineNoDisplay *parent) : QLabel(parent), m_editorPane(editorPane), m_lineNo(-1), m_last(NULL), m_parent(parent)
 {
    setFont(*m_editorPane->m_font);
    if (m_breakPoint == NULL)
@@ -102,28 +102,31 @@ void LineNo::resetDisplay(QTextBlock *b) {
    bool possibleBP = !(b == NULL && (b = m_last = m_editorPane->m_activeEditor->getBlockForLine(m_lineNo, m_last)) == NULL);
    bool bp = possibleBP;
    
+   QString text;
+ 
+   if (m_lineNo < 10) {
+      text = QString("%1").arg(m_lineNo);
+   } else {
+      int max = m_editorPane->m_activeEditor->noLines();
+      
+      text = QString((max > 99 ? "%1" : "%1")).arg(m_lineNo);
+   }
+
+   
    if (possibleBP) {
       int state = b->userState();
 
       if (state == B_BREAKPOINT)
-         setPixmap(mergeSideBySide(*m_breakPoint, QString("177")));
+         setPixmap(mergeSideBySide(*m_breakPoint, text));
       else if (state == B_CURRENT_PC)
-         setPixmap(mergeSideBySide(*m_currentPC, text()));
+         setPixmap(mergeSideBySide(*m_currentPC, text));
       else if (state == B_BREAKPOINT_CURRENT_PC)
-         setPixmap(mergeSideBySide(*m_breakPointCurrentPC, text()));
+         setPixmap(mergeSideBySide(*m_breakPointCurrentPC, text));
       else bp = false;
-
-      if (bp)
-         return;
    }
    
-   if (m_lineNo < 10)
-      setText(QString("%1  ").arg(m_lineNo));
-   else {
-      int max = m_editorPane->m_activeEditor->noLines();
-      
-      setText(QString((max > 99 ? "%1  " : "%1")).arg(m_lineNo));
-   }
+   if (!bp)
+      setText(text);
 }
 
 QPixmap LineNo::mergeSideBySide(const QPixmap& pix, const QString &txt)
@@ -146,7 +149,8 @@ QPixmap LineNo::mergeSideBySide(const QPixmap& pix, const QString &txt)
    QPixmap res(maxWidth, maxHeight);
 
 //   res.fill(Qt::white);
-   res.fill(QColor(207, 207, 207, 255));
+   QColor c = palette().window().color();
+   res.fill(c);//QColor(207, 207, 207, 255));
    
    p.begin(&res);
    p.setFont(font());
@@ -154,7 +158,29 @@ QPixmap LineNo::mergeSideBySide(const QPixmap& pix, const QString &txt)
    p.drawPixmap(maxWidth - pixWidth, 0, pix);
    p.end();
    
+   if (maxWidth > rect().width()) {
+      const QRect &r = geometry();
+      
+      QRect newRect(r.x(), r.y(), maxWidth, maxHeight);
+      setGeometry(newRect);
+      m_parent->addToBounds(newRect);
+   }
+   
    return res;
+}
+
+QSize LineNo::sizeHint() const {
+   const QPixmap *p = pixmap();
+   
+   if (p != NULL) {
+      return p->size();
+   }
+   
+   return QLabel::sizeHint();
+}
+
+QSize LineNo::minimumSize() const {
+   return sizeHint();
 }
 
 void LineNoDisplay::fontChanged(const QFont &font) {
@@ -235,7 +261,11 @@ void LineNoDisplay::updateLineNumbers() {
            //if ((*li)->sizeHint().width() > width)
       //   cerr << (*li)->sizeHint().width() << " > " << width << endl;
       
-      QRect r(0, p.y(), width/*(*li)->sizeHint().width()*/, rect.height());
+      int customWidth;
+      if ((customWidth = (*li)->sizeHint().width()) > width)
+         width = customWidth;
+      
+      QRect r(0, p.y(), width, rect.height());
       (*li)->setGeometry(r);
       
       bounds = bounds.united(r);
@@ -274,6 +304,12 @@ void LineNoDisplay::updateLineNumbers() {
    //cerr << lineNo.toStdString() << endl;
    
    m_rect = bounds.adjusted(4, 0, (lastLineNo - firstLineNo >= 100 ? 0 : 10), 0);
+   
+   updateGeometry();
+}
+
+void LineNoDisplay::addToBounds(const QRect &r) {
+   m_rect = m_rect.united(r);
    
    updateGeometry();
 }

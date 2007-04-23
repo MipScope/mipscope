@@ -78,7 +78,8 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
 class BackgroundWidget : public QWidget {
    public:
       BackgroundWidget(QString path, QWidget *parent = NULL) : QWidget(parent) {
-         m_pixMap = new QPixmap(path);
+         m_background = QImage(path);
+         m_pixMap = QPixmap::fromImage(m_background);
          
 /*         QPalette p = palette();
          p.setBrush(QPalette::Window, *m_pixMap);
@@ -87,16 +88,31 @@ class BackgroundWidget : public QWidget {
       }
 
    protected:
-      QPixmap *m_pixMap;
+      QPixmap m_pixMap;
+      QImage m_background;
       
       // @overridden
       void paintEvent(QPaintEvent *e) {
          QPainter p(this);
-         QRect r(QPoint(0, 0), m_pixMap->size());
+         QRect r(QPoint(0, 0), m_pixMap.size());
+         const QRect &bounds = rect();
+         bool resizeH = (bounds.width() > r.width());
+         bool resizeV = (bounds.height() > r.height());
+         
+         // ensure background pic always takes up whole frame, scaling if necessary
+         if (resizeH || resizeV) {
+            m_pixMap = QPixmap::fromImage(m_background.scaled(resizeH ? bounds.width() : r.width(), resizeV ? bounds.height() : r.height()));
 
+            r.setSize(m_pixMap.size());
+         }
+         
          r.moveCenter(rect().center());
-         p.drawPixmap(r, *m_pixMap);
+         p.drawPixmap(r, m_pixMap);
       }
+
+//      void resizeEvent(QResizeEvent *e) {
+//         QWidget::resizeEvent(e);
+//      }
 };
 
 RegisterPane::RegisterPane(RegisterView *regView) : QWidget(), 
@@ -615,11 +631,14 @@ void ExtendedView::paintEvent(QPaintEvent *e) {
 
    QColor c(255, 255, 225, alpha); // light yellow
    QColor c2(255, 255, 150, alpha); // light yellow
+   QColor black = Qt::black;
+   black.setAlpha(alpha);
    
    QLinearGradient grad(0, 0, r.width(), r.height());
    grad.setColorAt(0.0, c);
    grad.setColorAt(1, c2);
-   p.setPen(QPen(QBrush(Qt::black), 2));
+   
+   p.setPen(QPen(QBrush(black), 2));
    
    p.fillRect(r, grad);
    p.drawRoundRect(r, 10, 10);

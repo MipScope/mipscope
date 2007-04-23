@@ -6,85 +6,94 @@
 #include "ParseNode.H"
 #include "StateException.H"
 
-State::State(ADDRESS memorySize) :	m_memory(memorySize, 0),
-									m_registers(register_count, 0),
-									m_pc(NULL),
-									m_caller(NULL),
-									m_currentTimestamp(0)
+State::State(unsigned int memorySize) :	m_memory(memorySize, 0),
+                                          m_registers(register_count, 0),
+                                          m_pc(NULL),
+                                          m_caller(NULL),
+                                          m_currentTimestamp(0)
 { }
 
 TIMESTAMP State::newTimestamp(ParseNode* caller) {
-	
-	m_caller = caller;
-	return ++m_currentTimestamp;
+   m_caller = caller;
+   return ++m_currentTimestamp;
 }
 
-void State::setMemoryWord(ADDRESS address, WORD value) {
+void State::setMemoryWord(unsigned int address, unsigned int value) {
 
-	if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
-	if (address % 4 != 0) throw BusError(address);
-	
-	m_memory[address + 0]	=	(value >> 0)	& 0xFF;
-	m_memory[address + 1]	= 	(value >> 8)	& 0xFF;
-	m_memory[address + 2]	= 	(value >> 16)	& 0xFF;
-	m_memory[address + 3]	= 	(value >> 24)	& 0xFF;		  
+   if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
+   if (address % 4 != 0) throw BusError(address);
+   
+   m_memory[address + 0]	=	(value >> 0)	& 0xFF;
+   m_memory[address + 1]	= 	(value >> 8)	& 0xFF;
+   m_memory[address + 2]	= 	(value >> 16)	& 0xFF;
+   m_memory[address + 3]	= 	(value >> 24)	& 0xFF;
 }
 
-void State::setMemoryByte(ADDRESS address, BYTE value) {
+void State::setMemoryByte(unsigned int address, unsigned char value) {
 
-	if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
-	
-	m_memory[address] = value;
+   if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
+
+   m_memory[address] = value;
 }
 
-WORD State::getMemoryWord(ADDRESS address) {
+unsigned int State::getMemoryWord(unsigned int address) {
 
-	if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
-	if (address % 4 != 0) throw BusError(address);
+   if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
+   if (address % 4 != 0) throw BusError(address);
 
-	return *((unsigned int*) (m_memory.data() + address) ); 
+   return *((unsigned int*) (m_memory.data() + address) ); 
 }
 
-BYTE State::getMemoryByte(ADDRESS address) {
+unsigned char State::getMemoryByte(unsigned int address) {
 
-	if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
+   if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
 
-	return m_memory[address]; 
+   return m_memory[address]; 
 }
 
-void State::setRegister(int reg, WORD value) {
-	
-	if (reg >= m_registers.size() || reg == zero ||
-				reg == hi || reg == lo || reg == register_count)
-				throw InvalidRegister(reg);
-
-	m_registers[reg] = value;	
+void State::memcpy(unsigned int destAddress, const void *src, unsigned int size) {
+   char *ptr = (char*)src;
+   
+   while(size-- > 0)
+      setMemoryByte(destAddress++, *ptr++);
 }
 
-WORD State::getRegister(int reg) {
-	
-	if (reg >= m_registers.size() ||
-				reg == hi || reg == lo || reg == register_count)
-				throw InvalidRegister(reg);
+void State::memset(unsigned int destAddress, const int value, unsigned int size) {
+   while(size-- > 0)
+      setMemoryByte(destAddress++, value);
+}
 
-	return m_registers[reg];	
+void State::setRegister(int reg, unsigned int value) {
+
+   if (reg >= m_registers.size() || reg == zero ||
+         reg == hi || reg == lo || reg >= register_count)
+      throw InvalidRegister(reg);
+   
+   m_registers[reg] = value;
+}
+
+unsigned int State::getRegister(int reg) {
+
+   if (reg >= m_registers.size() ||
+         reg == hi || reg == lo || reg == register_count)
+      throw InvalidRegister(reg);
+
+   return m_registers[reg];
 }
 
 void State::setPC(ParseNode* value) {
-	
-	m_pc = value;	
+   m_pc = value;	
 }
 
 ParseNode* State::getPC(void) {
-
-	return m_pc;	
+   return m_pc;	
 }
 
 void State::undoUntilTimestamp(TIMESTAMP timestamp) {
-	// TODO: unimplemented
+   // TODO: unimplemented
 }
 
 TIMESTAMP State::getCurrentTimestamp(void) {
-	
-	return m_currentTimestamp;
+   return m_currentTimestamp;
 }
+

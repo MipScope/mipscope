@@ -8,6 +8,7 @@
 #define __STATEMENTARGLIST_H__
 #include "typedefs.H"
 
+class State;
 class ParseNode;
 class Identifier;
 class StatementArg;
@@ -24,6 +25,9 @@ class StatementArgList {
 
       // Use to index into and retrieve a specific StatementArg in this list
       StatementArg *operator[](int ind) const;
+      
+      // Use to get the value of a StatementArg within this list, given the current State
+      int getValue(State *s, int ind) const;
       
       // Returns true iff this list contains exactly noRequired plain register arguments
       // Ex:  MoveInstruction::isValid() would only need to check for allArgumentsArePlainRegisters(3);
@@ -67,6 +71,9 @@ class StatementArg {
       
       Identifier *getID() const;
       int getRegister() const;
+      
+      // Use to get the value of this StatementArg, given the current State
+      int getValue(State *s) const;
       
    protected:
       Identifier *m_id;

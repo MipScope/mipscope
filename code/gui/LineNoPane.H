@@ -46,6 +46,7 @@ class LineNoDisplay : public QWidget {
    
    public:
       LineNoDisplay(EditorPane *editorPane);
+      void addToBounds(const QRect &r);
 
    private slots:
       void fontChanged(const QFont&);
@@ -83,10 +84,15 @@ class LineNo : public QLabel {
       EditorPane *m_editorPane;
       int m_lineNo;
       QTextBlock *m_last;
+      LineNoDisplay *m_parent;
       
       // @override
       virtual void mousePressEvent(QMouseEvent *);
       virtual void mouseReleaseEvent(QMouseEvent *);
+      
+      // @override
+      virtual QSize sizeHint() const;
+      virtual QSize minimumSize() const;
 };
 
 #endif // __LINE_NO_PANE_H__

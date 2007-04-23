@@ -4,22 +4,18 @@
 #include <QString>
 #include <QHash>
 #include <stdio.h>
+#include <iostream>
+using namespace std;
 
 class Statement;
 class ParseNode;
 class StatementArgList;
 class Instruction;
 class Directive;
-//class StatementInfo;
 
 #define CLEAN_TIMESTAMP    (0)
 
 typedef unsigned int TIMESTAMP;
-typedef uint32_t ADDRESS;
-typedef uint32_t WORD;
-typedef unsigned char BYTE;
-//typedef Statement*(*STATEMENT_FACTORY)(StatementArgList*);
-//typedef bool(*STATEMENT_IS_VALID)(StatementArgList*) const;
 
 typedef QHash<QString, Instruction*> InstructionMap;
 typedef InstructionMap::iterator InstructionMapIterator;

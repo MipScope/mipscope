@@ -16,18 +16,18 @@ class StateException
 
 class InvalidAddress : public StateException {
 	public:
-		InvalidAddress(ADDRESS attemptedAddress) : 
+		InvalidAddress(unsigned int attemptedAddress) : 
 			StateException("Attempt to access invalid address"),
 			m_attemptedAddress(attemptedAddress) {}
-		ADDRESS m_attemptedAddress;
+		unsigned int m_attemptedAddress;
 };
 
 class BusError : public StateException {
 	public:
-		BusError(ADDRESS attemptedAddress) : 
+		BusError(unsigned int attemptedAddress) : 
 			StateException("Attempt to read/write a word from an address not divisible by 4"),
 			m_attemptedAddress(attemptedAddress) {}
-		ADDRESS m_attemptedAddress;
+		unsigned int m_attemptedAddress;
 };
 
 class InvalidRegister : public StateException {

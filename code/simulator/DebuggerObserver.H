@@ -5,14 +5,14 @@
 
 struct memory_word_log {
 	ParseNode* who;
-	WORD previous;
-	WORD current;
+	unsigned int previous;
+	unsigned int current;
 };
 
 struct register_log {
 	ParseNode* who;
-	WORD previous;
-	WORD current;
+	unsigned int previous;
+	unsigned int current;
 };
 
 class DebuggerObserver : public QOBject {
@@ -24,16 +24,16 @@ class DebuggerObserver : public QOBject {
 		DebuggerObserver(int memorySize);
 		~DebuggerObserver(void);
 	
-		ParseNode* getMemoryWordWho(ADDRESS address);
+		ParseNode* getMemoryWordWho(unsigned int address);
 		ParseNode* getRegisteWho(int reg);
 		ParseNode* getPCWho(void);
 		
-		WORD getMemoryWordPrevious(ADDRESS address);
-		WORD getRegisterPrevious(int reg);
-		WORD getPCPrevious(void);
+		unsigned int getMemoryWordPrevious(unsigned int address);
+		unsigned int getRegisterPrevious(int reg);
+		unsigned int getPCPrevious(void);
 		
-		WORD getMemoryWordCurrent(ADDRESS address);
-		WORD getRegisterCurrent(ADDRESS reg);
+		unsigned int getMemoryWordCurrent(unsigned int address);
+		unsigned int getRegisterCurrent(unsigned int reg);
 		ParseNode* getPCCurrent(void);		
 	
 	public slots:

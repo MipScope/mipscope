@@ -1,7 +1,4 @@
-add $t0, $t1, $t2
-add $r31,$sp,     -43
+add $t1, $t2, 0x1e
 
-#CONSTANT= -42
-#testLabel:__test__=4
-#newLine:             .asciiz           "\n"
-#la $s1, CONSTANT($sp)# test comment
+memoryBitches:.word  07, 0x8, 92, -4, 0, 0
+javoll:   .half   -1:48

@@ -6,8 +6,8 @@
 \* ---------------------------------------------- */
 #include "StatementArgList.H"
 #include "Identifier.H"
-#include <iostream>
-using namespace std;
+#include "typedefs.H"
+#include "State.H"
 
 StatementArgList::StatementArgList(StatementArg *a1, StatementArg *a2, StatementArg *a3)
 {
@@ -25,6 +25,10 @@ StatementArgList::StatementArgList(StatementArg *a1, StatementArg *a2, Statement
 
 int StatementArgList::noArgs() const {
    return m_count;
+}
+
+int StatementArgList::getValue(State *s, int ind) const {
+   return m_args[ind]->getValue(s);
 }
 
 int StatementArgList::noPlainRegisterArgs() const {
@@ -114,5 +118,22 @@ Identifier *StatementArg::getID() const {
 
 int StatementArg::getRegister() const {
    return m_register;
+}
+
+int StatementArg::getValue(State *s) const {
+   if (hasRegister()) {
+      unsigned int registerVal = s->getRegister(m_register);
+      
+      if (!hasDereference())
+         return (signed)registerVal;
+
+      registerVal = s->getMemoryWord(registerVal);
+      
+      if (hasIdentifier())
+         return (signed)(registerVal + m_id->getValue());
+   }
+   
+   // Must be identifier (value of label and/or immediate)
+   return m_id->getValue();
 }
 

@@ -1,12 +1,19 @@
 #include "Statement.H"
 #include "StatementArgList.H"
 #include "SyntaxList.H"
-#include "ArithmeticStatement.H"
+#include "typedefs.H"
 #include <exception>
-#include <iostream>
-using namespace std;
 
-Statement::Statement() { }
+// Include all Statement Implementations
+#include "Statements/Arithmetic.H"
+
+Statement::Statement(unsigned int requiredSizeInBytes) 
+   : m_size(requiredSizeInBytes)
+{ }
+
+unsigned int Statement::getSizeInBytes() const {
+   return m_size;
+}
 
 bool Statement::isInstruction() {
    Instruction *instr = NULL;
@@ -31,7 +38,7 @@ bool Statement::isDirective() {
 // Instruction Superclass
 // ----------------------
 Instruction::Instruction(StatementArgList *args) 
-   : Statement(), m_args(args)
+   : Statement(4), m_args(args) // every instruction only takes a word of the address space
 { }
 
 Instruction::~Instruction() { safeDelete(m_args); }
@@ -47,17 +54,5 @@ void Instruction::InitializeInstructionMap() {
       instructionMap.insert(Instructions[i++], NULL/*TEMP*/);
 
    instructionMap.insert("add", new Add());
-}
-
-// --------------------
-// Directive Superclass
-// --------------------
-Directive::Directive() : Statement() { }
-
-DirectiveMap directiveMap;
-void Directive::InitializeDirectiveMap() {
-   int i = 0;
-   while(Directives[i] != NULL)
-      directiveMap.insert(Directives[i++], NULL);
 }
 

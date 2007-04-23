@@ -1,7 +1,6 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView, StackView?
-   * Make RegisterView much, much better!
    * p44 of mips guide for addressing modes
    * Look into transparency & background images for widgets -- improve ExtendedView;
 

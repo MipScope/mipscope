@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
    
    // initialize Instruction and Directive maps
    Statement::InitializeStatementMaps();
-   Parser::parseDocument(doc);
+   ParseList* parseList = Parser::parseDocument(doc);
    
    return 0;
 }

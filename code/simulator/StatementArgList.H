@@ -13,6 +13,8 @@ class ParseNode;
 class Identifier;
 class StatementArg;
 
+enum ArgType {PLAIN_REGISTER = 1, ADDRESS = 2, IMMEDIATE = 4, NONE = 8};
+
 class StatementArgList {
    public:
       StatementArgList(StatementArg *a1 = NULL, StatementArg *a2 = NULL, StatementArg *a3 = NULL);
@@ -28,6 +30,14 @@ class StatementArgList {
       
       // Use to get the value of a StatementArg within this list, given the current State
       int getValue(State *s, int ind) const;
+      
+      // returns true iff each arg in the argument list matches the corresponding
+      // argument type provided. For example,
+      // matchesSyntax(PLAIN_REGISTER, ADDRESS) returns true iff there are exactly two arguments and the first is a plain register, and the second is an address.
+      // You can also do:
+      // matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE) which works as you'd expect.
+      bool matchesSyntax(int arg1, int arg2 = NONE, int arg3 = NONE, int arg4 = NONE) const;
+      bool isArgType(int argNumber, int what) const;
       
       // Returns true iff this list contains exactly noRequired plain register arguments
       // Ex:  MoveInstruction::isValid() would only need to check for allArgumentsArePlainRegisters(3);
@@ -59,11 +69,9 @@ class StatementArg {
       StatementArg(Identifier *id, int reg = -1, bool dereference = false);
       StatementArg(int reg, bool dereference = false);
       
-      // Utility methods to be used in Statement::isValid implementations
-      bool isRegister() const;
-      bool isAddress() const;
-      bool isImmediate() const;
-      bool isRegisterOrImmediate() const;
+      // Utility methods to be used in Statement::isValid implementations      
+      bool isType(int kind);
+      int getType(void);
       
       bool hasIdentifier() const;
       bool hasRegister() const;

@@ -31,51 +31,32 @@ int StatementArgList::getValue(State *s, int ind) const {
    return m_args[ind]->getValue(s);
 }
 
-int StatementArgList::noPlainRegisterArgs() const {
-   int count = 0;
-   
-   for(int i = m_count; i--;)
-      count += (m_args[i]->isRegister());
-
-   return count;
-}
-
 StatementArg *StatementArgList::operator[](int ind) const {
    return m_args[ind];
 }
 
-// Returns true iff this list contains EXACTLY noRequired plain register arguments
-bool StatementArgList::allArgumentsArePlainRegisters(int noRequired) const {
-   return (noPlainRegisterArgs() == noRequired);
-}
-
-// Returns true iff this list contains AT LEAST noRequired plain register arguments (all coming at the beginning) and EXACTLY noTotal arguments
-bool StatementArgList::hasRequiredPlainRegisters(int noRequired, int noTotal) const {
-   if (m_count != noTotal)
-      return false;
+// returns true iff each arg in the argument list matches the corresponding
+// argument type provided. For example,
+// matchesSyntax(PLAIN_REGISTER, ADDRESS) returns true iff there are exactly two arguments and the first is a plain register, and the second is an address.
+// You can also do:
+// matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE) which works as you'd expect.
+bool StatementArgList::matchesSyntax(int arg0, int arg1, int arg2, int arg3) const {
    
-   for(int i = 0; i < noRequired; i++)
-      if (!m_args[i]->isRegister())
-         return false;
-
-   return true;
+   return ( isArgType(0, arg0) && isArgType(1, arg1) && isArgType(2, arg2) && isArgType(3, arg3));
 }
 
-// Returns true iff this list has noRegisters, followed to noTotal - noRegisters StatementArgs which can either be plain Registers or ImmediateIdentifiers
-bool StatementArgList::fitsRegisterImmediateType(int noRegisters, int noTotal) const
-{
-   if (hasRequiredPlainRegisters(noRegisters, noTotal)) {
-      
-      for(int i = noRegisters; i < noTotal; i++)
-         if (!m_args[i]->isRegisterOrImmediate())
-            return false;
-      
-      return true;
-   }
-
-   return false;
+// indexed from 0.
+bool StatementArgList::isArgType(int argNumber, int what) const {
+   return ((argNumber < noArgs()) ? (*this)[argNumber]->getType() : NONE) & what;  
 }
 
+
+
+
+/*
+ * StatementArg
+ * behold.
+ */
 StatementArg::StatementArg(Identifier *id, int r, bool dereference) 
    : m_id(id), m_register(r), m_dereference(dereference)
 { }
@@ -84,20 +65,17 @@ StatementArg::StatementArg(int r, bool dereference)
    : m_id(NULL), m_register(r), m_dereference(dereference)
 { }
 
-bool StatementArg::isRegister() const {
-   return (hasRegister() && !hasIdentifier() && !hasDereference());
+// Utility methods to be used in Statement::isValid implementations      
+bool StatementArg::isType(int kind) {
+     return (bool) (getType() & kind);   
 }
 
-bool StatementArg::isAddress() const {
-   return (hasIdentifier() || (hasRegister() && hasDereference()));
-}
-
-bool StatementArg::isImmediate() const {
-   return (!hasRegister() && hasIdentifier() && m_id->isImmediate());
-}
-
-bool StatementArg::isRegisterOrImmediate() const {
-   return (isRegister() || isImmediate());
+int StatementArg::getType(void) {
+   if (hasRegister() && !hasIdentifier() && !hasDereference()) return PLAIN_REGISTER;
+   if (hasIdentifier() || (hasRegister() && hasDereference())) return ADDRESS;
+   if (!hasRegister() && hasIdentifier() && m_id->isImmediate()) return IMMEDIATE;
+   return NONE; // shouldn't get here
+   
 }
 
 bool StatementArg::hasIdentifier() const {

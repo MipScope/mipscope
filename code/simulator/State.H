@@ -38,6 +38,9 @@ class State : public QObject {
       // undo
       void undoUntilTimestamp(TIMESTAMP timestamp);
       TIMESTAMP getCurrentTimestamp(void);
+      
+      // special
+      void syscall(void);
 
    signals:
 

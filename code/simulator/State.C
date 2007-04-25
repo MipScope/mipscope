@@ -97,3 +97,26 @@ TIMESTAMP State::getCurrentTimestamp(void) {
    return m_currentTimestamp;
 }
 
+// does the OS action depending on what's in $v0
+void State::syscall(void) {
+
+   // TODO: make these legit.
+   
+   switch (getRegister(v0)) {
+      case 1:
+         // print_int: print out what's in $a0
+         cout << getRegister(a0);
+         break;
+         
+      case 4:
+         // print_string: print out what's pointed to by $a0
+      
+      case 5:
+         // read_int: read an integer, stick it in $v0
+         
+      default:
+         assert(false); // the rest are unimplemented
+         
+   }
+}
+

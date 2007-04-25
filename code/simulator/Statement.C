@@ -6,6 +6,8 @@
 
 // Include all Statement Implementations
 #include "Statements/Arithmetic.H"
+#include "Statements/DataTransfer.H"
+#include "Statements/Special.H"
 
 Statement::Statement(unsigned int requiredSizeInBytes) 
    : m_size(requiredSizeInBytes)
@@ -47,12 +49,17 @@ InstructionMap instructionMap;
 void Instruction::InitializeInstructionMap() {
    // TODO:  initialize global instructionMap declared extern in typedefs.h
    
-   // temporary, to test parsing
-   
+   // temporary, to test parsing  
    int i = 0;
    while(Instructions[i] != NULL)
       instructionMap.insert(Instructions[i++], NULL/*TEMP*/);
 
    instructionMap.insert("add", new Add());
+   instructionMap.insert("addi", new Addi());
+   instructionMap.insert("li", new Li());
+   instructionMap.insert("nop", new Nop());
+   instructionMap.insert("syscall", new Syscall());
+   
+   
 }
 

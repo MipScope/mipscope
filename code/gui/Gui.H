@@ -22,6 +22,7 @@ class QToolBar;
 class LineNoPane;
 class OutputConsole;
 class RegisterView;
+class TextEditor;
 
 class Gui : public QMainWindow {
    
@@ -100,6 +101,8 @@ class Gui : public QMainWindow {
       // IMPORTANT:
       //    Editing, Debugging, or Paused
       DEBUG_MODE m_mode;
+      // TextEditor which is currently running / being debugged
+      TextEditor *m_runningEditor;
 
    private:  // methods
       void setupGui();

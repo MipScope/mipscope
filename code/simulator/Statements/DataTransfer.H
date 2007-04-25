@@ -64,5 +64,5 @@ class La : public Instruction {
       }
 };
 
-
 #endif // __DATATRANSFER_H__
+

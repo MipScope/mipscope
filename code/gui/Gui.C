@@ -13,7 +13,8 @@
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
-   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(M_NORMAL)
+   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(M_NORMAL), 
+   m_runningEditor(NULL)
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
@@ -400,6 +401,7 @@ void Gui::debugRunAction() {
             return;
       }
       
+      m_runningEditor = m_editorPane->m_activeEditor;
       m_mode = M_RUNNING;
    } else if (m_mode == M_PAUSED)
       m_mode = M_RUNNING;
@@ -417,6 +419,7 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
+         m_editorPane->setModifiable(false);
          
          break;
       case M_PAUSED:
@@ -426,6 +429,7 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(true);
          m_debugBStepAction->setEnabled(true);
+         m_editorPane->setModifiable(true);
  
          break;
       case M_NORMAL:
@@ -435,6 +439,7 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(false);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
+         m_editorPane->setModifiable(true);
          
       default:
          break;

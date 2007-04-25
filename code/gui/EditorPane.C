@@ -101,7 +101,7 @@ void EditorPane::activeEditorChanged(int index) {
    QTimer::singleShot(250, this, SLOT(resetModified()));
    isModified(m_activeEditor->isModified());
 
-   cerr << m_activeEditor->isModified() << ", ";// << m_parent->m_editUndoAction->isEnabled() << endl;
+//   cerr << m_activeEditor->isModified() << ", ";// << m_parent->m_editUndoAction->isEnabled() << endl;
    
    //m_highlighter->setDocument(m_activeEditor->document());
 }
@@ -364,7 +364,7 @@ bool EditorPane::isReadOnly() {
 
 void EditorPane::setModifiable(bool modifiable) {
    m_modifiable = modifiable;
-
+   
    // alert all listeners of change in read-only status
    isModifiable(modifiable);
 }

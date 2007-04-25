@@ -43,12 +43,13 @@ void EditorContextMenu::showAt(const QPoint &pos, int index) {
    if (index >= 0) {
       m_editor = (TextEditor*)m_editorPane->widget(index);
       int count = m_editorPane->count();
+      bool readOnly = !(m_editorPane->isModifiable());
       
       m_close->setEnabled(true);
-      if (count <= 1) {
+      if (count <= 1 || readOnly) {
          m_closeOtherTabs->setEnabled(false);
 
-         if (m_editor->file() == NULL && !m_editor->isModified())
+         if (readOnly || (m_editor->file() == NULL && !m_editor->isModified()))
             m_close->setEnabled(false);
       } else m_closeOtherTabs->setEnabled(true);
       

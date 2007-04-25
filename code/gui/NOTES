@@ -1,8 +1,10 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView, StackView?
-   * p44 of mips guide for addressing modes
    * Look into transparency & background images for widgets -- improve ExtendedView;
+   * Remember to fully implement SyntaxTip's repository from instructionMap and directiveMap :)
+   * QTextDocument::contentsChanged(int position, int charsRemoved, int charsAdded)  [signal]  -- activated before layout manager updates changes :)
+
 
 Highlighting a line of Text:
    QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )

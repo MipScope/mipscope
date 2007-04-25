@@ -66,6 +66,7 @@ void TextEditor::setupEditor(QFont *font) {
    connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
    connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    
+   modifiabilityChanged(m_parent->isModifiable());
    m_syntaxHighligher = new SyntaxHighlighter(this);
 }
 
@@ -271,7 +272,8 @@ bool TextEditor::openFile(QFile *file) {
       QTimer::singleShot(250, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(750, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(1300, m_parent, SLOT(contentChangedProxy()));
-   
+      modifiabilityChanged(m_parent->isModifiable());
+      
 //      setUpdatesEnabled(true);
    } // else display error
    
@@ -298,7 +300,10 @@ void TextEditor::resetTabText(bool modified) {
    int index = m_parent->indexOf(this);
    
    m_parent->setTabText(index, name);// + (m_modified ? "*" : ""));
-   m_parent->setTabIcon(index, (m_modified ? QIcon(IMAGES"/fileUnsaved.png") : QIcon(IMAGES"/fileSaved.png")));
+   const QIcon &icon = (isModifiable() ? (m_modified ? QIcon(IMAGES"/fileUnsaved.png") : 
+            QIcon(IMAGES"/fileSaved.png")) : QIcon(IMAGES"/fileLocked.png"));
+
+   m_parent->setTabIcon(index, icon);
 }
 
 bool Accepted(QMessageBox::StandardButton result) {
@@ -427,6 +432,7 @@ bool TextEditor::isModified() const {
 
 void TextEditor::modifiabilityChanged(bool isModifiable) {
    setReadOnly(!isModifiable);
+   resetTabText(m_modified);
 }
 
 bool TextEditor::isModifiable() const {
@@ -562,7 +568,7 @@ int TextEditor::lineNumber(const QTextBlock &b) const {
 
    QTextCursor c = textCursor();
    c.setPosition(b.position());
-   
+
    return lineNumber(c);
 }
 
@@ -601,11 +607,15 @@ QTextBlock *TextEditor::getBlockForLine(int lineNo, QTextBlock *last) {
 //   cerr << c.position() << " entering getBlockForLine(" << lineNo << ", " << last << ");\n";
 
    if (last != NULL && last->isValid()) {
-      c.setPosition(last->position());
-      
-      if (c.blockNumber() == lineNo) {
-   //      cerr << "\texiting last\n";
-         return last;
+      c.movePosition(QTextCursor::End);
+      int lastPosition = last->position();
+      if (c.position() >= lastPosition) {
+         c.setPosition(lastPosition);
+
+         if (c.blockNumber() == lineNo) {
+            //      cerr << "\texiting last\n";
+            return last;
+         }
       }
    }
    

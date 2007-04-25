@@ -17,6 +17,8 @@ unsigned int Statement::getSizeInBytes() const {
    return m_size;
 }
 
+void Statement::initialize(ParseNode *p, State *s) { p = NULL; s = NULL; }
+
 bool Statement::isInstruction() {
    Instruction *instr = NULL;
 
@@ -44,6 +46,14 @@ Instruction::Instruction(StatementArgList *args)
 { }
 
 Instruction::~Instruction() { safeDelete(m_args); }
+
+StatementArgList *Instruction::getArguments() const {
+   return m_args;
+}
+
+bool Instruction::autoIncrementPC() const {
+   return true;
+}
 
 InstructionMap instructionMap;
 void Instruction::InitializeInstructionMap() {

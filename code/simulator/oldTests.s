@@ -12,6 +12,11 @@ la $s1, CONSTANT($sp)# test comment.global newLine
 # ---------------
 # Directive Tests
 # ---------------
+.ascii "\n\"tab   \t  tab\"\n""    # passes now :)
+.ascii "\n\"tab\ttab\"\n"     
+memoryBitches:.word  07, 0x8, 92, -4, 0, 0
+javoll:   .half   -1:48
+
 CONSTANT= -42
 newLine:             .ascii           "__asdlkeowweoeiofs:.fei''"
 .align 2

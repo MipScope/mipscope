@@ -40,28 +40,28 @@ class Parser {
       // Parses one line of a QTextDocument
       // Returns an initialized ParseNode* if parsing was successful
       // Returns NULL upon syntax error
-      static ParseNode *parseLine(QTextBlock *b);
+      static ParseNode *parseLine(QTextBlock *b, ParseList *list);
       
       // Parses given text for one argument of an instruction
-      static StatementArg *parseArg(QString text);
+      static StatementArg *parseArg(QString text, ParseList *list);
       
       // Searches for label+-imm($reg)
-      static AddressIdentifier *parseLabelWithOffset(QString text);
+      static AddressIdentifier *parseLabelWithOffset(QString text, ParseList *list);
       
       // Parses the given text for an immediate number  or label identifier
-      static Identifier *parseIdentifier(QString text);
+      static Identifier *parseIdentifier(QString text, ParseList *list);
       
       // Parses for an immediate number (in hex, binary, or decimal)
-      static ImmediateIdentifier *parseImmediate(QString text);
+      static ImmediateIdentifier *parseImmediate(QString text, ParseList *list);
       // Parses for valid label names (or identifiers for global data, consts, etc)
       static AddressIdentifier *parseLabel(QString text);
       static bool simplify(QString &text);
 
       // Parses the directive found in the text given
       // (assuming its (possibly optional) label has already been parsed)
-      static ParseNode *parseDirective(QTextBlock *b, QString &text, AddressIdentifier *label);
+      static ParseNode *parseDirective(QTextBlock *b, QString &text, AddressIdentifier *label, ParseList *list);
       
-      static ParseNode *parseConstant(QTextBlock *b, QString &text, AddressIdentifier *label, int equalsIndex);
+      static ParseNode *parseConstant(QTextBlock *b, QString &text, AddressIdentifier *label, int equalsIndex, ParseList *list);
 
       // Why doesn't QString have this functinality???
       //static QString substring(QString s, int startIndex, int endIndex);
@@ -72,22 +72,28 @@ class ParseError : public QString {
    public:
       ParseError(const QString &description, const QString &unrecognized, int length = -1, QTextBlock *b = NULL, int lineNo = -1);
       
+      QString getUnrecognized() const;
+      QTextBlock *getTextBlock() const;
+      void setTextBlock(QTextBlock *b);
+       
       int getPosition() const;
       int getLength() const;
       int getLineNo() const;
-      QTextBlock *getTextBlock() const;
       
       void setPosition(int position);
       void setLineNo(int lineNo);
-      void setTextBlock(QTextBlock *b);
-      
+
    protected:
+      // string which caused problem (optional)
+      QString m_unrecognized;
+      // line where problem occurred
+      QTextBlock *m_textBlock;
+      
       int m_position; // position of parse error
       int m_length;   // length (if available) of unrecognized string
       // string which couldn't be recognized by parser (probably a subset of m_textBlock->text())
-      QString m_unrecognized;
-      QTextBlock *m_textBlock;
       int m_lineNo;
+
 };
 
 #endif // __PARSER_H__

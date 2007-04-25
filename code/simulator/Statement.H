@@ -11,7 +11,10 @@ class Statement {
       virtual ~Statement() { }
       
       static void InitializeStatementMaps();
-       
+      
+      // defaults to no initialization, overridden by some Directives
+      virtual void initialize(ParseNode *p, State *s);
+      
       // Returns the number of bytes this Statement should take up in the address space
       unsigned int getSizeInBytes() const;
       
@@ -19,8 +22,8 @@ class Statement {
       virtual const char *getSyntax() const = 0;
       virtual const char *getDescription() const = 0;
       
-      bool isInstruction();
-      bool isDirective();
+      virtual bool isInstruction();
+      virtual bool isDirective();
 
    protected:
       unsigned int m_size; // in bytes  (4 for all instructions)
@@ -32,6 +35,11 @@ class Instruction : public Statement {
       virtual ~Instruction();
       
       static void InitializeInstructionMap();
+      
+      // returns true if ParseNode should automatically increment PC to next ParseNode
+      // returns false for branch-like instructions which update the PC automatically
+      virtual bool autoIncrementPC() const;
+      StatementArgList *getArguments() const;
       
       // Returns true if the arguments passed to this Instruction are valid
       virtual bool isSyntacticallyValid(StatementArgList *args) const = 0;

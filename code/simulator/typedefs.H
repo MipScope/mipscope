@@ -12,6 +12,7 @@ class Statement;
 class ParseNode;
 class StatementArgList;
 class Instruction;
+class AddressIdentifier;
 class Directive;
 class ParseError;
 
@@ -25,6 +26,23 @@ typedef QHash<QString, Instruction*> InstructionMap;
 typedef InstructionMap::iterator InstructionMapIterator;
 typedef QHash<QString, Directive*> DirectiveMap;
 typedef DirectiveMap::iterator DirectiveMapIterator;
+
+// used by Parser::parseLine -- updated when it finds a new label
+typedef QHash<QString, AddressIdentifier*> LabelMap;
+typedef LabelMap::iterator LabelMapIterator;
+
+// for copying/pasting consts and #defines during Parser::parseLine
+typedef QHash<QString, QString> PreProcessorMap;
+typedef PreProcessorMap::iterator PreProcessorMapIterator;
+
+typedef list<ParseNode*> ParseNodeList;
+typedef ParseNodeList::iterator ParseNodeListIterator;
+
+// string -> ParseNodes for which that string has caused a semantic error
+//    (not defined at the time when that ParseNode was inserted)
+typedef QHash<QString, ParseNodeList*> SemanticErrors;
+typedef SemanticErrors::iterator SemanticErrorsIterator;
+
 
 // Global QHashes containing representative instances (factories) of each supported Statement
 extern InstructionMap instructionMap;

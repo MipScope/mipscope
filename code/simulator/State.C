@@ -1,10 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
-
 #include "State.H"
-#include "typedefs.H"
-#include "ParseNode.H"
 #include "StateException.H"
+#include "ParseList.H"
+#include "ParseNode.H"
+#include "typedefs.H"
+#include <string.h>
 
 State::State(unsigned int memorySize) :	m_memory(memorySize, 0),
                                           m_registers(register_count, 0),
@@ -36,15 +35,15 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
    m_memory[address] = value;
 }
 
-unsigned int State::getMemoryWord(unsigned int address) {
+unsigned int State::getMemoryWord(unsigned int address) const {
 
    if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
    if (address % 4 != 0) throw BusError(address);
 
-   return *((unsigned int*) (m_memory.data() + address) ); 
+   return *((unsigned int*) (m_memory.data() + address) );
 }
 
-unsigned char State::getMemoryByte(unsigned int address) {
+unsigned char State::getMemoryByte(unsigned int address) const {
 
    if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
 
@@ -72,7 +71,7 @@ void State::setRegister(int reg, unsigned int value) {
    m_registers[reg] = value;
 }
 
-unsigned int State::getRegister(int reg) {
+unsigned int State::getRegister(int reg) const {
 
    if (reg >= m_registers.size() ||
          reg == hi || reg == lo || reg == register_count)
@@ -81,19 +80,27 @@ unsigned int State::getRegister(int reg) {
    return m_registers[reg];
 }
 
-void State::setPC(ParseNode* value) {
-   m_pc = value;	
+
+void State::incrementPC() {
+   setPC(ParseList::getClosestInstruction(m_pc->getNext()));
 }
 
-ParseNode* State::getPC(void) {
+void State::setPC(ParseNode* value) {
+   m_pc = value;	
+   
+   // TODO:  detect when next node does not exit and signal program completion/termination
+}
+
+ParseNode* State::getPC(void) const {
    return m_pc;	
 }
 
 void State::undoUntilTimestamp(TIMESTAMP timestamp) {
    // TODO: unimplemented
+   timestamp = 0;
 }
 
-TIMESTAMP State::getCurrentTimestamp(void) {
+TIMESTAMP State::getCurrentTimestamp(void) const {
    return m_currentTimestamp;
 }
 

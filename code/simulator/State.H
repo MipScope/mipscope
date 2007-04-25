@@ -20,8 +20,8 @@ class State : public QObject {
       // memory
       void setMemoryWord(unsigned int address, unsigned int value);
       void setMemoryByte(unsigned int address, unsigned char value);
-      unsigned int getMemoryWord(unsigned int address);
-      unsigned char getMemoryByte(unsigned int address);
+      unsigned int getMemoryWord(unsigned int address) const;
+      unsigned char getMemoryByte(unsigned int address) const;
       
       // utility methods for bulk-operations (mainly for Directive-initialization)
       void memcpy(unsigned int destAddress, const void *src, unsigned int size);
@@ -29,15 +29,16 @@ class State : public QObject {
       
       // registers
       void setRegister(int reg, unsigned int value);
-      unsigned int getRegister(int reg);
+      unsigned int getRegister(int reg) const;
 
       // pc
+      void incrementPC();
       void setPC(ParseNode* value);
-      ParseNode* getPC(void);
-
+      ParseNode* getPC(void) const;
+      
       // undo
       void undoUntilTimestamp(TIMESTAMP timestamp);
-      TIMESTAMP getCurrentTimestamp(void);
+      TIMESTAMP getCurrentTimestamp(void) const;
       
       // special
       void syscall(void);

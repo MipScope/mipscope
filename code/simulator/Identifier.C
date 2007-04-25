@@ -51,6 +51,11 @@ void AddressIdentifier::setLabelParseNode(ParseNode *p) {
    m_parseNode = p;
 }
 
+// Returns the ParseNode containing the label which corresponds to this identifier
+ParseNode *AddressIdentifier::getParseNode() const {
+   return m_parseNode;
+}
+
 ImmediateIdentifier::ImmediateIdentifier(const QString &id, int value) 
    : Identifier(id), m_value(value) {}
 

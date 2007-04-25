@@ -12,17 +12,27 @@ class ParseNode : public QTextBlockUserData {
    public:
       ParseNode(QTextBlock* textBlock, Statement* statement = NULL, AddressIdentifier *label = NULL);
       
-      Statement* getStatement(void);
-      AddressIdentifier *getLabel();
+      static ParseNode *Node(const QTextBlock &b); // utility method
       
-      int getAddress();
-      TIMESTAMP getFirstExecuted(void);
+      Statement* getStatement(void) const;
+      AddressIdentifier *getLabel() const;
       
-      ParseNode* getNext(void);
-      ParseNode* getPrevious(void);
+      void setAddress(unsigned int address);
+      unsigned int getAddress() const;  // inclusive
+      unsigned int getSize() const;
+      unsigned int getEndAddress() const;  // exclusive
       
+      TIMESTAMP getFirstExecuted(void) const;
+      QTextBlock *getTextBlock() const;
+      
+      ParseNode* getNext(void) const;
+      ParseNode* getPrevious(void) const;
+
+      // Returns whether or not this ParseNode contains a valid Instruction
+      bool isExecutable() const;
       void execute(State* state);
-      bool isValid();
+      bool isValid() const;
+      void setSemanticValidity(bool isValid);
       
    private:
       TIMESTAMP m_firstExecuted;
@@ -31,7 +41,10 @@ class ParseNode : public QTextBlockUserData {
       Statement* m_statement;
       QTextBlock* m_textBlock;
 
-      int m_address;
+      unsigned int m_address;
+      
+      // Set in ParseList::insert() upon successful insertion
+      bool m_isSemanticallyValid;
 };
 
 #endif // PARSENODE_H_

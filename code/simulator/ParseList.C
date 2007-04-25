@@ -10,22 +10,226 @@
 #include "StatementArgList.H"
 #include "Identifier.H"
 #include "Statement.H"
+#include "State.H"
 
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QTextCursor>
 
 ParseList::ParseList(QTextDocument *document) :
-   m_source(document)
+   m_source(document), m_nextTextAddress(TEXT_BASE_ADDRESS), 
+   m_nextDataAddress(DATA_BASE_ADDRESS)
 { }
 
-ParseNode *ParseList::first() {
-   return NULL;
+ParseNode *ParseList::first() const {
+   return ParseNode::Node(m_source->begin());
    //	return static_cast<ParseNode*> (m_textEditor->getBlockForLine(0)->userData());	
 }
 
-ParseNode *ParseList::last() {
+ParseNode *ParseList::last() const {
+   return ParseNode::Node(m_source->end());
+}
+
+ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
+   if (address < TEXT_BASE_ADDRESS || address >= m_nextTextAddress)
+      return NULL;
+   
+   ParseNode *cur = getEntryPoint();
+
+   
+   // TODO:  start at better address point
+   // and/or binary-search for ParseNode at address
+   // and/or maintain Map or text addresses -> ParseNode*
+   
+
+   while(cur != NULL) {
+      unsigned int startAddress = cur->getAddress();
+      unsigned int endAddress = cur->getEndAddress();
+      
+      if (address >= startAddress && address < endAddress)
+         return getClosestInstruction(cur); // closest executable instr
+
+      cur = cur->getNext();
+   }
+   
+   // invalid addess
    return NULL;
 }
 
+// (static) Returns the closest executable ParseNode at or after the given ParseNode 
+ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
+   if (p == NULL)
+      return NULL;
+
+   while(!p->isExecutable()) {
+      if ((p = p->getNext()) == NULL)
+         return NULL;  // end of program
+   }
+
+   return p;
+}
+
+// Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
+bool ParseList::isValid() const {
+   if (m_semanticErrors.size() > 0)
+      return false;
+   
+   // ensure prog contains valid entry point
+   if (getEntryPoint() == NULL)
+      return false; // TODO:  notify user of this
+   
+   for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next()) {
+      ParseNode *p = ParseNode::Node(b);
+      
+      if (p == NULL || !p->isValid())
+         return false;
+   }
+   
+   return true;
+}
+
+// Returns the ParseNode* containing the program's entry point (__start label or main)
+ParseNode *ParseList::getEntryPoint() const {
+   ParseNode *entryPoint = NULL;
+   
+   if (m_labelMap.contains(__START) && (entryPoint = m_labelMap[__START]->getParseNode()) != NULL && entryPoint->isValid())
+      return entryPoint;
+   if (m_labelMap.contains(MAIN) && (entryPoint = m_labelMap[MAIN]->getParseNode()) != NULL && entryPoint->isValid())
+      return entryPoint;
+
+   return NULL;
+}
+
+// ensures ParseList is valid and ready to run, and then initializes all 
+// static memory given the State.  returns whether or not initialization was successful.
+bool ParseList::initialize(State *state) {
+   if (!this->isValid())
+      return false;
+   
+   ParseNode *l = last();
+   for(ParseNode *cur = first(); cur != l; cur = cur->getNext()) {
+      Statement *s = cur->getStatement();
+      
+      if (s != NULL)
+         s->initialize(cur, state);
+   }
+
+   state->setPC(getEntryPoint());
+   return true;
+}
+
+bool ParseList::insert(ParseNode *newNode) {
+   if (newNode == NULL)
+      return false;
+   
+   // Validate any ParseNodes which were waiting on this ParseNode's label 
+   // to become semantically valid
+   AddressIdentifier *label = newNode->getLabel();
+   if (label != NULL && m_semanticErrors.contains(label->getID())) {
+      ParseNodeList *waitingNodes = m_semanticErrors[label->getID()];
+      
+      foreach(ParseNode *cur, *waitingNodes) {
+         cur->setSemanticValidity(true);
+         
+         Statement *s = cur->getStatement();
+         if (s != NULL && s->isInstruction()) {
+            StatementArgList *args = (static_cast<Instruction*>(s))->getArguments();
+
+            for(int i = 0; i < args->noArgs(); i++) {
+               StatementArg *cur = (*args)[i];
+
+               if (cur->hasIdentifier()) {
+                  Identifier *addrID = cur->getID();
+                  const QString &id = addrID->getID();
+                  if (id == label->getID() && addrID->isAddress()) {
+                     (static_cast<AddressIdentifier*>(addrID))->setLabelParseNode(newNode);
+                     break;
+                  }
+               }
+            } // for
+         } // if statement is an instruction
+      } // foreach ParseNode waiting
+      
+      m_semanticErrors.remove(label->getID());
+      delete waitingNodes;
+   }
+   
+   Statement *s = newNode->getStatement();
+   bool semanticallyCorrect = true;
+   
+   // ensure any labels referenced by this instruction are defined
+   if (s != NULL && s->isInstruction()) {
+      StatementArgList *args = (static_cast<Instruction*>(s))->getArguments();
+      
+      for(int i = 0; i < args->noArgs(); i++) {
+         StatementArg *cur = (*args)[i];
+         
+         if (cur->hasIdentifier()) {
+            const QString &id = cur->getID()->getID();
+
+            if (!m_labelMap.contains(id)) {
+               // this node is referencing some label which currently doesn't exist
+               // wait for the label to appear, and only then validate it
+               newNode->setSemanticValidity(false);
+               semanticallyCorrect = false;
+
+               if (!m_semanticErrors.contains(id))
+                  m_semanticErrors.insert(id, new ParseNodeList());
+               
+               m_semanticErrors[id]->push_back(newNode);
+               break;
+            }
+         }
+      } // for
+   }
+   
+
+
+   // TODO:  handle alignment correctly; ensure word-boundaries for 
+   // stuff which needs to be word-aligned; adhere to .align directive
+
+
+   
+   // ------------------------------
+   // Initialize ParseNode's Address
+   // ------------------------------
+   if (s != NULL) {
+      if (s->isInstruction()) {
+         Instruction *instr = (static_cast<Instruction*>(s));
+         newNode->setAddress(m_nextTextAddress);
+         
+         m_nextTextAddress += instr->getSizeInBytes();
+      } else if (s->isDirective()) {
+         Directive *dir = (static_cast<Directive*>(s));
+         newNode->setAddress(m_nextDataAddress);
+         
+         m_nextDataAddress += dir->getSizeInBytes();
+      } else newNode->setAddress(SENTINEL_ADDRESS);
+   } else newNode->setAddress(SENTINEL_ADDRESS);
+   
+   return semanticallyCorrect;
+}
+
+void ParseList::remove(ParseNode *node) {
+   if (node == NULL)
+      return;
+   
+   
+}
+
+void ParseList::remove(QTextBlock &block) {
+   remove(ParseNode::Node(block));
+}
+
+
+SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 
+   : ParseError(description, unrecognized), m_parseNode(parseNode)
+{
+   if (m_parseNode != NULL)
+      setTextBlock(m_parseNode->getTextBlock());
+}
+
+ParseNode *SemanticError::getParseNode() const {
+   return m_parseNode;
+}
 

@@ -339,5 +339,28 @@ class WordDirective : public Directive {
       unsigned int *m_values;
 };
 
+// ----------------------------------
+// Directive CONSTANT = imm
+// ----------------------------------
+class ConstStatement : public Statement {
+   public:
+      ConstStatement(AddressIdentifier *name, ImmediateIdentifier *value) 
+         : Statement(0), m_id(name), m_value(value) { }
+      
+      virtual bool isInstruction() { return false; }
+      virtual bool isDirective() { return false; }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return ""; }
+      virtual const char *getSyntax() const { return ""; }
+      virtual const char *getDescription() const {
+         return "";
+      }
+
+   protected:
+      AddressIdentifier *m_id;
+      ImmediateIdentifier *m_value;
+};
+
 #endif // __DIRECTIVES_H__
 

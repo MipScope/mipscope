@@ -36,6 +36,9 @@ class AddressIdentifier : public Identifier {
       void setOffset(int);
       
       void setLabelParseNode(ParseNode *p);
+
+      // Returns the ParseNode containing the label which corresponds to this identifier
+      ParseNode *getParseNode() const;
       
    protected:
       ParseNode *m_parseNode;

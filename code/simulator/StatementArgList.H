@@ -22,9 +22,6 @@ class StatementArgList {
       // Returns the number of arguments in this list
       int noArgs() const;
 
-      // Returns the number of plain register arguments in this list
-      int noPlainRegisterArgs() const;
-
       // Use to index into and retrieve a specific StatementArg in this list
       StatementArg *operator[](int ind) const;
       
@@ -39,17 +36,6 @@ class StatementArgList {
       bool matchesSyntax(int arg1, int arg2 = NONE, int arg3 = NONE, int arg4 = NONE) const;
       bool isArgType(int argNumber, int what) const;
       
-      // Returns true iff this list contains exactly noRequired plain register arguments
-      // Ex:  MoveInstruction::isValid() would only need to check for allArgumentsArePlainRegisters(3);
-      bool allArgumentsArePlainRegisters(int noRequired = 3) const;
-      
-      // Returns true iff this list contains AT LEAST noRequired plain register arguments (all coming at the beginning) and EXACTLY noTotal arguments
-      bool hasRequiredPlainRegisters(int noRequired, int noTotal) const;
-      
-      // Returns true iff this list has noRegisters, followed by (noTotal - noRegisters) StatementArgs which can either be plain Registers or ImmediateIdentifiers
-      // Ex:  Add::isValid() would only need fitsRegisterImmediateType(2, 3);
-      // for its syntactic-validity check
-      bool fitsRegisterImmediateType(int noRegisters, int noTotal) const;
       
    protected:
       StatementArg *m_args[3];
@@ -71,7 +57,11 @@ class StatementArg {
       
       // Utility methods to be used in Statement::isValid implementations      
       bool isType(int kind);
-      int getType(void);
+      int getType(void);      
+      
+      bool isRegister(void) const;
+      bool isAddress(void) const;
+      bool isImmediate(void) const;
       
       bool hasIdentifier() const;
       bool hasRegister() const;

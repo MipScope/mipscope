@@ -9,6 +9,8 @@
 #include "typedefs.H"
 #include "State.H"
 
+#include <iostream>
+
 StatementArgList::StatementArgList(StatementArg *a1, StatementArg *a2, StatementArg *a3)
 {
    m_args[0] = a1;
@@ -42,12 +44,15 @@ StatementArg *StatementArgList::operator[](int ind) const {
 // matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE) which works as you'd expect.
 bool StatementArgList::matchesSyntax(int arg0, int arg1, int arg2, int arg3) const {
    
+  // cerr << arg0 << "\n" << arg1 << "\n" << arg2 << "\n" << arg3;
+   
    return ( isArgType(0, arg0) && isArgType(1, arg1) && isArgType(2, arg2) && isArgType(3, arg3));
 }
 
 // indexed from 0.
 bool StatementArgList::isArgType(int argNumber, int what) const {
-   return ((argNumber < noArgs()) ? (*this)[argNumber]->getType() : NONE) & what;  
+   
+   return ((argNumber < noArgs()) ? (m_args[argNumber]->getType()) : NONE) & what;  
 }
 
 
@@ -55,7 +60,6 @@ bool StatementArgList::isArgType(int argNumber, int what) const {
 
 /*
  * StatementArg
- * behold.
  */
 StatementArg::StatementArg(Identifier *id, int r, bool dereference) 
    : m_id(id), m_register(r), m_dereference(dereference)
@@ -70,31 +74,51 @@ bool StatementArg::isType(int kind) {
      return (bool) (getType() & kind);   
 }
 
+// everything that takes an address should take IMMEDIATE | ADDRESS.
+// a Statement is only of type ADDRESS if we KNOW it's an address.
+// it's possible that it's a correct address, but if it's just a plain number,
+// we call it an IMMEDIATE.
 int StatementArg::getType(void) {
-   if (hasRegister() && !hasIdentifier() && !hasDereference()) return PLAIN_REGISTER;
-   if (hasIdentifier() || (hasRegister() && hasDereference())) return ADDRESS;
-   if (!hasRegister() && hasIdentifier() && m_id->isImmediate()) return IMMEDIATE;
-   return NONE; // shouldn't get here
    
+   //cerr << "StatementArg::getType: " << "identifier=" << m_id << " register=" << m_register << " dereference=" << m_dereference << "\n";
+   
+   int ret = 0;
+   if (isRegister()) ret |= PLAIN_REGISTER;
+   if (isAddress()) ret |= ADDRESS;
+   if (isImmediate()) ret |=  IMMEDIATE;
+   
+   return ret;   
 }
 
-bool StatementArg::hasIdentifier() const {
+bool StatementArg::isRegister(void) const {
+   return (hasRegister() && !hasIdentifier() && !hasDereference());
+}
+
+bool StatementArg::isAddress(void) const {
+   return (hasIdentifier() || (hasRegister() && hasDereference()));
+}
+
+bool StatementArg::isImmediate(void) const {
+   return (!hasRegister() && hasIdentifier() && m_id->isImmediate());
+}
+
+bool StatementArg::hasIdentifier(void) const {
    return (m_id != NULL);
-}
+}  
 
-bool StatementArg::hasRegister() const {
+bool StatementArg::hasRegister(void) const {
    return (m_register >= 0);
 }
 
-bool StatementArg::hasDereference() const {
+bool StatementArg::hasDereference(void) const {
    return m_dereference;
 }
 
-Identifier *StatementArg::getID() const {
+Identifier *StatementArg::getID(void) const {
    return m_id;
 }
 
-int StatementArg::getRegister() const {
+int StatementArg::getRegister(void) const {
    return m_register;
 }
 

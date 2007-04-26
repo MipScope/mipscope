@@ -8,6 +8,7 @@
 #include "Statements/Arithmetic.H"
 #include "Statements/DataTransfer.H"
 #include "Statements/Special.H"
+#include "Statements/Assert.H"
 
 Statement::Statement(unsigned int requiredSizeInBytes) 
    : m_size(requiredSizeInBytes)
@@ -78,6 +79,8 @@ void Instruction::InitializeInstructionMap() {
    instructionMap.insert("nop", new Nop());
    instructionMap.insert("syscall", new Syscall());
    
+   // Assert.H
+   instructionMap.insert("assertequals", new AssertEquals());
    
 }
 

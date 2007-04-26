@@ -43,6 +43,7 @@ class State : public QObject {
 
       // special
       void syscall(void);
+      void assertEquals(int val1, int val2); // throws AssertionFailure
       
       // completely resets the state to its original state
       void reset();

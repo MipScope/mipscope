@@ -2,6 +2,7 @@
 #include <QMutexLocker>
 
 #include "State.H"
+#include "StateException.H"
 #include "ParseList.H"
 #include "Debugger.H"
 #include "ParseNode.H"
@@ -84,12 +85,12 @@ void DebuggerThread::run(void) {
    
    if (!m_parseList->isValid()) {
       cerr << "Debugger: parseList isn't valid.\n";
-      quit();
+      return;
    }
    
    if (!m_parseList->initialize(m_state)) {
       cerr << "Debugger: parseList couldn't be initialized.\n";
-      quit();
+      return; 
    }
    
    // let's run!
@@ -98,12 +99,20 @@ void DebuggerThread::run(void) {
    while (getStatus() != STOPPED) {            
       waitOnStatus(PAUSED);
       
-      if (m_state->getPC() == NULL)
+      if (m_state->getPC() == NULL) {
+         setStatus(STOPPED);
          break;
+      }
       cerr << "\tExecuting: " << m_state->getPC() << endl;
       
       // execute another parsenode  
-      m_state->getPC()->execute(m_state);            
+      
+      try {
+         m_state->getPC()->execute(m_state);
+      } catch (StateException e) {
+         setStatus(STOPPED);
+         std::cout << e.getMessage().toStdString();  
+      }    
    }
    
 //   delete m_state;

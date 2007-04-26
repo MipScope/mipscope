@@ -13,11 +13,6 @@ using namespace std;
 
 bool VERBOSE;
 
-// the only purpose of this is to send a signal to 
-
-      
-
-
 int main(int argc, char** argv) {
    QTextDocument p();
    VERBOSE = false;
@@ -62,7 +57,7 @@ int main(int argc, char** argv) {
    
    cout << "post execute.\n";   
    
-   if (debugger.waitOnDebuggerThread(10 * 1000)) { // timeout after 1 seconds.
+   if (debugger.waitOnDebuggerThread(10 * 1000)) { // timeout after 10 seconds.
       cout << "\nProgram terminated normally.\n";
    }
    else {

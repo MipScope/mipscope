@@ -12,6 +12,8 @@ main:
    la $t0, addr
    lw $a0, 4($t0)
    
+   assertequals $a0, 33
+   
    syscall
    
 

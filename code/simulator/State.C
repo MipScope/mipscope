@@ -146,3 +146,7 @@ void State::syscall(void) {
    }
 }
 
+void State::assertEquals(int val1, int val2) {
+   if (val1 != val2) throw AssertionFailure(val1, val2);
+}
+

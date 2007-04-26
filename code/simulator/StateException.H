@@ -38,5 +38,14 @@ class InvalidRegister : public StateException {
 		int m_attemptedRegister;
 };
 
+class AssertionFailure : public StateException {
+   public:
+      AssertionFailure(int val1, int val2) : 
+            StateException("Assertion failure."),
+            m_val1(val1), m_val2(val2) {}
+      int m_val1, m_val2;
+};
+
+
 #endif // STATEEXCEPTION_H_
 

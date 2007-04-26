@@ -92,7 +92,7 @@ void ParseNode::execute(State* state) {
       state->incrementPC();
    
    // update state's timestamp
-   state->newTimestamp(this);
+   state->newTimestamp();
 }
 
 bool ParseNode::isValid() const {

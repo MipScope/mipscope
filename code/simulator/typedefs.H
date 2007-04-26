@@ -18,6 +18,18 @@ class ParseError;
 
 #define CLEAN_TIMESTAMP    (0)
 
+#define SENTINEL_ADDRESS      (0)
+#define TEXT_BASE_ADDRESS     (0x400000)     //     4,194,304
+#define DATA_BASE_ADDRESS     (0x10000000)   //   268,435,456
+#define STACK_BASE_ADDRESS    (0x7ffffffc)   // 2,147,483,644  (grows down)
+
+#define MAX_TEXT_SIZE         (DATA_BASE_ADDRESS - TEXT_BASE_ADDRESS - 4)
+#define MAX_DATA_SIZE         (STACK_BASE_ADDRESS - DATA_BASE_ADDRESS)
+#define MAX_STACK_SIZE        (MAX_DATA_SIZE)
+
+// 2,143,289,340  --> 2 gigs
+#define MEMORY_SIZE           (STACK_BASE_ADDRESS - TEXT_BASE_ADDRESS)
+
 typedef unsigned int TIMESTAMP;
 
 typedef vector<ParseError> SyntaxErrors;

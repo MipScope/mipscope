@@ -21,15 +21,6 @@ class State;
 #define __START   "__start"
 #define MAIN      "main"
 
-#define SENTINEL_ADDRESS      (0)
-#define TEXT_BASE_ADDRESS     (0x400000)     //     4,194,304
-#define DATA_BASE_ADDRESS     (0x10000000)   //   268,435,456
-#define STACK_BASE_ADDRESS    (0x7ffffffc)   // 2,147,483,644  (grows down)
-
-// 2,143,289,340  --> 2 gigs
-#define MEMORY_SIZE           (STACK_BASE_ADDRESS - TEXT_BASE_ADDRESS)
-
-
 // map of SemanticErrors; QString -> list<ParseNode*>;
 // mark those ParseNodes invalid.
 //    upon successful insert(), update list of SemanticErrors for which 

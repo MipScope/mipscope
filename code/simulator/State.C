@@ -5,50 +5,56 @@
 #include "typedefs.H"
 #include <string.h>
 
-#define MEMORY_SIZE 1024
+#define MEMORY_SIZE (16384)
 
-State::State(void) :                   	m_memory(MEMORY_SIZE, 0),
-                                          m_registers(register_count, 0),
-                                          m_pc(NULL),
-                                          m_caller(NULL),
-                                          m_currentTimestamp(0)
-{ }
+State::State() : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP)
+{
+   m_memory.reserve(MEMORY_SIZE);
+   reset();
+}
 
-TIMESTAMP State::newTimestamp(ParseNode* caller) {
-   m_caller = caller;
+TIMESTAMP State::newTimestamp() {
    return ++m_currentTimestamp;
 }
 
 void State::setMemoryWord(unsigned int address, unsigned int value) {
-
-   if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
-   if (address % 4 != 0) throw BusError(address);
+   ensureValidAlignment(address, 3);   
+   // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
    
-   m_memory[address + 0]	=	(value >> 0)	& 0xFF;
-   m_memory[address + 1]	= 	(value >> 8)	& 0xFF;
-   m_memory[address + 2]	= 	(value >> 16)	& 0xFF;
-   m_memory[address + 3]	= 	(value >> 24)	& 0xFF;
-}
-
-void State::setMemoryByte(unsigned int address, unsigned char value) {
-   if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
-
    m_memory[address] = value;
 }
 
+void State::setMemoryByte(unsigned int address, unsigned char value) {
+   ensureValidAlignment(address, 0);   
+
+   // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+   
+   m_memory[address & ~3] |= (value << ((address & 3) << 3));
+}
+
 unsigned int State::getMemoryWord(unsigned int address) const {
-
-   if (address + 4 >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
-   if (address % 4 != 0) throw BusError(address);
-
-   return *((unsigned int*) (m_memory.data() + address) );
+   ensureValidAlignment(address, 3);
+    
+   if (m_memory.contains(address))
+      return m_memory[address];
+   
+   return 0;
+   //return *((unsigned int*) (m_memory.data() + address) );
 }
 
 unsigned char State::getMemoryByte(unsigned int address) const {
+   ensureValidAlignment(address, 0);
 
-   if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
+   unsigned int word = getMemoryByte(address & ~3);
+   return (unsigned char)(word & (0xff << ((address & 3) << 3)));
+}
 
-   return m_memory[address]; 
+void State::ensureValidAlignment(unsigned int address, unsigned int align) const {
+   if (address + align >= STACK_BASE_ADDRESS || address < DATA_BASE_ADDRESS)
+      throw InvalidAddress(address);
+   
+   if (address & align)
+      throw BusError(address);
 }
 
 void State::memcpy(unsigned int destAddress, const void *src, unsigned int size) {
@@ -64,23 +70,18 @@ void State::memset(unsigned int destAddress, const int value, unsigned int size)
 }
 
 void State::setRegister(int reg, unsigned int value) {
-
-   if (reg >= m_registers.size() || reg == zero ||
-         reg == hi || reg == lo || reg >= register_count)
+   if (reg <= zero || reg >= pc)
       throw InvalidRegister(reg);
    
    m_registers[reg] = value;
 }
 
 unsigned int State::getRegister(int reg) const {
-
-   if (reg >= m_registers.size() ||
-         reg == hi || reg == lo || reg == register_count)
+   if (reg <= zero || reg >= pc)
       throw InvalidRegister(reg);
-
+   
    return m_registers[reg];
 }
-
 
 void State::incrementPC() {
    setPC(ParseList::getClosestInstruction(m_pc->getNext()));
@@ -90,6 +91,8 @@ void State::setPC(ParseNode* value) {
    m_pc = value;	
    
    // TODO:  detect when next node does not exit and signal program completion/termination
+
+   
 }
 
 ParseNode* State::getPC(void) const {
@@ -105,6 +108,13 @@ TIMESTAMP State::getCurrentTimestamp(void) const {
    return m_currentTimestamp;
 }
 
+void State::reset() {
+   ::memset(m_registers, 0, sizeof(int) * register_count);
+   m_currentTimestamp = CLEAN_TIMESTAMP;
+   m_pc = NULL;
+   m_memory.clear();
+}
+
 // does the OS action depending on what's in $v0
 void State::syscall(void) {
 
@@ -118,7 +128,7 @@ void State::syscall(void) {
          
       case 4:
          // print_string: print out what's pointed to by $a0
-      
+         
       case 5:
          // read_int: read an integer, stick it in $v0
          

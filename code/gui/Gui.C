@@ -9,6 +9,7 @@
 #include "LineNoPane.H"
 #include "OutputConsole.H"
 #include "RegisterView.H"
+#include "DirectoryListing.H"
 #include <QtGui>
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
@@ -229,7 +230,13 @@ void Gui::setupDockWidgets() {
    m_viewRegistersAction = m_registerView->toggleViewAction();
    m_viewRegistersAction->setIcon(QIcon(ICONS"/viewRegisters.png"));
    menu->addAction(m_viewRegistersAction);
+
+   m_directorylisting = new DirectoryListing(this, m_editorPane);
+   addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    
+   m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
+//   m_viewDirectoryListingAction->setIcon(QIcon(ICONS"/viewDirectoryListing.png"));  // TODO!
+   menu->addAction(m_viewDirectoryListingAction);
 }
 
 

@@ -23,6 +23,7 @@ class LineNoPane;
 class OutputConsole;
 class RegisterView;
 class TextEditor;
+class DirectoryListing;
 
 class Gui : public QMainWindow {
    
@@ -86,7 +87,8 @@ class Gui : public QMainWindow {
               
               // View-Related
               *m_viewOutputAction, 
-              *m_viewRegistersAction;
+              *m_viewRegistersAction, 
+              *m_viewDirectoryListingAction;
       
       // Central EditorPane and Dockable Widgets
       EditorPane *m_editorPane;
@@ -94,6 +96,7 @@ class Gui : public QMainWindow {
       QStatusBar *m_statusBar;
       OutputConsole *m_output;
       RegisterView *m_registerView;
+      DirectoryListing *m_directorylisting;
       
       //@overridden
       void closeEvent(QCloseEvent *event);

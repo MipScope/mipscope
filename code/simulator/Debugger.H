@@ -11,58 +11,76 @@
 
 class ParseList;
 class State;
+class Debugger;
 
 enum Status { STOPPED, PAUSED, RUNNING };
 
-/* The Debugger is its own thread.
+/* The Debugger class is the interface to the debugger. It's a normal QObject,
+ * and uses signals and slots to communicate with the GUI. 
+ * 
+ * DebuggerThread is a thread that the Debugger manages. When you call programStop()
+ * on Debugger, it changes a member variable of DebuggerThread so that, upon 
+ * completion of the current instruction, DebuggerThread stops executing the parseList.
  * 
  */
 
-// to start this thread, call debugger.exec()
-//
-class Debugger : public QThread {
+// don't use this, use Debugger (below)
+class DebuggerThread : public QThread {
+   
+   friend class Debugger;
+   
+   Q_OBJECT
+   
+   protected:
+      DebuggerThread(ParseList* parseList);
+      void run(void);
+      Status getStatus(void);
+      void setStatus(Status status);   
+   
+      State* m_state;      
+      ParseList* m_parseList;      
+      QMutex m_statusMutex;
+      Status m_status;      
+      QWaitCondition m_statusChangedWaitCondition;            
+      
+      
+   private:
+      void waitOnStatus(Status status);
+};
+
+
+class Debugger : public QObject {
    
    Q_OBJECT
    
    public:
       Debugger(ParseList* parseList);
       Status getStatus(void);
-      void run(void); // the work of the thread
-      void terminateWhenProgramStops(void);  
+      bool waitOnDebuggerThread(unsigned long timeout);
       
    public slots:
-      void stop(void);
-      void pause(void);
-      void start(void);
-      void stepForward(void);
-      void stepBackwardToTimestamp(TIMESTAMP stamp);            
+      void programStop(void);
+      void programPause(void);
+      void programRun(void);
+      void programStepForward(void);
+      void programStepBackwardToTimestamp(TIMESTAMP stamp);
+      void threadTerminated(void);       
       
    signals:
       // manage the output stack, caught by the GUI
       void outputStackPush(QString item);
       void outputStackPop(void);
       
+      // also for the GUI:
       void stopped(void);
       void paused(void);
       void running(void);
       
    private:
-      void waitOnStatus(Status status);
-      void setStatus(Status status);
-   
-      QMutex m_stateMutex;
-      State* m_state;
-      
-      QMutex m_parseListMutex;
-      ParseList* m_parseList;
-      
-      QMutex m_statusMutex;
-      Status m_status;
-      
-      QWaitCondition m_statusChangedWaitCondition;
-            
-      bool m_terminateWhenProgramStops;
+      DebuggerThread m_debuggerThread;
       
 };
+
+
 
 #endif /*DEBUGGER_H_*/

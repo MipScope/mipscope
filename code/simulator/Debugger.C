@@ -1,3 +1,4 @@
+#include <iostream>
 #include <QMutexLocker>
 
 #include "State.H"
@@ -5,90 +6,122 @@
 #include "Debugger.H"
 #include "ParseNode.H"
 
-Debugger::Debugger(ParseList* parseList): m_stateMutex(),
-                                          m_state(NULL),
-                                          m_parseListMutex(),
+// constructor
+Debugger::Debugger(ParseList* parseList): m_debuggerThread(parseList) {
+   cerr << "Debugger constructor.\n";
+   QObject::connect(&m_debuggerThread, SIGNAL(finished(void)), this, SLOT(threadTerminated(void)));
+}  
+
+Status Debugger::getStatus(void) { 
+   return m_debuggerThread.getStatus();
+}
+
+bool Debugger::waitOnDebuggerThread(unsigned long timeout) {
+   return m_debuggerThread.wait(timeout);  
+}
+
+// slot
+void Debugger::threadTerminated(void) {
+   emit stopped();
+}
+
+// slot
+void Debugger::programStop(void) {
+   
+   if (getStatus() == STOPPED) return;
+   
+   m_debuggerThread.setStatus(STOPPED);   
+   emit stopped();   
+}
+
+// slot
+void Debugger::programPause(void) {
+   
+   if (getStatus() == PAUSED) return;
+   
+   m_debuggerThread.setStatus(PAUSED);
+   emit paused();
+}
+
+// slot
+void Debugger::programRun(void) {
+   cerr << "Debugger::programRun()\n";
+   
+   if (getStatus() == RUNNING) return;
+   if (getStatus() == STOPPED) {
+      m_debuggerThread.start();      
+   }
+   m_debuggerThread.setStatus(RUNNING);
+   emit running();   
+}
+
+
+// slot
+void Debugger::programStepForward(void) { } // TODO
+
+// slot
+void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) { } // TODO
+
+
+
+
+// ******************************************
+// DebuggerThread
+// ******************************************
+
+DebuggerThread::DebuggerThread(ParseList* parseList): m_state(NULL),
                                           m_parseList(parseList), 
                                           m_statusMutex(),
                                           m_status(STOPPED),
-                                          m_statusChangedWaitCondition(),
-                                          m_terminateWhenProgramStops(false)
+                                          m_statusChangedWaitCondition()
 { }   
 
-// this starts the thread
-void Debugger::run(void) {
+// the main wook of the thread
+void DebuggerThread::run(void) {
    
-   while (1) {
-      
-      waitOnStatus(STOPPED);
-      
-      m_state = new State();
-      
-      if (m_parseList->isValid() && m_parseList->initialize(m_state)) {
-         // let's run!
-         
-         while (getStatus() != STOPPED) {            
-            waitOnStatus(PAUSED);
-            
-            // execute another parsenode  
-            m_state->getPC()->execute(m_state);            
-         }
-                       
-      }
-      else {
-         assert(false); // for now
-      }
-      
-      delete m_state;  
+   cout << "DebuggerThread::run\n";
+   
+   m_state = new State();
+   
+   if (!m_parseList->isValid()) {
+      cerr << "Debugger: parseList isn't valid.\n";
+      quit();
    }
-} 
-
-
-Status Debugger::getStatus(void) { 
-   QMutexLocker locker(&m_statusMutex); // locks the mutex, automatically unlocked when destructed
-   return m_status;
+   
+   if (!m_parseList->initialize(m_state)) {
+      cerr << "Debugger: parseList couldn't be initialized.\n";
+      quit();
+   }
+   
+   // let's run!
+   cout << "Debugger::run: now executing the program.";
+   
+   while (getStatus() != STOPPED) {            
+      waitOnStatus(PAUSED);
+      
+      // execute another parsenode  
+      m_state->getPC()->execute(m_state);            
+   }
+   
+   delete m_state;
 }
 
-void Debugger::terminateWhenProgramStops(void) {
-   m_terminateWhenProgramStops = true;
-}
-
-// private
-void Debugger::setStatus(Status status) {
+// protected
+void DebuggerThread::setStatus(Status status) {
    QMutexLocker locker(&m_statusMutex);
    m_status = status;
    m_statusChangedWaitCondition.wakeAll();
 }
 
-// slot
-void Debugger::stop(void) {
-   setStatus(STOPPED);   
-   emit stopped();   
+Status DebuggerThread::getStatus(void) { 
+   QMutexLocker locker(&m_statusMutex); // locks the mutex, automatically unlocked when destructed
+   return m_status;
 }
-
-// slot
-void Debugger::pause(void) {
-   setStatus(PAUSED);
-   emit paused();
-}
-
-// slot
-void Debugger::start(void) {
-   setStatus(RUNNING);
-   emit paused();
-} 
-
-// slot
-void Debugger::stepForward(void) { } // TODO
-
-// slot
-void Debugger::stepBackwardToTimestamp(TIMESTAMP stamp) { } // TODO
 
 // private
-void Debugger::waitOnStatus(Status status) {
+void DebuggerThread::waitOnStatus(Status status) {
    m_statusMutex.lock();
-   while (getStatus() == status)
+   while (m_status == status)
       m_statusChangedWaitCondition.wait(&m_statusMutex);
    m_statusMutex.unlock();  
 }
-

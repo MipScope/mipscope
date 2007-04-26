@@ -9,8 +9,15 @@ using namespace std;
 #include <QTextDocument>
 #include <QFile>
 #include <QString>
+#include <QApplication>
 
 bool VERBOSE;
+
+// the only purpose of this is to send a signal to 
+
+      
+
+
 int main(int argc, char** argv) {
    QTextDocument p();
    VERBOSE = false;
@@ -46,14 +53,16 @@ int main(int argc, char** argv) {
    Statement::InitializeStatementMaps();
    ParseList* parseList = Parser::parseDocument(doc);
    
+   cout << "Executing the program.\n";
+   
+   QApplication app(argc, argv);
+   
    Debugger debugger(parseList);
-   debugger.run(); // starts thread
+   debugger.programRun();
    
-   debugger.start(); // start the program.
+   cout << "post execute.\n";   
    
-   debugger.terminateWhenProgramStops();
-   
-   if (debugger.wait(10 * 1000)) { // timeout after 10 seconds.
+   if (debugger.waitOnDebuggerThread(10 * 1000)) { // timeout after 1 seconds.
       cout << "\nProgram terminated normally.\n";
    }
    else {

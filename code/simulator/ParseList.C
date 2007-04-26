@@ -125,9 +125,12 @@ bool ParseList::initialize(State *state) {
       if (s != NULL)
          s->initialize(cur, state);
    }
-
+   
+   state->setRegister(gp, DATA_BASE_ADDRESS);
    state->setRegister(sp, STACK_BASE_ADDRESS);
-   state->setPC(getEntryPoint());
+
+   // Move PC to closest executable instruction after the entry point at __start: or main:
+   state->setPC(getClosestInstruction(getEntryPoint()));
    return true;
 }
 

@@ -63,15 +63,11 @@ QTextBlock *ParseNode::getTextBlock() const {
 }
 
 ParseNode* ParseNode::getNext(void) const {
-   // TODO
-
-   return NULL;
+   return ParseNode::Node(m_textBlock->next());
 }
 
 ParseNode* ParseNode::getPrevious(void) const {
-   // TODO
-   
-   return NULL;
+   return ParseNode::Node(m_textBlock->previous());
 }
 
 // Returns whether or not this ParseNode contains a valid Instruction

@@ -114,6 +114,7 @@ bool ParseList::initialize(State *state) {
          s->initialize(cur, state);
    }
 
+   state->setRegister(pc, STACK_BASE_ADDRESS);
    state->setPC(getEntryPoint());
    return true;
 }

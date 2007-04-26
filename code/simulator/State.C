@@ -31,7 +31,6 @@ void State::setMemoryWord(unsigned int address, unsigned int value) {
 }
 
 void State::setMemoryByte(unsigned int address, unsigned char value) {
-
    if (address >= (unsigned int) m_memory.size()) throw InvalidAddress(address);
 
    m_memory[address] = value;

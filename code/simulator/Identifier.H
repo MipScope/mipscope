@@ -9,6 +9,7 @@
 #include <QString>
 
 class ParseNode;
+class AddressIdentifier;
 
 class Identifier {
    public:
@@ -20,6 +21,7 @@ class Identifier {
       
       bool isImmediate() const;
       bool isAddress() const;
+      AddressIdentifier *getAddressIdentifier() const;
       
    protected:
       QString m_id;
@@ -43,6 +45,7 @@ class AddressIdentifier : public Identifier {
    protected:
       ParseNode *m_parseNode;
       int m_offset;
+      bool m_initialized; // true once setLabelParseNode() has been called
 };
 
 // for something like li $r0, 0x1e   -- storing the 0x1e -> 31 mapping

@@ -63,10 +63,18 @@ void Instruction::InitializeInstructionMap() {
    int i = 0;
    while(Instructions[i] != NULL)
       instructionMap.insert(Instructions[i++], NULL/*TEMP*/);
-
+   
+   // Arithmetic.H
    instructionMap.insert("add", new Add());
    instructionMap.insert("addi", new Addi());
+
+   // DataTransfer.H
    instructionMap.insert("li", new Li());
+   instructionMap.insert("la", new La());
+   instructionMap.insert("lw", new Lw());
+   instructionMap.insert("sw", new Sw());
+   
+   // Special.H
    instructionMap.insert("nop", new Nop());
    instructionMap.insert("syscall", new Syscall());
    

@@ -198,6 +198,8 @@ bool ParseList::insert(ParseNode *newNode) {
                
                m_semanticErrors[id]->push_back(newNode);
                break;
+            } else { // This ParseNode references a label which has already been defined
+               cur->getID()->getAddressIdentifier()->setLabelParseNode(m_labelMap[id]->getParseNode());
             }
          }
       } // for

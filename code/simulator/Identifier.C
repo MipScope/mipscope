@@ -32,10 +32,23 @@ bool Identifier::isAddress() const {
    return (!isImmediate());
 }
 
+AddressIdentifier *Identifier::getAddressIdentifier() const {
+   AddressIdentifier *addr = NULL;
+
+   try {
+      Identifier *i = const_cast<Identifier*>(this);
+      addr = dynamic_cast<AddressIdentifier*>(i);
+   } catch(bad_alloc&) { }
+
+   return addr;
+}
+
 AddressIdentifier::AddressIdentifier(const QString &id, ParseNode *p) 
    : Identifier(id), m_parseNode(p), m_offset(0) { }
 
 int AddressIdentifier::getValue() const {
+   assert (m_parseNode != NULL);
+   
    return m_parseNode->getAddress() + m_offset;
 }
 

@@ -374,15 +374,24 @@ AddressIdentifier *Parser::parseLabelWithOffset(QString text, ParseList *list) {
    }
    
    index = (plus ? indexP : indexM);
+   //cerr << index << ", " << text.length() << endl;
+   
+   QString orig2 = text;
    QString labelStr = text.remove(index, len - index);
-   QString immediate = text.remove(0, index + 1);
+   QString immediate = orig2.remove(0, index + 1);
+
+   cerr << _tab << "Parsing Labelw/Offset: label = '" << labelStr.toStdString() << "' \timm = '" << immediate.toStdString() << "'\n";
    
-   cerr << _tab << "Parsing Labelw/Offset: label=" << labelStr.toStdString() << " \timm = " << immediate.toStdString() << endl;
-   
-   ImmediateIdentifier *imm = Parser::parseImmediate(immediate, list);
+   ImmediateIdentifier *imm = Parser::parseImmediate(QString(immediate), list);
    if (imm == NULL) {
-      _tab = orig;
-      return NULL;
+      QString copy = labelStr;
+      labelStr = immediate;
+      immediate = copy;
+      
+      // test if + is other way around  (label + imm  instead of imm + label)
+      if ((imm = Parser::parseImmediate(immediate, list)) == NULL) { _tab = orig;
+         return NULL;
+      }
    }
    
    AddressIdentifier *label = Parser::parseLabel(labelStr);

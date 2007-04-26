@@ -133,10 +133,13 @@ int StatementArg::getValue(State *s) const {
       if (!hasDereference())
          return (signed)registerVal;
 
-      registerVal = s->getMemoryWord(registerVal);
+      // TODO:  NOT SURE IF THIS IS HOW DEREFERENCING WORKS IN MIPS!
+//      registerVal = s->getMemoryWord(registerVal);
       
       if (hasIdentifier())
          return (signed)(registerVal + m_id->getValue());
+
+      return (signed)registerVal;
    }
    
    // Must be identifier (value of label and/or immediate)

@@ -5,11 +5,11 @@
 #include "typedefs.H"
 #include <string.h>
 
-#define MEMORY_SIZE (16384)
+#define INTERNAL_MEMORY_SIZE (16384)
 
 State::State() : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP)
 {
-   m_memory.reserve(MEMORY_SIZE);
+   m_memory.reserve(INTERNAL_MEMORY_SIZE);
    reset();
 }
 
@@ -70,15 +70,22 @@ void State::memset(unsigned int destAddress, const int value, unsigned int size)
 }
 
 void State::setRegister(int reg, unsigned int value) {
-   if (reg <= zero || reg >= pc)
+   if (reg <= zero || reg >= pc) {
+      cerr << "set: " << reg << " = " << value << endl;
+      cerr << m_pc->getTextBlock()->text().toStdString() << endl;
+      // TODO:  add iostream operator to ParseNode
+
       throw InvalidRegister(reg);
+   }
    
    m_registers[reg] = value;
 }
 
 unsigned int State::getRegister(int reg) const {
-   if (reg <= zero || reg >= pc)
+   if (reg <= zero || reg >= pc) {
+      cerr << "get: " << reg << endl;
       throw InvalidRegister(reg);
+   }
    
    return m_registers[reg];
 }
@@ -88,8 +95,8 @@ void State::incrementPC() {
 }
 
 void State::setPC(ParseNode* value) {
-   m_pc = value;	
-   
+   m_pc = value;
+//   cerr << (void*)value << endl; 
    // TODO:  detect when next node does not exit and signal program completion/termination
 
    
@@ -117,13 +124,14 @@ void State::reset() {
 
 // does the OS action depending on what's in $v0
 void State::syscall(void) {
+   cerr << "\t\tSyscall called v0 = " << getRegister(v0) << ", a0 = " << getRegister(a0) << endl;
 
    // TODO: make these legit.
    
    switch (getRegister(v0)) {
       case 1:
          // print_int: print out what's in $a0
-         cout << getRegister(a0);
+         cerr << getRegister(a0);
          break;
          
       case 4:

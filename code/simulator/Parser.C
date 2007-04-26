@@ -49,12 +49,13 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
    _tab = "   ";
    for(QTextBlock cur = document->begin(); cur != document->end(); cur = cur.next(), lineNo++) {
       ParseNode *n = NULL;
+      QTextBlock *actual = new QTextBlock(cur);
       
       try {
-         n = Parser::parseLine(&cur, parseList);
+         n = Parser::parseLine(actual, parseList);
       } catch(ParseError &e) {
          cerr << "Error line  " << lineNo << ": " << e.toStdString() << endl;
-         e.setTextBlock(&cur);
+         e.setTextBlock(actual);
          e.setLineNo(lineNo);
          errors.push_back(e);
          

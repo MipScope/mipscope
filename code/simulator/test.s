@@ -1,3 +1,4 @@
-.ascii "\n\"tab   \t  tab\"\n"    # passes now :)
-CONST = 42
-add $t1, $s2, CONST
+main:
+   li $v0, 1  # print_int
+   li $a0, 13
+   syscall

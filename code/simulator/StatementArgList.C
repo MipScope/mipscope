@@ -102,6 +102,10 @@ bool StatementArg::isImmediate(void) const {
    return (!hasRegister() && hasIdentifier() && m_id->isImmediate());
 }
 
+bool StatementArg::hasAddressIdentifier() const {
+   return (hasIdentifier() && m_id->isAddress());
+}
+
 bool StatementArg::hasIdentifier(void) const {
    return (m_id != NULL);
 }  

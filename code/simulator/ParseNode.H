@@ -3,6 +3,7 @@
 
 #include <QTextBlockUserData>
 #include "typedefs.H"
+#include <ostream>
 
 class AddressIdentifier;
 class Statement;
@@ -33,6 +34,13 @@ class ParseNode : public QTextBlockUserData {
       void execute(State* state);
       bool isValid() const;
       void setSemanticValidity(bool isValid);
+
+      friend std::ostream& operator<<(std::ostream &o, ParseNode *p) {
+         if (p->m_textBlock == NULL)
+            return o << "{NULL Text Block}";
+         
+         return o << (p->m_textBlock->text().toStdString());
+      }
       
    private:
       TIMESTAMP m_firstExecuted;

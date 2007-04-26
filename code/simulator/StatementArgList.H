@@ -63,6 +63,7 @@ class StatementArg {
       bool isAddress(void) const;
       bool isImmediate(void) const;
       
+      bool hasAddressIdentifier() const;
       bool hasIdentifier() const;
       bool hasRegister() const;
       bool hasDereference() const;

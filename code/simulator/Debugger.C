@@ -7,8 +7,7 @@
 #include "ParseNode.H"
 
 // constructor
-Debugger::Debugger(ParseList* parseList): m_debuggerThread(parseList) {
-   cerr << "Debugger constructor.\n";
+Debugger::Debugger(ParseList* parseList) : m_debuggerThread(parseList) {
    QObject::connect(&m_debuggerThread, SIGNAL(finished(void)), this, SLOT(threadTerminated(void)));
 }  
 
@@ -79,7 +78,7 @@ DebuggerThread::DebuggerThread(ParseList* parseList): m_state(NULL),
 // the main wook of the thread
 void DebuggerThread::run(void) {
    
-   cout << "DebuggerThread::run\n";
+   cerr << "DebuggerThread::run\n";
    
    m_state = new State();
    
@@ -94,16 +93,20 @@ void DebuggerThread::run(void) {
    }
    
    // let's run!
-   cout << "Debugger::run: now executing the program.";
+   cerr << "Debugger::run: now executing the program.\n";
    
    while (getStatus() != STOPPED) {            
       waitOnStatus(PAUSED);
+      
+      if (m_state->getPC() == NULL)
+         break;
+      cerr << "\tExecuting: " << m_state->getPC() << endl;
       
       // execute another parsenode  
       m_state->getPC()->execute(m_state);            
    }
    
-   delete m_state;
+//   delete m_state;
 }
 
 // protected

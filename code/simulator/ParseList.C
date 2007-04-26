@@ -27,7 +27,7 @@ ParseNode *ParseList::first() const {
 }
 
 ParseNode *ParseList::last() const {
-   return ParseNode::Node(m_source->end());
+   return ParseNode::Node(m_source->end().previous());
 }
 
 ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
@@ -60,29 +60,36 @@ ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
 ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
    if (p == NULL)
       return NULL;
-
+   
    while(!p->isExecutable()) {
       if ((p = p->getNext()) == NULL)
-         return NULL;  // end of program
+         return NULL;  // end of program (tested and works :)
    }
-
+   
    return p;
 }
 
 // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
 bool ParseList::isValid() const {
-   if (m_semanticErrors.size() > 0)
+   if (m_semanticErrors.size() > 0) {
+      cerr << m_semanticErrors.size() << " semantic errors remain!\n";
       return false;
+   }
    
    // ensure prog contains valid entry point
-   if (getEntryPoint() == NULL)
+   if (getEntryPoint() == NULL) {
+      cerr << "error: no program entryPoint found\n";
       return false; // TODO:  notify user of this
-   
+   }
+   int i = 0;
    for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next()) {
       ParseNode *p = ParseNode::Node(b);
       
-      if (p == NULL || !p->isValid())
+      if (p == NULL || !p->isValid()) {
+         cerr << "error: line no: " << i << " is invalid  (" << p << ")\n";
          return false;
+      }
+      ++i;
    }
    
    return true;
@@ -92,6 +99,7 @@ bool ParseList::isValid() const {
 ParseNode *ParseList::getEntryPoint() const {
    ParseNode *entryPoint = NULL;
    
+   //cerr << m_labelMap.size() << ", " << m_labelMap[MAIN]->getParseNode()->isValid() << endl;
    if (m_labelMap.contains(__START) && (entryPoint = m_labelMap[__START]->getParseNode()) != NULL && entryPoint->isValid())
       return entryPoint;
    if (m_labelMap.contains(MAIN) && (entryPoint = m_labelMap[MAIN]->getParseNode()) != NULL && entryPoint->isValid())
@@ -107,14 +115,18 @@ bool ParseList::initialize(State *state) {
       return false;
    
    ParseNode *l = last();
-   for(ParseNode *cur = first(); cur != l; cur = cur->getNext()) {
+   for(ParseNode *cur = first(); cur != l && cur != NULL; cur = cur->getNext()) {
+      if (cur == NULL) {
+         cerr << "\t\tDEBUG this!  cur == NULL ParseList::initialize\n\n";
+         break;
+      }
       Statement *s = cur->getStatement();
       
       if (s != NULL)
          s->initialize(cur, state);
    }
 
-   state->setRegister(pc, STACK_BASE_ADDRESS);
+   state->setRegister(sp, STACK_BASE_ADDRESS);
    state->setPC(getEntryPoint());
    return true;
 }
@@ -139,7 +151,7 @@ bool ParseList::insert(ParseNode *newNode) {
             for(int i = 0; i < args->noArgs(); i++) {
                StatementArg *cur = (*args)[i];
 
-               if (cur->hasIdentifier()) {
+               if (cur->hasAddressIdentifier()) {
                   Identifier *addrID = cur->getID();
                   const QString &id = addrID->getID();
                   if (id == label->getID() && addrID->isAddress()) {
@@ -165,7 +177,7 @@ bool ParseList::insert(ParseNode *newNode) {
       for(int i = 0; i < args->noArgs(); i++) {
          StatementArg *cur = (*args)[i];
          
-         if (cur->hasIdentifier()) {
+         if (cur->hasAddressIdentifier()) {
             const QString &id = cur->getID()->getID();
 
             if (!m_labelMap.contains(id)) {
@@ -173,7 +185,11 @@ bool ParseList::insert(ParseNode *newNode) {
                // wait for the label to appear, and only then validate it
                newNode->setSemanticValidity(false);
                semanticallyCorrect = false;
-
+               
+               
+               //cerr << "semantically Invalid: '" << newNode->getTextBlock()->text().toStdString() << "' s = " << s << endl;
+               
+               
                if (!m_semanticErrors.contains(id))
                   m_semanticErrors.insert(id, new ParseNodeList());
                

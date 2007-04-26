@@ -5,9 +5,11 @@
 #include <QTextBlock>
 
 ParseNode::ParseNode(QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)
-   : m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_statement(statement), 
-   m_textBlock(textBlock), m_isSemanticallyValid(false)
+   : QTextBlockUserData(), m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_statement(statement), 
+   m_textBlock(textBlock), m_isSemanticallyValid(true)
 {
+//   cerr << "<<< " << m_statement << ", '" << m_textBlock->text().toStdString() << "'\n";
+   
    if (m_label != NULL)
       m_label->setLabelParseNode(this);
 
@@ -16,6 +18,9 @@ ParseNode::ParseNode(QTextBlock* textBlock, Statement* statement, AddressIdentif
 }
 
 ParseNode *ParseNode::Node(const QTextBlock &b) {
+   if (!b.isValid() || b.userData() == NULL)
+      return NULL;
+   
    return static_cast<ParseNode*>(b.userData());
 }
 
@@ -63,6 +68,15 @@ QTextBlock *ParseNode::getTextBlock() const {
 }
 
 ParseNode* ParseNode::getNext(void) const {
+//   cerr << m_textBlock << endl;
+//   cerr << ", " << (*m_textBlock == QTextBlock()) << endl;
+//   cerr << ", " << (m_textBlock->next() == QTextBlock()) << endl;
+//   cerr << m_textBlock->isValid() << endl;
+   if (m_textBlock->next() == QTextBlock() || !m_textBlock->next().isValid())
+      return NULL;
+
+   // ONLY thing causing segfault is m_textBlock->next()  even thought it IS valid
+
    return ParseNode::Node(m_textBlock->next());
 }
 
@@ -76,26 +90,31 @@ bool ParseNode::isExecutable() const {
 }
 
 void ParseNode::execute(State* state) {
-   if (!isExecutable())
-      return;
+   bool increment = true, executed;
    
-   // set firstexecuted
-   if (m_firstExecuted == CLEAN_TIMESTAMP)
-      m_firstExecuted = state->getCurrentTimestamp();
-   
-   // actually execute
-   Instruction *instr = static_cast<Instruction*>(m_statement);
-   instr->execute(state);
-   
-   // ensure PC gets updated properly (some branching instructions take care of this themselves)
-   if (instr->autoIncrementPC())
+   if ((executed = isExecutable())) {
+      // set firstexecuted
+      if (m_firstExecuted == CLEAN_TIMESTAMP)
+         m_firstExecuted = state->getCurrentTimestamp();
+
+      // actually execute
+      Instruction *instr = static_cast<Instruction*>(m_statement);
+      instr->execute(state);
+
+      // ensure PC gets updated properly (some branching instructions take care of this themselves)
+      increment = instr->autoIncrementPC();
+   }
+
+   if (increment)
       state->incrementPC();
    
    // update state's timestamp
-   state->newTimestamp();
+   if (executed)
+      state->newTimestamp();
 }
 
 bool ParseNode::isValid() const {
+//   cerr << m_textBlock << ", " << m_isSemanticallyValid << ", " << m_textBlock->isValid() << endl;
    return (m_textBlock != NULL && m_isSemanticallyValid && m_textBlock->isValid());
 }
 

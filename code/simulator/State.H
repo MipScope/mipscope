@@ -11,7 +11,7 @@ class State : public QObject {
    Q_OBJECT
 
    public:
-      State(unsigned int memorySize = 1024);		
+      State(void);		
 
       /* updates the state's current caller, increments timestamp, returns
        * new timestamp. */

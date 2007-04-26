@@ -2,6 +2,7 @@
 #include "State.H"
 #include "Statement.H"
 #include "ParseNode.H"
+#include "Debugger.H"
 #include <iostream>
 using namespace std;
 
@@ -44,6 +45,21 @@ int main(int argc, char** argv) {
    // initialize Instruction and Directive maps
    Statement::InitializeStatementMaps();
    ParseList* parseList = Parser::parseDocument(doc);
+   
+   Debugger debugger(parseList);
+   debugger.run(); // starts thread
+   
+   debugger.start(); // start the program.
+   
+   debugger.terminateWhenProgramStops();
+   
+   if (debugger.wait(10 * 1000)) { // timeout after 10 seconds.
+      cout << "\nProgram terminated normally.\n";
+   }
+   else {
+      cout << "\nExecution timed-out.\n";
+   } 
+   
    
    return 0;
 }

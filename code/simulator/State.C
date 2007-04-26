@@ -5,7 +5,9 @@
 #include "typedefs.H"
 #include <string.h>
 
-State::State(unsigned int memorySize) :	m_memory(memorySize, 0),
+#define MEMORY_SIZE 1024
+
+State::State(void) :                   	m_memory(MEMORY_SIZE, 0),
                                           m_registers(register_count, 0),
                                           m_pc(NULL),
                                           m_caller(NULL),

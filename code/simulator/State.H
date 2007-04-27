@@ -42,7 +42,7 @@ class State : public QObject {
       TIMESTAMP getCurrentTimestamp(void) const;
 
       // special
-      void syscall(void);
+      void doSyscall(void);
       void assertEquals(int val1, int val2); // throws AssertionFailure
       
       // completely resets the state to its original state
@@ -57,6 +57,7 @@ signals:
       void registerChanged(ParseNode* who, int reg, unsigned int previous, unsigned int current);
 
       void pcChanged(ParseNode* who, ParseNode* previous, ParseNode* current);
+      
 
    private:
       unsigned int m_registers[register_count];

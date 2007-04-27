@@ -73,12 +73,14 @@ void Instruction::InitializeInstructionMap() {
    // Arithmetic.H
    instructionMap.insert("add", new Add());
    instructionMap.insert("addi", new Addi());
+   instructionMap.insert("sub", new Addi());
 
    // DataTransfer.H
    instructionMap.insert("li", new Li());
    instructionMap.insert("la", new La());
    instructionMap.insert("lw", new Lw());
    instructionMap.insert("sw", new Sw());
+   instructionMap.insert("move", new Move());
    
    // Special.H
    instructionMap.insert("nop", new Nop());

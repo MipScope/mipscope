@@ -113,10 +113,38 @@ class Sw : public Instruction {
       }
       
       // @overridden from Statement
-      virtual const char *getName() const { return "Sw"; }
+      virtual const char *getName() const { return "sw"; }
       virtual const char *getSyntax() const { return "$src, <addr>"; }
       virtual const char *getDescription() const {
          return "Stores the word in register $src into <addr>";
+      }
+};
+
+// ----------------------------------
+// Instruction move $dest, $src
+// ----------------------------------
+class Move : public Instruction {
+   public:
+      Move(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Move(args);
+      }
+      
+      virtual void execute(State *s) const {
+         s->setRegister((*m_args)[0]->getRegister(), (*m_args)[1]->getValue(s));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "move"; }
+      virtual const char *getSyntax() const { return "$dest, $src"; }
+      virtual const char *getDescription() const {
+         return "Sets the register $dest to the value in register $src";
       }
 };
 

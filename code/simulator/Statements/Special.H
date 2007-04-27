@@ -44,7 +44,7 @@ class Syscall : public Instruction {
       }
 
       virtual void execute(State *s) const {
-         s->syscall();
+         s->doSyscall();
       }
       
       // @overridden from Statement

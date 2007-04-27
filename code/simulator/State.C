@@ -123,7 +123,7 @@ void State::reset() {
 }
 
 // does the OS action depending on what's in $v0
-void State::syscall(void) {
+void State::doSyscall(void) {
    cerr << "\t\tSyscall called v0 = " << getRegister(v0) << ", a0 = " << getRegister(a0) << endl;
 
    // TODO: make these legit.

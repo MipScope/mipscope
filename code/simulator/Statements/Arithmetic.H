@@ -71,5 +71,37 @@ class Addi : public Add {
       }
 };
 
+// ----------------------------------
+// Instruction add $dest, $src1, src2
+// ----------------------------------
+class Sub : public Instruction {
+   public:
+      Sub(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Sub(args);
+      }
+
+      virtual void execute(State *s) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 - val2));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "sub"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, $src2 OR <immediate>"; }
+      virtual const char *getDescription() const {
+         return "Subtracts $src2 from $src1, storing the result in $dest.";
+      }
+};
+
 #endif // __ARITHMETIC_H__
 

@@ -1,8 +1,0 @@
-
-make clean;
-rm -f gui.pro Makefile proj;
-/course/cs036_projects/mipscope/bin/qmake -project;
-/course/cs036_projects/mipscope/bin/qmake;
-make;
-ln -s /course/cs036_projects/mipscope/proj;
-

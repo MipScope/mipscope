@@ -881,3 +881,11 @@ void Directive::InitializeDirectiveMap() {
 // Default is no initialization (setting to NULL to avoid warnings)
 void Directive::initialize(ParseNode *p, State *s) { p = NULL; s = NULL; }
 
+unsigned int Directive::getPreferredAlignment() const {
+   return 0; // turn off automatic alignment
+}
+
+bool Directive::isAlign() const {
+   return false;
+}
+

@@ -74,6 +74,10 @@ class DataDirective : public Directive {
    public:
       DataDirective(int address = -1) : Directive(), m_address(address) { }
      
+      virtual unsigned int getPreferredAlignment() const {
+         return 2;
+      }
+      
       // @overridden from Statement
       virtual const char *getName() const { return ".data"; }
       virtual const char *getSyntax() const { return " <address>"; }
@@ -92,6 +96,10 @@ class TextDirective : public Directive {
    public:
       TextDirective(int address = -1) : Directive(), m_address(address) { }
      
+      virtual unsigned int getPreferredAlignment() const {
+         return 2;
+      }
+
       // @overridden from Statement
       virtual const char *getName() const { return ".text"; }
       virtual const char *getSyntax() const { return " <address>"; }
@@ -110,6 +118,10 @@ class KTextDirective : public Directive {
    public:
       KTextDirective(int address = -1) : Directive(), m_address(address) { }
      
+      virtual unsigned int getPreferredAlignment() const {
+         return 2;
+      }
+
       // @overridden from Statement
       virtual const char *getName() const { return ".ktext"; }
       virtual const char *getSyntax() const { return " <address>"; }
@@ -127,6 +139,13 @@ class KTextDirective : public Directive {
 class AlignDirective : public Directive {
    public:
       AlignDirective(int alignment = 0) : Directive(), m_alignment(alignment) { }
+      virtual unsigned int getPreferredAlignment() const {
+         return m_alignment;
+      }
+
+      virtual bool isAlign() const {
+         return true;
+      }
       
       // @overridden from Statement
       virtual const char *getName() const { return ".align"; }
@@ -266,9 +285,14 @@ class HalfDirective : public Directive {
       // @overridden from Directive
       virtual void initialize(ParseNode *p, State *s) {
          unsigned int address = (unsigned) p->getAddress();
+//         assert(!(address & 1));
          
          if (m_values != NULL)
             s->memcpy(address, m_values, m_size);
+      }
+      
+      virtual unsigned int getPreferredAlignment() const {
+         return 1; // 2 byte boundary
       }
       
       // @overridden from Statement
@@ -323,9 +347,14 @@ class WordDirective : public Directive {
       // @overridden from Directive
       virtual void initialize(ParseNode *p, State *s) {
          unsigned int address = (unsigned) p->getAddress();
+//         assert(!(address & 3));
          
          if (m_values != NULL)
             s->memcpy(address, m_values, m_size);
+      }
+      
+      virtual unsigned int getPreferredAlignment() const {
+         return 2; // 4 byte boundary
       }
       
       // @overridden from Statement

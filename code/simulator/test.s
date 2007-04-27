@@ -1,6 +1,9 @@
 PRINT_SYSCALL = 1
-addr:      .word    1, 2, 3, 4
+.byte 1
+.align 8
+aligned:   .word    8:30
 newLine:   .asciiz  "\n"
+addr:      .word    1, 2, 3, 4
 
 main:
    li $v0, PRINT_SYSCALL

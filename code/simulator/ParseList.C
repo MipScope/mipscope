@@ -73,6 +73,12 @@ ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
 bool ParseList::isValid() const {
    if (m_semanticErrors.size() > 0) {
       cerr << m_semanticErrors.size() << " semantic errors remain!\n";
+      foreach(ParseNodeList *l, m_semanticErrors.values()) {
+         foreach(ParseNode *e, *l) {
+            cerr << e << endl;
+         }
+      }
+
       return false;
    }
    
@@ -205,29 +211,52 @@ bool ParseList::insert(ParseNode *newNode) {
       } // for
    }
    
-
-
-   // TODO:  handle alignment correctly; ensure word-boundaries for 
-   // stuff which needs to be word-aligned; adhere to .align directive
-
-
    
    // ------------------------------
    // Initialize ParseNode's Address
    // ------------------------------
+   unsigned int address = SENTINEL_ADDRESS;
+
    if (s != NULL) {
-      if (s->isInstruction()) {
-         Instruction *instr = (static_cast<Instruction*>(s));
-         newNode->setAddress(m_nextTextAddress);
+      unsigned int *addr = NULL;
+      
+      if (s->isInstruction())
+         addr = &m_nextTextAddress;
+      else if (s->isDirective())
+         addr = &m_nextDataAddress;
+      
+      if (addr != NULL) {
+         unsigned int alignment = s->getPreferredAlignment() << 1;
+         address = *addr;
+         ParseNode *prev = newNode->getPrevious();
+         bool aligned = false;
+         if (prev != NULL) { // enforce .align directive
+            Statement *s = prev->getStatement();
+
+            if (s != NULL && s->isDirective()) {
+               Directive *dir = (static_cast<Directive*>(s));
+
+//               cerr << dir->isAlign() << endl;
+               if (dir->isAlign()) {
+                  alignment = dir->getPreferredAlignment() << 1;
+                  aligned = true;
+//                  cerr << "\t\taligned at: " << alignment << ", addr = " << address << endl;
+               }
+            }
+         }
          
-         m_nextTextAddress += instr->getSizeInBytes();
-      } else if (s->isDirective()) {
-         Directive *dir = (static_cast<Directive*>(s));
-         newNode->setAddress(m_nextDataAddress);
+         if (alignment > 0 && address & (alignment - 1)) {
+            address += (alignment - (address & (alignment - 1)));
+
+//            cerr << *addr << " vs " << address << ", " << alignment << " aligned=" << aligned << ", " << newNode << endl;
+//            assert(address > *addr);
+         }
          
-         m_nextDataAddress += dir->getSizeInBytes();
-      } else newNode->setAddress(SENTINEL_ADDRESS);
-   } else newNode->setAddress(SENTINEL_ADDRESS);
+         *addr = address + s->getSizeInBytes();
+      }
+   }
+   
+   newNode->setAddress(address);
    
    return semanticallyCorrect;
 }

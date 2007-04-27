@@ -16,7 +16,8 @@ class Statement {
       virtual void initialize(ParseNode *p, State *s);
       
       // Returns the number of bytes this Statement should take up in the address space
-      unsigned int getSizeInBytes() const;
+      virtual unsigned int getSizeInBytes() const;
+      virtual unsigned int getPreferredAlignment() const;
       
       virtual const char *getName() const = 0;
       virtual const char *getSyntax() const = 0;
@@ -64,6 +65,8 @@ class Directive : public Statement {
       
       static void InitializeDirectiveMap();
       
+      virtual unsigned int getPreferredAlignment() const;
+      virtual bool isAlign() const;
       // Factory for creating more of this specific type of Directive
       //virtual Directive *create(unsigned int size = 0) const = 0;
       

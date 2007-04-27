@@ -111,7 +111,7 @@ void DebuggerThread::run(void) {
          m_state->getPC()->execute(m_state);
       } catch (StateException e) {
          setStatus(STOPPED);
-         std::cout << e.getMessage().toStdString();  
+         std::cerr << e.getMessage().toStdString();  
       }    
    }
    

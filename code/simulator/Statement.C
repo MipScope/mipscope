@@ -18,6 +18,11 @@ unsigned int Statement::getSizeInBytes() const {
    return m_size;
 }
 
+unsigned int Statement::getPreferredAlignment() const {
+   return 2; // preferred 4-byte boundary (may be overridden by subclasses)
+   // (yes, it's supposed to be a 2)
+}
+
 void Statement::initialize(ParseNode *p, State *s) { p = NULL; s = NULL; }
 
 bool Statement::isInstruction() {

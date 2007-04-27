@@ -265,13 +265,12 @@ void TextEditor::pcChanged(ParseNode *pc) {
 }
 
 void TextEditor::programStatusChanged(int status) {
-   cerr << "TextEditor::programStatusChanged(" << status << ")\n";
+//   cerr << "TextEditor::programStatusChanged(" << status << ")\n";
 //   cerr << "\t" << QThread::currentThreadId() << "\n";
 
    if (status == PAUSED)
       pcChanged(m_program->getPC());
-   else if (m_pc != NULL)
-      pcChanged(NULL);
+   else pcChanged(NULL);
 }
 
 void TextEditor::updateCursorPosition() {

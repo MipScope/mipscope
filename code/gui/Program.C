@@ -35,6 +35,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    
    // Initialize relationship between Proxy and Debugger
    connect(m_debugger, SIGNAL(programStatusChanged(int)), this, SLOT(programStatusChangeReceived(int)));
+   connect(m_debugger, SIGNAL(programTerminated(int)), this, SLOT(programTerminated(int)));
    
    // Initialize relationship between Gui and Proxy
    connect(m_gui, SIGNAL(stop()), this, SLOT(stop()));
@@ -93,6 +94,8 @@ void Program::currentChanged(TextEditor *cur) {
 
 // TODO:  add contentChanged thing
 
+
+// --------------------------
 // Slots from Debugger -> Gui
 // --------------------------
 void Program::syscallReceived(int no) {
@@ -121,7 +124,32 @@ void Program::programStatusChangeReceived(int s) {
       emit programStatusChanged(s);
 }
 
+void Program::programTerminated(int reason) {
+   if (STATUS_BAR == NULL)
+      return;
+   
+   const int delay = STATUS_DELAY + 1000;
+   const QString &name = m_parent->fileName();
 
+   switch(reason) {
+      case T_COMPLETED:
+         STATUS_BAR->showMessage(QString("Program %1 completed successfully.").arg(name), delay);
+         break;
+      case T_TERMINATED:
+         STATUS_BAR->showMessage(QString("Program %1 terminated.").arg(name), delay);
+         break;
+      case T_INVALID_PROGRAM:
+         STATUS_BAR->showMessage(QString("Program %1 contains errors.").arg(name), delay);
+         break;
+      case T_ABNORMAL:
+      default:
+         STATUS_BAR->showMessage(QString("Warning: Program %1 terminated abnormally.").arg(name), delay);
+         break;
+   }
+}
+
+
+// --------------------------
 // Slots from Gui -> Debugger
 // --------------------------
 void Program::stop() {

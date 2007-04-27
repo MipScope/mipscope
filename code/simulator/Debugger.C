@@ -7,7 +7,8 @@
 #include <QMutexLocker>
 
 Debugger::Debugger(ParseList* parseList) 
-   : m_state(new State()), m_parseList(parseList), m_status(STOPPED)
+   : m_state(new State()), m_parseList(parseList), m_status(STOPPED), 
+     m_terminationReason(T_ABNORMAL)
 {
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
 }
@@ -27,6 +28,9 @@ void Debugger::threadTerminated(void) {
    cerr << "Debugger::threadTerminated\n";
    
    emit programStatusChanged(STOPPED);
+   if (m_terminationReason != T_COMPLETED && m_terminationReason != T_TERMINATED)
+      m_terminationReason = T_ABNORMAL;
+   emit programTerminated(m_terminationReason);
 }
 
 void Debugger::programStop(void) {
@@ -66,17 +70,20 @@ void Debugger::run(void) {
 
    if (!m_parseList->isValid()) {
       cerr << "Debugger: parseList isn't valid.\n";
+      m_terminationReason = T_INVALID_PROGRAM;
       return;
    }
 
    if (!m_parseList->initialize(m_state)) {
       cerr << "Debugger: parseList couldn't be initialized.\n";
+      m_terminationReason = T_INVALID_PROGRAM;
       return; 
    }
 
    // let's run!
    cerr << "Debugger::run: now executing the program.\n";
-
+   
+   m_terminationReason = T_TERMINATED;
    while (getStatus() != STOPPED) {
       waitOnStatus(PAUSED);
       if (getStatus() == STOPPED)
@@ -85,6 +92,7 @@ void Debugger::run(void) {
       // Check if we're at the end of the program
       if (m_state->getPC() == NULL) {
          setStatus(STOPPED);
+         m_terminationReason = T_COMPLETED;
          break;
       }
       cerr << "\tExecuting: " << m_state->getPC() << endl;
@@ -94,7 +102,10 @@ void Debugger::run(void) {
          cerr << ">>> BREAKPOINT\n";
 
          setStatus(PAUSED);
-         continue;
+         waitOnStatus(PAUSED);
+         if (getStatus() == STOPPED)
+            break; // check if waitOnStatus was interrupted
+//         continue;
       }
 
       try {
@@ -106,16 +117,18 @@ void Debugger::run(void) {
       }
    }
    
-   cerr << "Debugger::end of run()\n";
+   cerr << "Debugger::end of run(); terminationReasion = " << m_terminationReason << endl;
 }
 
 void Debugger::setStatus(int status) {
    QMutexLocker locker(&m_statusMutex);
    
    m_status = status;
-   cerr << "Debugger::emitting status: " << status << endl;
+   cerr << "Debugger emitting status: " << 
+      (status == STOPPED ? "stopped" : 
+       (status == PAUSED ? "paused" : "running")) << endl;
    emit programStatusChanged(status);
-
+   
    m_statusChangedWaitCondition.wakeAll();
 }
 
@@ -131,14 +144,18 @@ void Debugger::setStatusConditionally(int status) {
     m_statusChangedWaitCondition.wakeAll();
 }
 
-void Debugger::waitOnStatus(int status) {
-   cerr << "\tentering wait\n";
+int Debugger::waitOnStatus(int status) {
+//   cerr << "\tentering wait\n";
+   int st;
    
    m_statusMutex.lock();
    while (m_status == status)
       m_statusChangedWaitCondition.wait(&m_statusMutex);
+
+   st = m_status;
    m_statusMutex.unlock();
    
-   cerr << "\texiting wait\n";
+//   cerr << "\texiting wait\n";
+   return st;
 }
 

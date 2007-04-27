@@ -40,7 +40,10 @@ class Debugger: public QThread {
       void programStepBackwardToTimestamp(TIMESTAMP stamp);
       
    signals:
+      // uses enum Status from typedefs.H
       void programStatusChanged(int s);
+      // uses enum TerminationReason from typedefs.H
+      void programTerminated(int reason);
       
    private slots:
       void threadTerminated();
@@ -54,11 +57,13 @@ class Debugger: public QThread {
       State* m_state;
       ParseList* m_parseList;      
       QMutex m_statusMutex;
-      int m_status;
+      int m_status, m_terminationReason;
       QWaitCondition m_statusChangedWaitCondition;            
    
    private:
-      void waitOnStatus(int status);
+      // returns the new status once m_status has changed from the
+      // status passed in.
+      int waitOnStatus(int status);
 };
 
 /*

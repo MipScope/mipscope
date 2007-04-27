@@ -66,6 +66,8 @@ class Program : public QObject {
       void memoryChangeReceived(unsigned int address, unsigned int value);
       
       void programStatusChangeReceived(int s);
+      // called whenever Debugger thread exits
+      void programTerminated(int reason);
       
       // Slots from Gui -> Debugger
       // --------------------------

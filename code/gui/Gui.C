@@ -235,7 +235,7 @@ void Gui::setupDockWidgets() {
    addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    
    m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
-//   m_viewDirectoryListingAction->setIcon(QIcon(ICONS"/viewDirectoryListing.png"));  // TODO!
+   m_viewDirectoryListingAction->setIcon(QIcon(ICONS"/viewDirectoryListing.png"));
    menu->addAction(m_viewDirectoryListingAction);
 }
 

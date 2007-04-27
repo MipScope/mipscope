@@ -15,7 +15,7 @@ using namespace std;
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")
 #define STATUS_DELAY       (2500)
-#define IMAGES             "images"
+#define IMAGES             "gui/images"
 //#define LARGE_ICONS
 #define SMALL_ICONS
 

@@ -20,7 +20,7 @@
 #include <QtCore>
 #include <string>
 
-
+/*
 const char *const registerAliases[] = {
    "r0", "at",       // $r0-1
    "v0", "v1",       // $r2-3
@@ -37,7 +37,7 @@ const char *const registerAliases[] = {
    "PC",             // 32
    "HI",             // 33
    "LO",             // 34
-};
+};*/
 string _tab;
 
 ParseList *Parser::parseDocument(QTextDocument *document) {

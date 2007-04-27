@@ -112,8 +112,8 @@ const char *const Registers[] = {
    NULL
 };
 
-const char *LabelSyntax   = "[a-zA-Z_][a-zA-Z_0-9]*\\s?:";
-const char *CommentSyntax = "#[^\n]*";
+//const char *LabelSyntax   = "[a-zA-Z_][a-zA-Z_0-9]*\\s?:";
+//const char *CommentSyntax = "#[^\n]*";
 
 const char *const SpecialSyntax[] = {
    "\\bdone\\b", 

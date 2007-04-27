@@ -11,16 +11,6 @@
 # *********************************************************************
 
 
-#
-# NOTE: to TA
-#    This is the version with the extra credit.  The other file, shittyLife.s
-# is a watered down version of this file since the handout said we had to do 
-# both versions if we chose to implement the extra credit.
-#
-
-
-
-
 .data
 
 # ---------

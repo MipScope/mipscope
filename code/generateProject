@@ -1,0 +1,27 @@
+make clean;
+rm -f *.pro Makefile Makefile.*;
+rm -rfd objects/;
+
+/course/cs036_projects/mipscope/bin/qmake -project && \
+sed -i "s/simulator\/main.C//g" code.pro && \
+sed -i "s/gui\/main.C//g" code.pro && \
+echo "
+CONFIG += debug_and_release
+
+CONFIG(debug, debug|release) {
+   TARGET = debugger    # cli
+   
+   OBJECTS_DIR = objects/debug
+   MOC_DIR = objects/debug
+   SOURCES += simulator/main.C
+} else {
+   TARGET = mipscope
+   
+   OBJECTS_DIR = objects/release
+   MOC_DIR = objects/release
+   SOURCES += gui/main.C
+}
+" >> code.pro && \
+/course/cs036_projects/mipscope/bin/qmake && \
+make all && \
+echo "" && echo "Project generation successful!"

@@ -9,13 +9,15 @@
 #include "EditorPane.H"
 #include "Utilities.H"
 #include "Gui.H"
+#include "../simulator/ParseNode.H"
+#include "Program.H"
 #include <QtGui>
 #include <QtCore>
 
 TextEditor::TextEditor(EditorPane *parent, QFont *font, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
    m_loaded(false), m_modified(false), m_undoAvailable(false), 
-   m_redoAvailable(false), m_syntaxHighligher(NULL)
+   m_redoAvailable(false), m_syntaxHighligher(NULL), m_program(new Program(parent->m_parent, parent, this)), m_pc(NULL)
 {
    setupEditor(font);
    
@@ -61,12 +63,12 @@ void TextEditor::setupEditor(QFont *font) {
    connect(this, SIGNAL(undoAvailable(bool)), m_parent, SLOT(undoAvailabilityModified(bool)));
    connect(this, SIGNAL(redoAvailable(bool)), m_parent, SLOT(redoAvailabilityModified(bool)));
    connect(this, SIGNAL(copyAvailable(bool)), m_parent, SLOT(copyAvailabilityModified(bool)));
-   connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_parent, SLOT(editorScrolled(int)));
+   connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_parent, SLOT(updateLineNumbers(int)));
    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_syntaxTip, SLOT(editorScrolled(int)));
-   connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
+//   connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
    connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    
-   modifiabilityChanged(m_parent->isModifiable());
+   //modifiabilityChanged(m_parent->isModifiable());
    m_syntaxHighligher = new SyntaxHighlighter(this);
 }
 
@@ -234,17 +236,53 @@ void TextEditor::toggleComment() {
    }
 }
 
+void TextEditor::pcChanged(ParseNode *pc) {
+   ParseNode *old = m_pc;
+   
+   m_pc = pc;
+   if (m_program->getStatus() != PAUSED)
+      return;
+   
+   if (old != NULL) {
+      QTextBlock *b = old->getTextBlock();
+      b->setUserState(b->userState() & ~B_CURRENT_PC);
+   }
+
+   if (m_pc != NULL) {
+      QTextBlock *b = m_pc->getTextBlock();
+      b->setUserState(b->userState() | B_CURRENT_PC);
+      
+      QTextCursor c = textCursor();
+      c.setPosition(b->position());
+      setTextCursor(c);
+      ensureCursorVisible();
+   }
+   
+   m_parent->updateLineNumbers(0);
+   viewport()->update();
+}
+
 void TextEditor::updateCursorPosition() {
    viewport()->update();
 }
 
 void TextEditor::paintEvent(QPaintEvent *e) {
-   QRect r(0, cursorRect().y(), viewport()->width(), fontMetrics().height());
-
+   int width = viewport()->width(), height = fontMetrics().height();
+   QRect cRect(0, cursorRect().y(), viewport()->width(), height);
+   
    QPainter p(viewport());
    // good for highlighting line during paused execution:
-   //    255, 240, 117  -- yellow
-   p.fillRect(r, QBrush(QColor(215, 227, 255)));//palette().brush(QPalette::AlternateBase));
+   p.fillRect(cRect, QBrush(QColor(215, 227, 255)));
+   
+   if (m_pc != NULL && m_program->getStatus() == PAUSED) {
+      QTextCursor c = textCursor();
+      c.setPosition(m_pc->getTextBlock()->position());
+      
+      QRect r(0, cursorRect(c).y(), width, height);
+      //    255, 240, 117  -- yellow
+      p.fillRect(r, QBrush(QColor(255, 240, 117)));
+   }
+   
    p.end();
    //setTabStopWidth(4 * QFontMetrics(f).width(' '));
    
@@ -272,7 +310,7 @@ bool TextEditor::openFile(QFile *file) {
       QTimer::singleShot(250, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(750, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(1300, m_parent, SLOT(contentChangedProxy()));
-      modifiabilityChanged(m_parent->isModifiable());
+      //modifiabilityChanged(m_parent->isModifiable());
       
 //      setUpdatesEnabled(true);
    } // else display error
@@ -431,6 +469,10 @@ bool TextEditor::isModified() const {
 }
 
 void TextEditor::modifiabilityChanged(bool isModifiable) {
+   setModifiable(isModifiable);
+}
+
+void TextEditor::setModifiable(bool isModifiable) {
    setReadOnly(!isModifiable);
    resetTabText(m_modified);
 }

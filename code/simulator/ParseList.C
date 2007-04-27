@@ -101,6 +101,20 @@ bool ParseList::isValid() const {
    return true;
 }
 
+SyntaxErrors *ParseList::getSyntaxErrors() const {
+   SyntaxErrors *errors = new SyntaxErrors();
+   
+   foreach(QString s, m_semanticErrors.keys()) {
+      foreach(ParseNode *e, *m_semanticErrors[s]) {
+         ParseError p(QString("Undefined reference to label '%1'").arg(s), s, s.length(), e->getTextBlock());
+         
+         errors->push_back(p);
+      }
+   }
+   
+   return errors;
+}
+
 // Returns the ParseNode* containing the program's entry point (__start label or main)
 ParseNode *ParseList::getEntryPoint() const {
    ParseNode *entryPoint = NULL;

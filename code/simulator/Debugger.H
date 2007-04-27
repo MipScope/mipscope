@@ -13,8 +13,6 @@ class ParseList;
 class State;
 class Debugger;
 
-enum Status { STOPPED, PAUSED, RUNNING };
-
 /* The Debugger class is the interface to the debugger. It's a normal QObject,
  * and uses signals and slots to communicate with the GUI. 
  * 
@@ -32,20 +30,20 @@ class DebuggerThread : public QThread {
    Q_OBJECT
    
    protected:
-      DebuggerThread(ParseList* parseList);
+      DebuggerThread(ParseList* parseList, Debugger *debugger);
       void run(void);
-      Status getStatus(void);
-      void setStatus(Status status);   
-   
-      State* m_state;      
+      int getStatus(void);
+      void setStatus(int status);   
+       
+      State* m_state;
       ParseList* m_parseList;      
       QMutex m_statusMutex;
-      Status m_status;      
+      int m_status;
       QWaitCondition m_statusChangedWaitCondition;            
-      
+      Debugger *m_debugger;
       
    private:
-      void waitOnStatus(Status status);
+      void waitOnStatus(int status);
 };
 
 
@@ -54,33 +52,36 @@ class Debugger : public QObject {
    Q_OBJECT
    
    public:
-      Debugger(ParseList* parseList);
-      Status getStatus(void);
+      friend class DebuggerThread;
+      
+      Debugger(ParseList* parseList = NULL);
       bool waitOnDebuggerThread(unsigned long timeout);
+      
+      int getStatus(void);
+      State *getState();
+      
+      void setParseList(ParseList *list);
       
    public slots:
       void programStop(void);
       void programPause(void);
       void programRun(void);
       void programStepForward(void);
+      void programStepBackward();
       void programStepBackwardToTimestamp(TIMESTAMP stamp);
       void threadTerminated(void);       
       
    signals:
       // manage the output stack, caught by the GUI
-      void outputStackPush(QString item);
-      void outputStackPop(void);
+      //void outputStackPush(QString item);
+      //void outputStackPop(void);
       
       // also for the GUI:
-      void stopped(void);
-      void paused(void);
-      void running(void);
+      void programStatusChanged(int s);
       
    private:
       DebuggerThread m_debuggerThread;
-      
 };
 
+#endif // DEBUGGER_H_
 
-
-#endif /*DEBUGGER_H_*/

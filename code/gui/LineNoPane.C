@@ -44,7 +44,7 @@ LineNoDisplay::LineNoDisplay(EditorPane *editorPane)
    m_editorPane->m_lineNoDisplay = this;
    
    connect(m_editorPane, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
-   connect(m_editorPane, SIGNAL(editorScrolled(TextEditor*, int)), this, SLOT(editorScrolled(TextEditor*,int)));
+   connect(m_editorPane, SIGNAL(updateLineNumbers(TextEditor*, int)), this, SLOT(editorScrolled(TextEditor*,int)));
    connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(contentChanged(TextEditor*)));
    connect(m_editorPane, SIGNAL(contentChanged(TextEditor*)), this, SLOT(contentChanged(TextEditor*)));
    
@@ -79,13 +79,16 @@ void LineNo::mouseReleaseEvent(QMouseEvent *e) {
       if (b != NULL) {
          int state = b->userState();
          
+//         cerr << state;
          // Toggle display of breakpoint
-         if (state == B_BREAKPOINT) {
-            b->setUserState(B_NORMAL);
-         } else if (state == B_BREAKPOINT_CURRENT_PC) {
-            b->setUserState(B_CURRENT_PC);
-         } else b->setUserState(B_BREAKPOINT);
-         //m_editorPane->m_activeEditor->highlightLine(
+         if (state < 0)
+            state = B_BREAKPOINT;
+         else if (state & B_BREAKPOINT)
+            state &= ~B_BREAKPOINT;
+         else state |= B_BREAKPOINT;
+
+         b->setUserState(state);
+//         cerr << ", vs " << state << endl;
       }
       
       resetDisplay(b);
@@ -111,7 +114,6 @@ void LineNo::resetDisplay(QTextBlock *b) {
       
       text = QString((max > 99 ? "%1" : "%1")).arg(m_lineNo);
    }
-
    
    if (possibleBP) {
       int state = b->userState();

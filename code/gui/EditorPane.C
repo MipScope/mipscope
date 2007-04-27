@@ -13,12 +13,11 @@
 #include "Utilities.H"
 #include <QtGui>
 
-EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_font(new QFont("Courier", 11)), m_modifiable(true)
+EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_parent(parent), m_font(new QFont("Courier", 11)), m_modifiable(true)
 {
    m_font->setFixedPitch(true);
    m_activeEditor = new TextEditor(this, m_font);
    //m_highlighter = new SyntaxHighlighter(m_activeEditor->document());
-   m_parent = parent;
    m_lineNoDisplay = NULL;
    m_contextMenu = new EditorContextMenu(this);
 
@@ -369,8 +368,8 @@ void EditorPane::setModifiable(bool modifiable) {
    isModifiable(modifiable);
 }
 
-void EditorPane::editorScrolled(int val) {
-   editorScrolled(m_activeEditor, val);
+void EditorPane::updateLineNumbers(int val) {
+   updateLineNumbers(m_activeEditor, val);
 }
 
 void EditorPane::contentChangedProxy() {

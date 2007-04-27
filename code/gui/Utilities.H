@@ -31,10 +31,14 @@ using namespace std;
 
 extern QStatusBar *STATUS_BAR;
 
-enum DEBUG_MODE {
+/*enum DEBUG_MODE {
    M_NORMAL = 0, M_DEBUGGING = 1, M_RUNNING = (M_DEBUGGING | 2), M_PAUSED = (M_DEBUGGING | 4), 
-};
+};*/
 
+// userState() in QTextBlock
+enum BlockState { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1, 
+   B_CURRENT_PC = 2, B_BREAKPOINT_CURRENT_PC = (B_BREAKPOINT | B_CURRENT_PC)
+};
 
 #define safeDelete(p)         {if ((p)) { delete (p); (p) = NULL; }}
 #define safeDeleteArray(p)    {if ((p)) { delete[] (p); (p) = NULL; }}
@@ -43,6 +47,10 @@ enum DEBUG_MODE {
 
 #define println(__s_) \
    {std::cerr << __FILE__ << " (" << __LINE__ << "): " << (__s_) << '\n';} \
+
+#include "../simulator/typedefs.H"
+#if 0
+#endif // guard to ensure errors in utilities.H don't show up in weird places
 
 #endif // __UTILITIES_H__
 

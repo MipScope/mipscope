@@ -2,6 +2,7 @@
 #include "Identifier.H"
 #include "Statement.H"
 #include "State.H"
+#include "../gui/Utilities.H"
 #include <QTextBlock>
 
 ParseNode::ParseNode(QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)
@@ -65,6 +66,12 @@ TIMESTAMP ParseNode::getFirstExecuted(void) const {
 
 QTextBlock *ParseNode::getTextBlock() const {
    return m_textBlock;
+}
+
+bool ParseNode::containsBreakPoint() const {
+   int blockState;
+   
+   return (m_textBlock != NULL && ((blockState = m_textBlock->userState()) >= 0) && (blockState & B_BREAKPOINT));
 }
 
 ParseNode* ParseNode::getNext(void) const {

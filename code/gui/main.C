@@ -6,9 +6,12 @@
 \* ---------------------------------------------- */
 #include <QApplication>
 #include "Gui.H"
+#include "../simulator/Statement.H"
 
 int main(int argc, char** argv) {
    QApplication app(argc, argv);
+   Statement::InitializeStatementMaps();
+
    Gui gui(argc, argv);
 
    return app.exec();

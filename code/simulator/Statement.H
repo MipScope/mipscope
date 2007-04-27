@@ -35,6 +35,7 @@ class Instruction : public Statement {
       Instruction(StatementArgList *args = NULL);
       virtual ~Instruction();
       
+      static void insert(Instruction *instr);
       static void InitializeInstructionMap();
       
       // returns true if ParseNode should automatically increment PC to next ParseNode

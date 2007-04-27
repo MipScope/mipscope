@@ -61,33 +61,37 @@ bool Instruction::autoIncrementPC() const {
    return true;
 }
 
+void Instruction::insert(Instruction *instr) {
+   instructionMap.insert(instr->getName(), instr);
+}
+
 InstructionMap instructionMap;
 void Instruction::InitializeInstructionMap() {
-   // TODO:  initialize global instructionMap declared extern in typedefs.h
-   
-   // temporary, to test parsing  
-   int i = 0;
-   while(Instructions[i] != NULL)
-      instructionMap.insert(Instructions[i++], NULL/*TEMP*/);
-   
    // Arithmetic.H
-   instructionMap.insert("add", new Add());
-   instructionMap.insert("addi", new Addi());
-   instructionMap.insert("sub", new Addi());
+   insert(new Add());
+   insert(new Addi());
+   insert(new Sub());
 
    // DataTransfer.H
-   instructionMap.insert("li", new Li());
-   instructionMap.insert("la", new La());
-   instructionMap.insert("lw", new Lw());
-   instructionMap.insert("sw", new Sw());
-   instructionMap.insert("move", new Move());
+   insert(new Li());
+   insert(new La());
+   insert(new Lw());
+   insert(new Sw());
+   insert(new Move());
    
    // Special.H
-   instructionMap.insert("nop", new Nop());
-   instructionMap.insert("syscall", new Syscall());
+   insert(new Nop());
+   insert(new Syscall());
    
    // Assert.H
-   instructionMap.insert("assertequals", new AssertEquals());
+   insert(new AssertEquals());
    
+   
+   int i = 0; // temporary, to test parsing
+   while(Instructions[i] != NULL) {// TODO:  remove eventually!
+      if (!instructionMap.contains(Instructions[i]))
+         instructionMap.insert(Instructions[i], NULL/*TEMP*/);
+      ++i;
+   }
 }
 

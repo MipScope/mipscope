@@ -48,6 +48,8 @@ class ParseList {
 
       // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
       bool isValid() const;
+
+      SyntaxErrors *getSyntaxErrors() const;
       
       // Returns the ParseNode* containing the program's entry point (__start label or main)
       ParseNode *getEntryPoint() const;

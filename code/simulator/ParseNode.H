@@ -18,6 +18,9 @@ class ParseNode : public QTextBlockUserData {
       Statement* getStatement(void) const;
       AddressIdentifier *getLabel() const;
       
+      // returns true if there is a breakpoint set on this ParseNode
+      bool containsBreakPoint() const;
+      
       void setAddress(unsigned int address);
       unsigned int getAddress() const;  // inclusive
       unsigned int getSize() const;

@@ -22,14 +22,17 @@ void State::setMemoryWord(unsigned int address, unsigned int value) {
    // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
    
    m_memory[address] = value;
+   memoryChanged(address, value);
 }
 
 void State::setMemoryByte(unsigned int address, unsigned char value) {
    ensureValidAlignment(address, 0);   
 
    // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
-   
-   m_memory[address & ~3] |= (value << ((address & 3) << 3));
+   unsigned int result = 
+      (m_memory[address & ~3] |= (value << ((address & 3) << 3)));
+
+   memoryChanged(address & ~3, result);
 }
 
 unsigned int State::getMemoryWord(unsigned int address) const {
@@ -79,6 +82,7 @@ void State::setRegister(int reg, unsigned int value) {
    }
    
    m_registers[reg] = value;
+   memoryChanged((unsigned)reg, value);
 }
 
 unsigned int State::getRegister(int reg) const {
@@ -97,9 +101,10 @@ void State::incrementPC() {
 void State::setPC(ParseNode* value) {
    m_pc = value;
 //   cerr << (void*)value << endl; 
-   // TODO:  detect when next node does not exit and signal program completion/termination
-
+   // TODO:  detect when next node does not exit and signal program completion/termination -- done in Debugger?
    
+   
+   pcChanged(m_pc);
 }
 
 ParseNode* State::getPC(void) const {
@@ -125,6 +130,8 @@ void State::reset() {
 // does the OS action depending on what's in $v0
 void State::doSyscall(void) {
    cerr << "\t\tSyscall called v0 = " << getRegister(v0) << ", a0 = " << getRegister(a0) << endl;
+   
+   syscall(getRegister(v0));
 
    // TODO: make these legit.
    

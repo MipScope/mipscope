@@ -48,20 +48,20 @@ int main(int argc, char** argv) {
    Statement::InitializeStatementMaps();
    ParseList* parseList = Parser::parseDocument(doc);
    
-   cout << "Executing the program.\n";
+   cerr << "Executing the program.\n";
    
    QApplication app(argc, argv);
    
    Debugger debugger(parseList);
    debugger.programRun();
    
-   cout << "post execute.\n";   
+   cerr << "post execute.\n";   
    
    if (debugger.waitOnDebuggerThread(10 * 1000)) { // timeout after 10 seconds.
-      cout << "\nProgram terminated normally.\n";
+      cerr << "\nProgram terminated normally.\n";
    }
    else {
-      cout << "\nExecution timed-out.\n";
+      cerr << "\nExecution timed-out.\n";
    } 
    
    

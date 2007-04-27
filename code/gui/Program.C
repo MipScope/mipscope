@@ -1,0 +1,185 @@
+/* ---------------------------------------------- *\
+   file: Program.C
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 4/18/2007
+\* ---------------------------------------------- */
+#include "Program.H"
+#include "Utilities.H"
+#include "EditorPane.H"
+#include "TextEditor.H"
+#include "Gui.H"
+#include "../simulator/Debugger.H"
+#include "../simulator/ParseList.H"
+#include "../simulator/ParseNode.H"
+#include "../simulator/Parser.H"
+#include "../simulator/State.H"
+#include <QTextBlock>
+
+
+// TODO:  Test how it looks w/ pc/registers/memory constantly updating; not only when paused
+
+
+// Proxy between Gui and Debugger and vice-versa
+// ---------------------------------------------
+Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
+   : QObject(parent), m_current(true), m_runnable(false), m_gui(gui), m_editorPane(editorPane), m_parent(parent), m_syntaxErrors(NULL), m_parseList(NULL), m_debugger(new Debugger()) 
+{
+   State *s = m_debugger->getState();
+
+   // Initialize relationship between Proxy and State
+   connect(s, SIGNAL(syscall(int)), this, SLOT(syscallReceived(int)));
+   connect(s, SIGNAL(memoryChanged(unsigned int, unsigned int)), this, SLOT(memoryChangeReceived(unsigned int, unsigned int)));
+   connect(s, SIGNAL(registerChanged(unsigned int, unsigned int)), this, SLOT(registerChangeReceived(unsigned int, unsigned int)));
+   connect(s, SIGNAL(pcChanged(ParseNode*)), this, SLOT(pcChangeReceived(ParseNode*)));
+   
+   // Initialize relationship between Proxy and Debugger
+   connect(m_debugger, SIGNAL(programStatusChanged(int)), this, SLOT(programStatusChangeReceived(int)));
+   
+   // Initialize relationship between Gui and Proxy
+   connect(m_gui, SIGNAL(stop()), this, SLOT(stop()));
+   connect(m_gui, SIGNAL(pause()), this, SLOT(pause()));
+   connect(m_gui, SIGNAL(run()), this, SLOT(run()));
+   connect(m_gui, SIGNAL(stepForward()), this, SLOT(stepForward()));
+   connect(m_gui, SIGNAL(stepBackward()), this, SLOT(stepBackward()));
+//   connect(m_parent, SIGNAL(stepBackwardToTimestamp(TIMESTAMP)), this, SLOT(stepBackwardToTimestamp(TIMESTAMP)));
+   connect(this, SIGNAL(programStatusChanged(int)), m_gui, SLOT(programStatusChanged(int)));
+
+   // Initialize relationship between parent TextEditor and Proxy
+   connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
+   connect(this, SIGNAL(pcChanged(ParseNode*)), m_parent, SLOT(pcChanged(ParseNode*)));
+   // TODO:  content changed during Pause textEditor->notifies Proxy
+   
+   // Initialize relationship between EditorPane and Proxy
+   connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(currentChanged(TextEditor*)));
+}
+
+bool Program::isRunnable() const {
+   return m_runnable;
+}
+
+void Program::setRunnable(bool isRunnable) {
+   m_runnable = isRunnable;
+   validityChanged(m_runnable);
+}
+
+SyntaxErrors *Program::getSyntaxErrors() const {
+   return m_syntaxErrors;
+}
+
+int Program::getStatus() const { // gets status of Debugger
+   return m_debugger->getStatus();
+}
+
+ParseNode *Program::getPC() const {
+   return getState()->getPC();
+}
+
+State *Program::getState() const {
+   return m_debugger->getState();
+}
+
+
+// Slots outside of Debugger/Gui Relationship
+// ------------------------------------------
+void Program::currentChanged(TextEditor *cur) {
+   m_current = (cur == m_parent);
+}
+
+// TODO:  add contentChanged thing
+
+// Slots from Debugger -> Gui
+// --------------------------
+void Program::syscallReceived(int no) {
+   if (m_current)
+      syscall(no);
+}
+
+// only when debugger is paused
+void Program::pcChangeReceived(ParseNode *pc) {
+   if (m_current && getStatus() == PAUSED)
+      pcChanged(pc);
+}
+
+void Program::registerChangeReceived(unsigned int reg, unsigned int current) {
+   if (m_current && getStatus() == PAUSED)
+      registerChanged(reg, current);
+}
+
+void Program::memoryChangeReceived(unsigned int address, unsigned int value) {
+   if (m_current && getStatus() == PAUSED)
+      memoryChanged(address, value);
+}
+
+void Program::programStatusChangeReceived(int s) {
+   if (m_current)
+      emit programStatusChanged(s);
+}
+
+
+// Slots from Gui -> Debugger
+// --------------------------
+void Program::stop() {
+   if (m_current)
+      m_debugger->programStop();
+}
+
+void Program::pause() {
+   if (m_current)
+      m_debugger->programPause();
+}
+
+void Program::updateSyntaxErrors(SyntaxErrors *newS) {
+   m_syntaxErrors = newS;
+
+//   m_parent->
+}
+
+void Program::run() {
+   if (!m_current)
+      return;
+
+   if (getStatus() == STOPPED) {
+      // reparse program; ensure it was successful
+      
+      try {
+         m_parseList = Parser::parseDocument(m_parent->document());
+      } catch(SyntaxErrors &e) {
+         updateSyntaxErrors(new SyntaxErrors(e));
+         return;
+      }
+
+      if (!m_parseList->isValid()) {
+         updateSyntaxErrors(m_parseList->getSyntaxErrors());
+         return;
+      }
+
+      m_debugger->setParseList(m_parseList);
+   }
+   
+   m_debugger->programRun();
+   
+//   if (m_current)
+//      programStatusChanged(RUNNING);
+}
+
+void Program::stepForward() {
+   if (m_current)
+      m_debugger->programStepForward();
+}
+
+void Program::stepBackward() {
+   if (m_current)
+      m_debugger->programStepBackward();
+}
+
+void Program::stepBackwardToTimestamp(TIMESTAMP stamp) {
+   if (m_current)
+      m_debugger->programStepBackwardToTimestamp(stamp);
+}
+
+void Program::jumpTo(const QTextBlock &b) {
+//   if (m_current)
+//      m_debugger->jumpTo(b);
+}
+

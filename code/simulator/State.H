@@ -48,16 +48,14 @@ class State : public QObject {
       // completely resets the state to its original state
       void reset();
       
-signals:
-
+   signals:
+      void syscall(int);
+      
       /* this is emitted whenever a word in memory is changed, even if only
        * one byte of this word was changed with a call to setMemoryByte. */
-      void memoryWordChanged(ParseNode* who, unsigned int address, unsigned int previous, unsigned int current);
-
-      void registerChanged(ParseNode* who, int reg, unsigned int previous, unsigned int current);
-
-      void pcChanged(ParseNode* who, ParseNode* previous, ParseNode* current);
-      
+      void memoryChanged(unsigned int address, unsigned int value);
+      void registerChanged(unsigned int register, unsigned int value);
+      void pcChanged(ParseNode *pc);
 
    private:
       unsigned int m_registers[register_count];

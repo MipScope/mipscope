@@ -38,7 +38,29 @@ class Gui : public QMainWindow {
       QAction *getSaveAllAction();
       
       QMenu *getEditMenu();
+   
+      // Proxy-DEBUGGER Related
+      // ----------------------
+   signals:
+      void stop();
+      void pause();
+      void run();
+      void stepForward();
+      void stepBackward();
+      //void stepBackwardToTimestamp(TIMESTAMP stamp);
+      //void jumpTo(const QTextBlock&);
       
+   public slots:
+      // emitted upon run, pause, or stop of Debugger
+      void programStatusChanged(int s);
+      
+      // emitted whenever the runnability of a program changes
+      void validityChanged(bool isValid);
+ 
+      
+      
+      // Normal Gui/Menu Related
+      // -----------------------
    private slots:
       // MenuBar
       void fileOpenAction();
@@ -103,7 +125,7 @@ class Gui : public QMainWindow {
       
       // IMPORTANT:
       //    Editing, Debugging, or Paused
-      DEBUG_MODE m_mode;
+      int m_mode;
       // TextEditor which is currently running / being debugged
       TextEditor *m_runningEditor;
 

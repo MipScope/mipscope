@@ -25,11 +25,10 @@ class AssertEquals : public Instruction {
       }
       
       // @overridden from Statement
-      
-      virtual const char *getName() const { return "add"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, $src2 OR <immediate>"; }
+      virtual const char *getName() const { return "assertequals"; }
+      virtual const char *getSyntax() const { return "$reg, imm"; }
       virtual const char *getDescription() const {
-         return "Adds two signed integers, storing the result in $dest.";
+         return "Asserts that the value in register $reg is equal to the immediate value given, terminating the program if the assertion fails";
       }
 };
 

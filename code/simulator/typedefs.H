@@ -16,6 +16,16 @@ class AddressIdentifier;
 class Directive;
 class ParseError;
 
+/*typedef int Status;
+//#define Status    int
+#define STOPPED   (0)
+#define PAUSED    (1)
+#define RUNNING   (2)*/
+enum Status { STOPPED, PAUSED, RUNNING };
+
+//#include <QMetaType>
+//Q_DECLARE_METATYPE(Status);
+
 #define CLEAN_TIMESTAMP    (0)
 
 #define SENTINEL_ADDRESS      (0)

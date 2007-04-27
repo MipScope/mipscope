@@ -14,7 +14,7 @@
 
 Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
-   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(M_NORMAL), 
+   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
    m_runningEditor(NULL)
 {
    QApplication::setStyle(new QPlastiqueStyle());
@@ -400,53 +400,58 @@ void Gui::loadSettings() {
 // DEBUGGER - RELATED
 // ------------------
 void Gui::debugRunAction() {
-   if (m_mode == M_NORMAL) {
+   if (m_mode == STOPPED) {
       if (m_editorPane->m_activeEditor->isModified()) {
          QMessageBox::StandardButton ret = m_editorPane->m_activeEditor->promptUnsavedChanges();
          
-         if (ret == QMessageBox::Cancel || ret == QMessageBox::No)
+         if (ret == QMessageBox::Cancel)
             return;
       }
       
       m_runningEditor = m_editorPane->m_activeEditor;
-      m_mode = M_RUNNING;
-   } else if (m_mode == M_PAUSED)
-      m_mode = M_RUNNING;
-   else m_mode = M_PAUSED;
-
-   updateDebugActions();
+   }
+/*      m_mode = RUNNING;
+   else if (m_mode == PAUSED)
+      m_mode = RUNNING;
+   else m_mode = PAUSED;*/
+   
+   run();
+   //updateDebugActions();
 }
 
 void Gui::updateDebugActions() {
    switch(m_mode) {
-      case M_RUNNING:
+      case RUNNING:
          m_debugRunAction->setText(tr("&Pause"));
          m_debugRunAction->setIcon(QIcon(ICONS"/debugPause.png"));
          m_debugStopAction->setEnabled(true);
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
-         m_editorPane->setModifiable(false);
+         m_runningEditor->setModifiable(false);
+//         m_editorPane->setModifiable(false);
          
          break;
-      case M_PAUSED:
+      case PAUSED:
          m_debugRunAction->setText(tr("&Run"));
          m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
          m_debugStopAction->setEnabled(true);
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(true);
          m_debugBStepAction->setEnabled(true);
-         m_editorPane->setModifiable(true);
+         //m_editorPane->setModifiable(true);
+         m_runningEditor->setModifiable(true);
  
          break;
-      case M_NORMAL:
+      case STOPPED:
          m_debugRunAction->setText(tr("&Run"));
          m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
          m_debugStopAction->setEnabled(false);
          m_debugRestartAction->setEnabled(false);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
-         m_editorPane->setModifiable(true);
+         //m_editorPane->setModifiable(true);
+         m_runningEditor->setModifiable(true);
          
       default:
          break;
@@ -454,28 +459,30 @@ void Gui::updateDebugActions() {
 }
 
 void Gui::debugStopAction() {
-   m_mode = M_NORMAL;
-
-   updateDebugActions();
+   stop();
+   //m_mode = STOPPED;
+//   updateDebugActions();
 }
 
 //void debugPauseAction(); // only have one run menuitem
 // which switches automatically to 'pause' upon invocation.
 void Gui::debugStepAction() {
-   
+   stepForward();
    // TODO
 }
 
 void Gui::debugBStepAction() {
-   
+   stepBackward();
    // TODO
 }
 
 void Gui::debugRestartAction() {
+   stop();
+   run();
    
    // TODO
-   m_mode = M_RUNNING;
-   updateDebugActions();
+   //m_mode = RUNNING;
+   //updateDebugActions();
 }
 
 // Allow user to load file into a separate process running in xspim (cs31-version)
@@ -540,4 +547,15 @@ void Gui::debugRunXSpimAction() {
    }
 }
 
+// emitted upon run, pause, or stop of Debugger
+void Gui::programStatusChanged(int s) {
+   m_mode = s;
+   updateDebugActions();
+}
+
+// emitted whenever the runnability of a program changes
+void Gui::validityChanged(bool isValid) {
+   // TODO!
+   isValid = false;
+}
 

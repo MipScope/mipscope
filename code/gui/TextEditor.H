@@ -13,6 +13,8 @@
 #include <map>
 using namespace std;
 
+class Program;
+class ParseNode;
 class QTextBlock;
 class QFont;
 class SyntaxHighlighter;
@@ -31,11 +33,6 @@ typedef LineToPosMap::const_iterator LineToMapIterator;
 
 extern bool Accepted(QMessageBox::StandardButton result);
 
-// userState() in QTextBlock
-enum BlockStates { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1, 
-   B_CURRENT_PC = 2, B_BREAKPOINT_CURRENT_PC = (B_BREAKPOINT | B_CURRENT_PC)
-};
-
 #define UNTITLED     "Untitled"
 
 class TextEditor : public QTextEdit {
@@ -45,6 +42,7 @@ class TextEditor : public QTextEdit {
    public:
       friend class EditorPane;
       friend class SyntaxTip;
+      friend class Program;
       
       TextEditor(EditorPane *parent, QFont *font, QFile *file = NULL, TextEditor *prev = NULL);
 	   virtual ~TextEditor(void);
@@ -61,6 +59,8 @@ class TextEditor : public QTextEdit {
       QMessageBox::StandardButton saveAs();
       // proxy for document()->isModified()
       bool isModified() const;
+
+      void setModifiable(bool isModifiable);
 
       // Utility methods
       bool isModifiable() const;
@@ -85,6 +85,9 @@ class TextEditor : public QTextEdit {
       QString fileName() const;
       QFile *file() const { return m_file; }
 
+   signals:
+      void jumpTo(const QTextBlock&); // Jump PC to given text block
+      
    private slots:
       void codeChanged();
       void modifiabilityChanged(bool);
@@ -93,6 +96,8 @@ class TextEditor : public QTextEdit {
       void toggleComment();
       void updateCursorPosition();
       void fontChanged(const QFont&);
+      
+      void pcChanged(ParseNode*);
       
    protected:
       EditorPane *m_parent;
@@ -109,6 +114,8 @@ class TextEditor : public QTextEdit {
       SyntaxHighlighter *m_syntaxHighligher;
       QList<ExtraSelection> m_highlighted;
       LineToPosMap m_lineToPosMap;
+      Program *m_program; // proxy to Debugger and ParseList
+      ParseNode *m_pc;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);

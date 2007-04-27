@@ -11,7 +11,6 @@
 
 class ParseList;
 class State;
-class Debugger;
 
 /* The Debugger class is the interface to the debugger. It's a normal QObject,
  * and uses signals and slots to communicate with the GUI. 
@@ -22,66 +21,82 @@ class Debugger;
  * 
  */
 
-// don't use this, use Debugger (below)
-class DebuggerThread : public QThread {
-   
-   friend class Debugger;
-   
-   Q_OBJECT
-   
-   protected:
-      DebuggerThread(ParseList* parseList, Debugger *debugger);
-      void run(void);
-      int getStatus(void);
-      void setStatus(int status);   
-       
-      State* m_state;
-      ParseList* m_parseList;      
-      QMutex m_statusMutex;
-      int m_status;
-      QWaitCondition m_statusChangedWaitCondition;            
-      Debugger *m_debugger;
-      
-   private:
-      void waitOnStatus(int status);
-};
+class Debugger: public QThread {
 
-
-class Debugger : public QObject {
-   
    Q_OBJECT
    
    public:
-      friend class DebuggerThread;
-      
       Debugger(ParseList* parseList = NULL);
-      bool waitOnDebuggerThread(unsigned long timeout);
       
-      int getStatus(void);
+      int getStatus();
       State *getState();
-      
       void setParseList(ParseList *list);
       
-   public slots:
       void programStop(void);
       void programPause(void);
       void programRun(void);
       void programStepForward(void);
       void programStepBackward();
       void programStepBackwardToTimestamp(TIMESTAMP stamp);
-      void threadTerminated(void);       
       
    signals:
+      void programStatusChanged(int s);
+      
+   private slots:
+      void threadTerminated();
+
+   protected:
+      
+      void setStatusConditionally(int desiredStatus);
+      void setStatus(int status);
+      void run();
+
+      State* m_state;
+      ParseList* m_parseList;      
+      QMutex m_statusMutex;
+      int m_status;
+      QWaitCondition m_statusChangedWaitCondition;            
+   
+   private:
+      void waitOnStatus(int status);
+};
+
+/*
+class Debugger : public QObject {
+
+   Q_OBJECT
+
+   public:
+      friend class DebuggerThread;
+
+      Debugger(ParseList* parseList = NULL);
+      bool waitOnDebuggerThread(unsigned long timeout);
+
+      int getStatus(void);
+      State *getState();
+
+      void setParseList(ParseList *list);
+
+      public slots:
+         void programStop(void);
+      void programPause(void);
+      void programRun(void);
+      void programStepForward(void);
+      void programStepBackward();
+      void programStepBackwardToTimestamp(TIMESTAMP stamp);
+      void threadTerminated(void);       
+
+signals:
       // manage the output stack, caught by the GUI
       //void outputStackPush(QString item);
       //void outputStackPop(void);
-      
+
       // also for the GUI:
       void programStatusChanged(int s);
-      
+
    private:
       DebuggerThread m_debuggerThread;
-};
+};*/
 
 #endif // DEBUGGER_H_
 

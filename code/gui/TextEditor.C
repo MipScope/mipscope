@@ -238,10 +238,12 @@ void TextEditor::toggleComment() {
 
 void TextEditor::pcChanged(ParseNode *pc) {
    ParseNode *old = m_pc;
+   if (old == pc)
+      return;
    
    m_pc = pc;
-   if (m_program->getStatus() != PAUSED)
-      return;
+//   if (m_program->getStatus() != PAUSED)
+//      return;
    
    if (old != NULL) {
       QTextBlock *b = old->getTextBlock();
@@ -260,6 +262,16 @@ void TextEditor::pcChanged(ParseNode *pc) {
    
    m_parent->updateLineNumbers(0);
    viewport()->update();
+}
+
+void TextEditor::programStatusChanged(int status) {
+   cerr << "TextEditor::programStatusChanged(" << status << ")\n";
+//   cerr << "\t" << QThread::currentThreadId() << "\n";
+
+   if (status == PAUSED)
+      pcChanged(m_program->getPC());
+   else if (m_pc != NULL)
+      pcChanged(NULL);
 }
 
 void TextEditor::updateCursorPosition() {

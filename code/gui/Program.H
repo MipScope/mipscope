@@ -19,6 +19,7 @@ class Gui;
 class Debugger;
 class ParseList;
 class QTextBlock;
+class QEvent;
 
 class Program : public QObject {
    
@@ -42,6 +43,8 @@ class Program : public QObject {
       
       ParseNode *getPC() const;
       State *getState() const;
+      
+//      void customEvent(QEvent *e);
       
    protected:
       void setRunnable(bool);
@@ -76,7 +79,7 @@ class Program : public QObject {
       
    signals:
       // Signals -> Gui  only if m_current
-//      void syscall(int no);
+      void syscall(int no);
       
       void pcChanged(ParseNode *pc);
       void registerChanged(int register, unsigned int current);

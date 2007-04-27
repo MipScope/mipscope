@@ -97,7 +97,9 @@ class TextEditor : public QTextEdit {
       void updateCursorPosition();
       void fontChanged(const QFont&);
       
+      // Related to Debugging
       void pcChanged(ParseNode*);
+      void programStatusChanged(int);
       
    protected:
       EditorPane *m_parent;

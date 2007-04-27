@@ -48,6 +48,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    // Initialize relationship between parent TextEditor and Proxy
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
    connect(this, SIGNAL(pcChanged(ParseNode*)), m_parent, SLOT(pcChanged(ParseNode*)));
+   connect(this, SIGNAL(programStatusChanged(int)), m_parent, SLOT(programStatusChanged(int)));
+
    // TODO:  content changed during Pause textEditor->notifies Proxy
    
    // Initialize relationship between EditorPane and Proxy
@@ -79,6 +81,9 @@ State *Program::getState() const {
    return m_debugger->getState();
 }
 
+/*void Program::customEvent(QEvent *e) {
+//   if (e->type() == )
+}*/
 
 // Slots outside of Debugger/Gui Relationship
 // ------------------------------------------
@@ -91,7 +96,7 @@ void Program::currentChanged(TextEditor *cur) {
 // Slots from Debugger -> Gui
 // --------------------------
 void Program::syscallReceived(int no) {
-   if (m_current)
+   if (m_current && getStatus() == PAUSED)
       syscall(no);
 }
 

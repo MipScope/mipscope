@@ -11,7 +11,7 @@ class State : public QObject {
    Q_OBJECT
 
    public:
-      State();		
+      State();
 
       // increments timestamp
       TIMESTAMP newTimestamp();

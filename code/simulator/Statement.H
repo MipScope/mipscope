@@ -4,6 +4,7 @@
 
 class StatementArgList;
 class State;
+class ParseList;
 
 class Statement {
    public:
@@ -50,7 +51,7 @@ class Instruction : public Statement {
       virtual Instruction *create(StatementArgList *args) const = 0;
       
       // Executes this Instruction, modifying the given State accordingly
-      virtual void execute(State* state) const = 0;
+      virtual void execute(State* state, ParseList* parseList) const = 0;
 
       virtual const char *getName() const = 0;
       virtual const char *getSyntax() const = 0;

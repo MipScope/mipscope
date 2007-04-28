@@ -17,7 +17,7 @@ class AssertEquals : public Instruction {
          return new AssertEquals(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 0);
          int val2 = m_args->getValue(s, 1);
 

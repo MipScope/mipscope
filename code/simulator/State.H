@@ -12,7 +12,7 @@ class State : public QObject {
    Q_OBJECT
 
    public:
-      State(ParseList* parseList);
+      State();
 
       // increments timestamp
       TIMESTAMP newTimestamp();
@@ -51,8 +51,6 @@ class State : public QObject {
       // completely resets the state to its original state
       void reset();
       
-      ParseList* getParseList(void);
-      
    signals:
       void syscall(int, int);
       
@@ -71,7 +69,6 @@ class State : public QObject {
 
       TIMESTAMP m_currentTimestamp;
       
-      ParseList* m_parseList;
 };
 
 

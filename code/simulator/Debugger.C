@@ -7,7 +7,7 @@
 #include <QMutexLocker>
 
 Debugger::Debugger(ParseList* parseList) 
-   : m_state(new State(parseList)), m_parseList(parseList), m_status(STOPPED), 
+   : m_state(new State()), m_parseList(parseList), m_status(STOPPED), 
      m_terminationReason(T_ABNORMAL)
 {
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
@@ -62,7 +62,7 @@ void Debugger::runAnotherStep(void) {
    
    try {
       // execute another parsenode  
-      m_state->getPC()->execute(m_state);
+      m_state->getPC()->execute(m_state, m_parseList);
    } catch (StateException e) {
       setStatus(STOPPED);
       std::cerr << e.getMessage().toStdString();  

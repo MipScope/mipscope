@@ -8,6 +8,7 @@
 class AddressIdentifier;
 class Statement;
 class State;
+class ParseList;
 
 class ParseNode : public QTextBlockUserData {
    public:
@@ -34,7 +35,7 @@ class ParseNode : public QTextBlockUserData {
 
       // Returns whether or not this ParseNode contains a valid Instruction
       bool isExecutable() const;
-      void execute(State* state);
+      void execute(State* state, ParseList* parseList);
       bool isValid() const;
       void setSemanticValidity(bool isValid);
 

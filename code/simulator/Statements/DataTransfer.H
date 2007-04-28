@@ -24,7 +24,7 @@ class Li : public Instruction {
          return new Li(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setRegister((*m_args)[0]->getRegister(), (*m_args)[1]->getValue(s));
       }
       
@@ -52,7 +52,7 @@ class La : public Instruction {
          return new La(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setRegister((*m_args)[0]->getRegister(), (*m_args)[1]->getValue(s));
       }
       
@@ -80,7 +80,7 @@ class Lw : public Instruction {
          return new Lw(args);
       }
       
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setRegister((*m_args)[0]->getRegister(), s->getMemoryWord((*m_args)[1]->getValue(s)));
       }
       
@@ -108,7 +108,7 @@ class Sw : public Instruction {
          return new Sw(args);
       }
       
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setMemoryWord(m_args->getValue(s, 1), m_args->getValue(s, 0));
       }
       
@@ -136,7 +136,7 @@ class Move : public Instruction {
          return new Move(args);
       }
       
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setRegister((*m_args)[0]->getRegister(), (*m_args)[1]->getValue(s));
       }
       
@@ -164,7 +164,7 @@ class Mflo : public Instruction {
          return new Mflo(args);
       }
       
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setRegister(lo, (*m_args)[0]->getValue(s));
       }
       
@@ -192,7 +192,7 @@ class Mfhi : public Instruction {
          return new Mfhi(args);
       }
       
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->setRegister(hi, (*m_args)[0]->getValue(s));
       }
       

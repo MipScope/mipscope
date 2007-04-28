@@ -28,7 +28,7 @@ class Add : public Instruction {
          return new Add(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 1);
          int val2 = m_args->getValue(s, 2);
 
@@ -87,7 +87,7 @@ class Sub : public Instruction {
          return new Sub(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 1);
          int val2 = m_args->getValue(s, 2);
 
@@ -119,7 +119,7 @@ class Mult : public Instruction {
          return new Mult(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 0);
          int val2 = m_args->getValue(s, 1);
          
@@ -155,7 +155,7 @@ class Div : public Instruction {
          return new Div(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 0);
          int val2 = m_args->getValue(s, 1);
 

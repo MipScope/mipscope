@@ -96,7 +96,7 @@ bool ParseNode::isExecutable() const {
    return (m_statement == NULL ? false : m_statement->isInstruction());
 }
 
-void ParseNode::execute(State* state) {
+void ParseNode::execute(State* state, ParseList* parseList) {
    bool increment = true, executed;
    
    if ((executed = isExecutable())) {
@@ -106,7 +106,7 @@ void ParseNode::execute(State* state) {
 
       // actually execute
       Instruction *instr = static_cast<Instruction*>(m_statement);
-      instr->execute(state);
+      instr->execute(state, parseList);
 
       // ensure PC gets updated properly (some branching instructions take care of this themselves)
       increment = instr->autoIncrementPC();

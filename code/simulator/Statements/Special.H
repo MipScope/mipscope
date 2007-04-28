@@ -19,7 +19,7 @@ class Nop : public Instruction {
          return new Nop(args);
       }
 
-      virtual void execute(State *s) const {}
+      virtual void execute(State *s, ParseList* parseList) const {}
       
       // @overridden from Statement
       virtual const char *getName() const { return "nop"; }
@@ -43,7 +43,7 @@ class Syscall : public Instruction {
          return new Syscall(args);
       }
 
-      virtual void execute(State *s) const {
+      virtual void execute(State *s, ParseList* parseList) const {
          s->doSyscall();
       }
       

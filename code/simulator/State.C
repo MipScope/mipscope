@@ -7,7 +7,7 @@
 
 #define INTERNAL_MEMORY_SIZE (16384)
 
-State::State(ParseList* parseList) : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP), m_parseList(parseList)
+State::State() : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP)
 {
    m_memory.reserve(INTERNAL_MEMORY_SIZE);
    reset();
@@ -15,10 +15,6 @@ State::State(ParseList* parseList) : m_pc(NULL), m_currentTimestamp(CLEAN_TIMEST
 
 TIMESTAMP State::newTimestamp() {
    return ++m_currentTimestamp;
-}
-
-ParseList* State::getParseList(void) {
-   return m_parseList;
 }
 
 void State::setMemoryWord(unsigned int address, unsigned int value) {

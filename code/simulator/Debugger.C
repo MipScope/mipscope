@@ -55,6 +55,7 @@ void Debugger::runAnotherStep(void) {
    
    // Check if we're at the end of the program
    if (m_state->getPC() == NULL) {
+      setStatus(STOPPED);
       m_terminationReason = T_COMPLETED;
       return;
    }
@@ -65,6 +66,13 @@ void Debugger::runAnotherStep(void) {
    } catch (StateException e) {
       setStatus(STOPPED);
       std::cerr << e.getMessage().toStdString();  
+   }
+   
+   // We run this below as well, so we stop the program immediately
+   if (m_state->getPC() == NULL) {
+      setStatus(STOPPED);
+      m_terminationReason = T_COMPLETED;
+      return;
    }
 }
 

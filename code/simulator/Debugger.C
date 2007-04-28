@@ -50,25 +50,31 @@ void Debugger::programRun(void) {
    }
 }
 
+// private
+void Debugger::runAnotherStep(void) {
+   
+   // Check if we're at the end of the program
+   if (m_state->getPC() == NULL) {
+      m_terminationReason = T_COMPLETED;
+      return;
+   }
+   
+   try {
+      // execute another parsenode  
+      m_state->getPC()->execute(m_state);
+   } catch (StateException e) {
+      setStatus(STOPPED);
+      std::cerr << e.getMessage().toStdString();  
+   }
+}
+
 bool Debugger::waitOnDebuggerThread(unsigned long timeout) {
    return wait(timeout);  
 }
 
-// slot
-void Debugger::programStepForward(void) { } // TODO
-
-void Debugger::programStepBackward() { } // TODO
-
-// slot
-void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) { stamp=0;} // TODO
-
-
-void Debugger::setParseList(ParseList *list) {
-   QMutexLocker locker(&m_statusMutex);
-   m_parseList = list;
-}
-
-void Debugger::run(void) {
+//private
+void Debugger::executionInit(void) {
+   
    cerr << "Debugger::run\n";
 
    if (!m_parseList->isValid()) {
@@ -81,8 +87,36 @@ void Debugger::run(void) {
       cerr << "Debugger: parseList couldn't be initialized.\n";
       m_terminationReason = T_INVALID_PROGRAM;
       return; 
-   }
+   }  
+}
 
+// public
+// we remain PAUSED the whole time
+void Debugger::programStepForward(void) {
+   
+   switch (getStatus()) {
+      case STOPPED:
+         executionInit();
+         setStatus(PAUSED);
+      case PAUSED:            // fall through
+         runAnotherStep(); 
+   }
+}
+
+void Debugger::programStepBackward() { } // TODO
+
+void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) { stamp=0;} // TODO
+
+
+void Debugger::setParseList(ParseList *list) {
+   QMutexLocker locker(&m_statusMutex);
+   m_parseList = list;
+}
+
+void Debugger::run(void) {
+   
+   executionInit();   
+   
    // let's run!
    cerr << "Debugger::run: now executing the program.\n";
    
@@ -110,14 +144,8 @@ void Debugger::run(void) {
             break; // check if waitOnStatus was interrupted
 //         continue;
       }
-
-      try {
-         // execute another parsenode  
-         m_state->getPC()->execute(m_state);
-      } catch (StateException e) {
-         setStatus(STOPPED);
-         std::cerr << e.getMessage().toStdString();  
-      }
+      // execute another parsenode  
+      runAnotherStep();
    }
    
    cerr << "Debugger::end of run(); terminationReasion = " << m_terminationReason << endl;

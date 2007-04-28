@@ -56,14 +56,14 @@ int main(int argc, char** argv) {
    debugger.programRun();
    
    cerr << "post execute.\n";   
-   
+   /*
    if (debugger.waitOnDebuggerThread(10 * 1000)) { // timeout after 10 seconds.
       cerr << "\nProgram terminated normally.\n";
    }
    else {
       cerr << "\nExecution timed-out.\n";
    }
-   
+   */
    
    return 0;
 }

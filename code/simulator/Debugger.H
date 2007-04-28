@@ -49,6 +49,7 @@ class Debugger : public QThread {
       
    private slots:
       void threadTerminated();
+      
 
    protected:
       
@@ -66,6 +67,8 @@ class Debugger : public QThread {
       // returns the new status once m_status has changed from the
       // status passed in.
       int waitOnStatus(int status);
+      void runAnotherStep(void);
+      void Debugger::executionInit(void);
 };
 
 /*

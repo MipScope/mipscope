@@ -28,6 +28,9 @@ class OutputConsole : public Console,
       virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
       virtual void undoSyscall(int syscallNo);
       virtual void reset();
+
+   protected:
+      bool m_first; // since last reset
 };
 
 #endif // __OUTPUT_CONSOLE_H__

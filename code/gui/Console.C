@@ -32,18 +32,6 @@ Console::Console(Gui *gui, EditorPane *editorPane, const QString &name, bool cre
 
 Console::~Console() { }
 
-void Console::push(const QString &newOutput) {
-   m_strings.append(newOutput);
-   
-   updateDisplay();
-}
-
-void Console::pop() {
-   m_strings.pop_back();
-   
-   updateDisplay();
-}
-
 void Console::flush() {
    m_strings.clear();
 

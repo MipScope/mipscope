@@ -24,12 +24,6 @@ class Console : public QDockWidget {
    public:
       Console(Gui *parent, EditorPane *editorPane, const QString &name, bool createDisplay = true);
       virtual ~Console();
- 
-      // Adds a new string to the console's display
-      void push(const QString &newOutput);
-      
-      // Removes (undoes) the last push of new output
-      void pop();
 
    protected slots:
       // Clears the console's display

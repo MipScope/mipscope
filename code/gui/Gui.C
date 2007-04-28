@@ -249,9 +249,8 @@ void Gui::setupDockWidgets() {
 
 void Gui::ensureVisibility(QDockWidget *widget) {
 //   cerr << "in: " << widget->isVisible() << endl;
-   
-   if (widget == NULL)// || widget->isVisible())
-      return;
+   if (widget == NULL)
+      return; // possibly use etwas w/ widget's size?  if in a tab?
    
    setUpdatesEnabled(false);
    Qt::DockWidgetArea a = dockWidgetArea(widget);

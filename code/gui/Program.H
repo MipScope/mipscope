@@ -81,7 +81,8 @@ class Program : public QObject {
       
    signals:
       // Signals -> Gui  only if m_current
-      void syscall(int no);
+      void syscall(State *s, int status, int syscallNo);
+      void undoSyscall(int syscallNo);
       
       void pcChanged(ParseNode *pc);
       void registerChanged(int register, unsigned int current);

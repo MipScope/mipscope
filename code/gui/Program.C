@@ -99,8 +99,11 @@ void Program::currentChanged(TextEditor *cur) {
 // Slots from Debugger -> Gui
 // --------------------------
 void Program::syscallReceived(int no) {
-   if (m_current && getStatus() == PAUSED)
-      syscall(no);
+//   if (no == 1)
+//      m_gui->m_output->push(QString(getState()->getRegister(a0)));
+   
+   if (m_current);
+      syscall(getState(), getStatus(), no);
 }
 
 // only when debugger is paused

@@ -23,7 +23,7 @@ OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
    m_display->setFont(*m_editorPane->font());
    connect(m_editorPane, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    
-   m_display->setPlainText("\nExample output text.\nBah!\n");
+   m_display->setPlainText("Welcome to "PROJECT_NAME"!\nWritten by Travis Fischer and Tim O'Donnell\n\n");
    setWidget(m_display);
 }
 

@@ -72,6 +72,16 @@ void State::memset(unsigned int destAddress, const int value, unsigned int size)
       setMemoryByte(destAddress++, value);
 }
 
+QString State::getString(unsigned int address) const {
+   unsigned char byte;
+   QString s;
+   
+   while((byte = getMemoryByte(address++)) != 0)
+      s += QChar(byte);
+   
+   return s;
+}
+
 void State::setRegister(int reg, unsigned int value) {
    if (reg <= zero || reg >= pc) {
       cerr << "set: " << reg << " = " << value << endl;

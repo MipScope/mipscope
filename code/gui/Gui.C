@@ -10,9 +10,11 @@
 #include "OutputConsole.H"
 #include "RegisterView.H"
 #include "DirectoryListing.H"
+#include "SyscallHandler.H"
 #include <QtGui>
 
-Gui::Gui(int argc, char **argv) : QMainWindow(), m_fileSaveAction(NULL), 
+Gui::Gui(int argc, char **argv) : QMainWindow(), 
+   m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
    m_runningEditor(NULL)
@@ -240,6 +242,10 @@ void Gui::setupDockWidgets() {
 }
 
 
+SyscallListener *Gui::getSyscallListener() const {
+   return m_syscallListener;
+}
+
 // -----------------------
 // MenuBar-related Actions
 // -----------------------
@@ -408,6 +414,7 @@ void Gui::debugRunAction() {
             return;
       }
       
+      m_syscallListener->reset();
       m_runningEditor = m_editorPane->m_activeEditor;
    }
 /*      m_mode = RUNNING;

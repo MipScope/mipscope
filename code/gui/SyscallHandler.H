@@ -6,7 +6,10 @@
 \* ---------------------------------------------- */
 #ifndef __SYSCALL_HANDLER_H__
 #define __SYSCALL_HANDLER_H__
+
+#include "Syscalls.H"
 #include <QObject>
+#include <QHash>
 
 class Gui;
 class EditorPane;
@@ -28,7 +31,7 @@ class SyscallListener : public QObject {
    Q_OBJECT
    
    public:
-      SyscallListener(Gui *parent, OutputConsole *output);
+      SyscallListener(Gui *parent);
       
       void registerHandler(SyscallHandler *handler);
       
@@ -39,7 +42,7 @@ class SyscallListener : public QObject {
       
    protected:
       Gui *m_gui;
-      OutputConsole *m_output;
+      QHash<int, SyscallHandler*> m_syscallMap;
 };
 
 /* SyscallHandler:
@@ -51,9 +54,7 @@ class SyscallListener : public QObject {
  * and provide it with a valid SyscallListener.
  *
  */
-class SyscallHandler : public virtual QObject {
-   
-   Q_OBJECT
+class SyscallHandler {
    
    public:
       // Initializes and registers this SyscallHandler with the given SyscallListener
@@ -63,20 +64,20 @@ class SyscallHandler : public virtual QObject {
       int getSyscallNo() const;
       bool handlesUndo() const;
       
-   public slots:
+      // Core functionality:
+      
       // Should execute this syscall
-      virtual void syscall(State *s, int status) = 0;
+      virtual void syscall(State *s, int status, int syscallNo) = 0;
 
       // Should undo the last call to syscall
       // Note:  Implementation left up to the implementing SyscallHandler.
-      virtual void undoSyscall() = 0;
+      virtual void undoSyscall(int syscallNo) = 0;
       virtual void reset() = 0;
       
    protected:
       int m_syscallNo;
       bool m_handlesUndo;
 };
-
 
 #endif // __SYSCALL_HANDLER_H__
 

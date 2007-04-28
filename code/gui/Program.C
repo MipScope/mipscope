@@ -14,6 +14,7 @@
 #include "../simulator/ParseNode.H"
 #include "../simulator/Parser.H"
 #include "../simulator/State.H"
+#include "SyscallHandler.H"
 #include <QTextBlock>
 
 
@@ -44,7 +45,10 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(m_gui, SIGNAL(stepForward()), this, SLOT(stepForward()));
    connect(m_gui, SIGNAL(stepBackward()), this, SLOT(stepBackward()));
 //   connect(m_parent, SIGNAL(stepBackwardToTimestamp(TIMESTAMP)), this, SLOT(stepBackwardToTimestamp(TIMESTAMP)));
+   
+   // Proxy -> Gui
    connect(this, SIGNAL(programStatusChanged(int)), m_gui, SLOT(programStatusChanged(int)));
+   connect(this, SIGNAL(syscall(State*,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int)));
 
    // Initialize relationship between parent TextEditor and Proxy
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));

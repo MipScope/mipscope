@@ -18,5 +18,5 @@ main:
    assertequals $a0, 33
    
    syscall
-   
+   li $a0, 27
 

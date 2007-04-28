@@ -24,6 +24,7 @@ class OutputConsole;
 class RegisterView;
 class TextEditor;
 class DirectoryListing;
+class SyscallListener;
 
 class Gui : public QMainWindow {
    
@@ -38,6 +39,8 @@ class Gui : public QMainWindow {
       QAction *getSaveAllAction();
       
       QMenu *getEditMenu();
+      
+      SyscallListener *getSyscallListener() const;
    
       // Proxy-DEBUGGER Related
       // ----------------------
@@ -56,7 +59,7 @@ class Gui : public QMainWindow {
       
       // emitted whenever the runnability of a program changes
       void validityChanged(bool isValid);
- 
+       
       
       
       // Normal Gui/Menu Related
@@ -82,6 +85,9 @@ class Gui : public QMainWindow {
       
       
    protected:
+      // Global listener for syscalls
+      SyscallListener *m_syscallListener;
+
       // MenuBar
       QMenu *m_fileMenu, *m_editMenu, *m_debugMenu;
       QString m_lastDirectoryOpened; // TODO
@@ -128,7 +134,7 @@ class Gui : public QMainWindow {
       int m_mode;
       // TextEditor which is currently running / being debugged
       TextEditor *m_runningEditor;
-
+      
    private:  // methods
       void setupGui();
       void setupStatusBar();

@@ -21,7 +21,7 @@ class State;
  * 
  */
 
-class Debugger: public QThread {
+class Debugger : public QThread {
 
    Q_OBJECT
    
@@ -39,6 +39,8 @@ class Debugger: public QThread {
       void programStepBackward();
       void programStepBackwardToTimestamp(TIMESTAMP stamp);
       
+      bool waitOnDebuggerThread(unsigned long timeout);
+
    signals:
       // uses enum Status from typedefs.H
       void programStatusChanged(int s);

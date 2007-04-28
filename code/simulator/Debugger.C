@@ -50,6 +50,9 @@ void Debugger::programRun(void) {
    }
 }
 
+bool Debugger::waitOnDebuggerThread(unsigned long timeout) {
+   return wait(timeout);  
+}
 
 // slot
 void Debugger::programStepForward(void) { } // TODO

@@ -8,14 +8,16 @@
 #define __OUTPUT_CONSOLE_H__
 #include <QDockWidget>
 #include <QVector>
+#include "SyscallHandler.H"
 
 class QTextEdit;
 class Gui;
 class EditorPane;
 class QFont;
 
-class OutputConsole : public QDockWidget {
-   
+class OutputConsole : public QDockWidget, 
+                      public SyscallHandler 
+{
    Q_OBJECT
    
    public:
@@ -26,6 +28,11 @@ class OutputConsole : public QDockWidget {
       
       // Removes (undoes) the last push of new output
       void pop();
+
+      // @overridden from SyscallHandler
+      virtual void syscall(State *s, int status, int syscallNo);
+      virtual void undoSyscall(int syscallNo);
+      virtual void reset();
 
    private slots:
       // Clears the console's display

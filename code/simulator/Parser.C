@@ -20,24 +20,6 @@
 #include <QtCore>
 #include <string>
 
-/*
-const char *const registerAliases[] = {
-   "r0", "at",       // $r0-1
-   "v0", "v1",       // $r2-3
-   "a0", "a1", "a2", "a3", // $r4-r7
-   "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", // $r8-15
-   "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", // $r16-23
-   "t8", "t9",       // $r24-25
-   "k0", "k1", "gp", // $r26-28
-   "sp",             // $r29
-   "s8",             // $r30
-   "ra",             // $r31
-   
-   // Special -- not available to user
-   "PC",             // 32
-   "HI",             // 33
-   "LO",             // 34
-};*/
 string _tab;
 
 ParseList *Parser::parseDocument(QTextDocument *document) {

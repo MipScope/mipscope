@@ -43,12 +43,15 @@ class RegisterView : public QDockWidget {
    
       void displayTypeChanged();
       
-   private slots:
+   public slots:
       // Clears all registers
       void reset();
       
+      // Redisplays all register values
+      void updateDisplay();
+      
       // Updates display of modified register
-      void registerChanged(int reg, int value);
+      void registerChanged(unsigned int reg, unsigned int value, int status);
       
    protected:
       Gui *m_gui;
@@ -137,7 +140,7 @@ class IDLabel : public RegisterLabel {
       void reset();
       void handleClick(QMouseEvent *e);
       void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
-      void setValue(int value);
+      void setValue(unsigned int value);
       
       QPixmap merge(const QPixmap *pix, const QString &txt);
       ValueLabel *getValueLabel();
@@ -160,7 +163,7 @@ class IDLabel : public RegisterLabel {
 enum IDDisplay { D_REGISTER, D_ALIAS };
 
 // Different ways values in registers may be viewed
-enum ValueDisplay { D_HEX, D_BINARY, D_SIGNED_DECIMAL, D_UNSIGNED_DECIMAL };
+enum ValueDisplay { D_HEX, /*D_BINARY, */D_SIGNED_DECIMAL, D_UNSIGNED_DECIMAL };
 extern ValueDisplay m_displayType;
 extern IDDisplay m_registerDisplayType;
 

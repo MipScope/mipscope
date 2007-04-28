@@ -51,7 +51,7 @@ class State : public QObject {
       void reset();
       
    signals:
-      void syscall(int);
+      void syscall(int, int);
       
       /* this is emitted whenever a word in memory is changed, even if only
        * one byte of this word was changed with a call to setMemoryByte. */

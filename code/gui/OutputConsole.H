@@ -30,7 +30,7 @@ class OutputConsole : public QDockWidget,
       void pop();
 
       // @overridden from SyscallHandler
-      virtual void syscall(State *s, int status, int syscallNo);
+      virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
       virtual void undoSyscall(int syscallNo);
       virtual void reset();
 

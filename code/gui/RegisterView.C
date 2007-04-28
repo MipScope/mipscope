@@ -36,7 +36,7 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
    setObjectName(tr("Register View"));
    
    // Default display types (unsigned base 10, and register aliases)
-   m_displayType = D_UNSIGNED_DECIMAL;
+   m_displayType = D_HEX;
    m_registerDisplayType = D_ALIAS;
    watchPoint = new QPixmap(IMAGES"/watchPoint.png");
    
@@ -238,10 +238,17 @@ void RegisterLabel::mousePressed(QMouseEvent *e, const QPoint &parentPos) {
 }
 
 // Updates display of modified register
-void RegisterView::registerChanged(int reg, int value) {
-   assert(reg < NO_REGISTERS);
-
+void RegisterView::registerChanged(unsigned int reg, unsigned int value, int status) {
+//   assert(reg < register_count);
+   
    m_registerPane->m_registerLabels[reg]->setValue(value);
+   if (status == PAUSED)
+      m_registerPane->m_registerLabels[reg]->updateDisplay();
+}
+
+void RegisterView::updateDisplay() {
+   for(int i = 0; i < register_count; i++)
+      m_registerPane->m_registerLabels[i]->updateDisplay();
 }
 
 void RegisterPane::showExtended(const QPoint &pos, const QString &text, RegisterLabel *v) {
@@ -334,13 +341,13 @@ IDLabel::IDLabel(RegisterPane *regPane, unsigned int id)
 }
 
 void IDLabel::reset() {
+   m_watchPoint = false;
    setValue(0);
 }
 
-void IDLabel::setValue(int value) {
+void IDLabel::setValue(unsigned int value) {
    m_value = value;
-   
-   updateDisplay();
+   //updateDisplay();
 }
 
 void IDLabel::updateDisplay() {
@@ -432,16 +439,17 @@ void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel 
       mText += QString("Value = 0");
    else {
       QString one = getNoInBase(m_value, D_HEX), 
-              two = getNoInBase(m_value, D_BINARY), 
+//              two = getNoInBase(m_value, D_BINARY), 
               three = getNoInBase(m_value, D_SIGNED_DECIMAL), 
               four = getNoInBase(m_value, D_UNSIGNED_DECIMAL);
       
       mText += QString(
          "Hex:      %1<br>"
-         "Binary:   %2<br>"
-         "Decimal:  %3<br>"
-         "UDecimal: %4")
-         .arg(one, two, three, four);
+//         "Binary:   %2<br>"
+         "Decimal:  %2")
+         .arg(one, /*two, */three);
+      if (three != four)
+         mText += QString("<br>UDecimal: %1").arg(four);
    }
 
    mText += QString("</pre>");
@@ -483,7 +491,7 @@ void ValueLabel::setValue(unsigned int newValue) {
 }
 
 QString getNoInBase(unsigned int no, int base) {
-   const int bases[] = { 16, 2, 10, 10 };
+   const int bases[] = { 16, /*2, */10, 10 };
    int base2 = bases[base];
    
    if (base == D_SIGNED_DECIMAL)
@@ -641,7 +649,7 @@ void ExtendedView::paintEvent(QPaintEvent *e) {
    p.setPen(QPen(QBrush(black), 2));
    
    p.fillRect(r, grad);
-   p.drawRoundRect(r, 10, 10);
+   p.drawRect(r);//, 10, 10);
    p.end();
    
    if (fading < 0 && alpha <= 0) { // S_Fading
@@ -682,7 +690,7 @@ RegisterOptionsPane::RegisterOptionsPane(RegisterView *parent)
    label->setToolTip("Sets the base in which register values will be displayed.");
    b = new QComboBox();
    b->addItem(QString("Hex"));
-   b->addItem(QString("Binary"));
+//   b->addItem(QString("Binary"));
    b->addItem(QString("Decimal (signed)"));
    b->addItem(QString("Decimal (unsigned)"));
    b->setCurrentIndex(m_displayType);

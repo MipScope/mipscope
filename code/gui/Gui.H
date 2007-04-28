@@ -41,6 +41,7 @@ class Gui : public QMainWindow {
       QMenu *getEditMenu();
       
       SyscallListener *getSyscallListener() const;
+      RegisterView *getRegisterView() const;
    
       // Proxy-DEBUGGER Related
       // ----------------------
@@ -59,7 +60,8 @@ class Gui : public QMainWindow {
       
       // emitted whenever the runnability of a program changes
       void validityChanged(bool isValid);
-       
+      // passes on to RegisterView
+      void registerChanged(unsigned int reg, unsigned int value, int status);
       
       
       // Normal Gui/Menu Related

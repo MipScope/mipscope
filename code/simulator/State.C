@@ -92,11 +92,11 @@ void State::setRegister(int reg, unsigned int value) {
    }
    
    m_registers[reg] = value;
-   memoryChanged((unsigned)reg, value);
+   registerChanged((unsigned)reg, value);
 }
 
 unsigned int State::getRegister(int reg) const {
-   if (reg <= zero || reg >= pc) {
+   if (reg < zero || reg >= pc) {
       cerr << "get: " << reg << endl;
       throw InvalidRegister(reg);
    }
@@ -141,26 +141,7 @@ void State::reset() {
 void State::doSyscall(void) {
    cerr << "\t\tSyscall called v0 = " << getRegister(v0) << ", a0 = " << getRegister(a0) << endl;
    
-   syscall(getRegister(v0));
-
-   // TODO: make these legit.
-   
-   switch (getRegister(v0)) {
-      case 1:
-         // print_int: print out what's in $a0
-         cerr << getRegister(a0);
-         break;
-         
-      case 4:
-         // print_string: print out what's pointed to by $a0
-         
-      case 5:
-         // read_int: read an integer, stick it in $v0
-         
-      default:
-         assert(false); // the rest are unimplemented
-         
-   }
+   syscall(getRegister(v0), getRegister(a0));
 }
 
 void State::assertEquals(int val1, int val2) {

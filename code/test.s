@@ -19,4 +19,3 @@ main:
    
    syscall
    li $a0, 27
-

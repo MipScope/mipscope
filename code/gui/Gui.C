@@ -246,6 +246,10 @@ SyscallListener *Gui::getSyscallListener() const {
    return m_syscallListener;
 }
 
+RegisterView *Gui::getRegisterView() const {
+   return m_registerView;
+}
+
 // -----------------------
 // MenuBar-related Actions
 // -----------------------
@@ -415,6 +419,7 @@ void Gui::debugRunAction() {
       }
       
       m_syscallListener->reset();
+      m_registerView->reset();
       m_runningEditor = m_editorPane->m_activeEditor;
    }
 /*      m_mode = RUNNING;
@@ -558,11 +563,20 @@ void Gui::debugRunXSpimAction() {
 void Gui::programStatusChanged(int s) {
    m_mode = s;
    updateDebugActions();
+
+   if (s != RUNNING)
+      m_registerView->updateDisplay();
 }
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
    // TODO!
    isValid = false;
+}
+
+// passes on to RegisterView
+void Gui::registerChanged(unsigned int reg, unsigned int value, int status) {
+   if (m_registerView != NULL)
+      m_registerView->registerChanged(reg, value, status);
 }
 

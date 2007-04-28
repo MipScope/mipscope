@@ -9,12 +9,13 @@
 #include "EditorPane.H"
 #include "TextEditor.H"
 #include "Gui.H"
+#include "SyscallHandler.H"
+#include "RegisterView.H"
 #include "../simulator/Debugger.H"
 #include "../simulator/ParseList.H"
 #include "../simulator/ParseNode.H"
 #include "../simulator/Parser.H"
 #include "../simulator/State.H"
-#include "SyscallHandler.H"
 #include <QTextBlock>
 
 
@@ -29,7 +30,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    State *s = m_debugger->getState();
 
    // Initialize relationship between Proxy and State
-   connect(s, SIGNAL(syscall(int)), this, SLOT(syscallReceived(int)));
+   connect(s, SIGNAL(syscall(int,int)), this, SLOT(syscallReceived(int,int)));
    connect(s, SIGNAL(memoryChanged(unsigned int, unsigned int)), this, SLOT(memoryChangeReceived(unsigned int, unsigned int)));
    connect(s, SIGNAL(registerChanged(unsigned int, unsigned int)), this, SLOT(registerChangeReceived(unsigned int, unsigned int)));
    connect(s, SIGNAL(pcChanged(ParseNode*)), this, SLOT(pcChangeReceived(ParseNode*)));
@@ -48,12 +49,13 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    
    // Proxy -> Gui
    connect(this, SIGNAL(programStatusChanged(int)), m_gui, SLOT(programStatusChanged(int)));
-   connect(this, SIGNAL(syscall(State*,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int)));
+   connect(this, SIGNAL(syscall(State*,int,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int,int)));
 
    // Initialize relationship between parent TextEditor and Proxy
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
    connect(this, SIGNAL(pcChanged(ParseNode*)), m_parent, SLOT(pcChanged(ParseNode*)));
    connect(this, SIGNAL(programStatusChanged(int)), m_parent, SLOT(programStatusChanged(int)));
+   connect(this, SIGNAL(registerChanged(unsigned int, unsigned int, int)), m_gui, SLOT(registerChanged(unsigned int, unsigned int, int)));
 
    // TODO:  content changed during Pause textEditor->notifies Proxy
    
@@ -102,12 +104,12 @@ void Program::currentChanged(TextEditor *cur) {
 // --------------------------
 // Slots from Debugger -> Gui
 // --------------------------
-void Program::syscallReceived(int no) {
+void Program::syscallReceived(int no, int valueOfa0) {
 //   if (no == 1)
 //      m_gui->m_output->push(QString(getState()->getRegister(a0)));
    
-   if (m_current);
-      syscall(getState(), getStatus(), no);
+//   if (m_current);
+      syscall(getState(), getStatus(), no, valueOfa0);
 }
 
 // only when debugger is paused
@@ -117,8 +119,10 @@ void Program::pcChangeReceived(ParseNode *pc) {
 }
 
 void Program::registerChangeReceived(unsigned int reg, unsigned int current) {
-   if (m_current && getStatus() == PAUSED)
-      registerChanged(reg, current);
+//   cerr << "reg " << reg << " = " << current << endl;
+
+   if (m_current)// && getStatus() == PAUSED)
+      registerChanged(reg, current, getStatus());
 }
 
 void Program::memoryChangeReceived(unsigned int address, unsigned int value) {
@@ -135,7 +139,7 @@ void Program::programTerminated(int reason) {
    if (STATUS_BAR == NULL)
       return;
    
-   const int delay = STATUS_DELAY + 1000;
+   const int delay = STATUS_DELAY + 2000;
    const QString &name = m_parent->fileName();
 
    switch(reason) {

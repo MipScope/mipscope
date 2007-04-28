@@ -10,6 +10,7 @@
 #include "Utilities.H"
 #include "Gui.H"
 #include "../simulator/ParseNode.H"
+#include "../simulator/Statement.H"
 #include "Program.H"
 #include <QtGui>
 #include <QtCore>
@@ -91,10 +92,13 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
    if (key == Qt::Key_Space && !textCursor().hasSelection()) {
       QTextCursor c = textCursor();
       c.movePosition(QTextCursor::StartOfLine/*PreviousWord*/, QTextCursor::KeepAnchor);
-      const QString &selectedText = c.selectedText();
-      bool match = m_syntaxHighligher->matches(selectedText);
+      const QString &selectedText = c.selectedText().trimmed();
+//      bool match = m_syntaxHighligher->matches(selectedText);
+      bool match1 = instructionMap.contains(selectedText), match2 = false; 
       
-      if (match) {
+      //cerr << selectedText.toStdString() << ", " << match1 << ", " << match2 << endl;
+
+      if (match1 || (match2 = directiveMap.contains(selectedText))) {
          // move cursor to start of matched word
          c = textCursor();
          c.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
@@ -103,9 +107,15 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
          const QPoint pos(rect.center().x() + 2, rect.bottom() + 1);
                //top + ((rect.bottom() - top) >> 3));
          
-         const QString text = "<p style='white-space:pre'><b>add</b> $dest, $src1, $src2";
-         const QString statusText = "Adds two signed integers, storing the result in $dest.";
-
+         const Statement *statement = (match1 ? (Statement*)instructionMap[selectedText] : (Statement*)directiveMap[selectedText]);
+         const QString text = QString("<p style='white-space:pre'><b>%1</b> %2").arg(selectedText, QString(statement->getSyntax()));
+         
+         const QString statusText = statement->getDescription();
+         //"Adds two signed integers, storing the result in $dest.";
+         
+         cerr << text.toStdString() << endl;
+         cerr << statusText.toStdString() << endl;
+         
          m_syntaxTip->show(text, statusText, pos, c);
 
 //         highlightLine(c, Qt::red);

@@ -36,7 +36,7 @@ class SyscallListener : public QObject {
       void registerHandler(SyscallHandler *handler);
       
    public slots:
-      void syscall(State *s, int status, int syscallNo);
+      void syscall(State *s, int status, int syscallNo, int valueOfa0);
       void undoSyscall(int syscallNo);
       void reset();
       
@@ -67,7 +67,7 @@ class SyscallHandler {
       // Core functionality:
       
       // Should execute this syscall
-      virtual void syscall(State *s, int status, int syscallNo) = 0;
+      virtual void syscall(State *s, int status, int syscallNo, int valueOfa0) = 0;
 
       // Should undo the last call to syscall
       // Note:  Implementation left up to the implementing SyscallHandler.

@@ -57,20 +57,20 @@ void OutputConsole::updateDisplay() {
    m_display->setPlainText(QStringList(m_strings.toList()).join(QString("")));
 }
 
-void OutputConsole::syscall(State *s, int status, int syscallNo) {
+void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    QString output;
    
-   cerr << "syscallNo: " << syscallNo << ", status: " << status << endl;
+   cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;
    
    switch(syscallNo) {
       case S_PRINT_INT:
-         output = QString::number(s->getRegister(a0));
+         output = QString::number(valueOfa0);
          break;
       case S_PRINT_STRING:
-         output = QString(s->getString(s->getRegister(a0)));
+         output = QString(s->getString(valueOfa0));
          break;
       case S_PRINT_CHAR:
-         output = QString::number((char)(s->getRegister(a0) & 0xFF));
+         output = QString::number((char)(valueOfa0 & 0xFF));
          break;
       case S_PRINT_FLOAT:  // Unimplemented
       case S_PRINT_DOUBLE:

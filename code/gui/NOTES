@@ -2,8 +2,10 @@
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView, StackView?
    * Look into transparency & background images for widgets -- improve ExtendedView;
-   * Remember to fully implement SyntaxTip's repository from instructionMap and directiveMap :)
    * QTextDocument::contentsChanged(int position, int charsRemoved, int charsAdded)  [signal]  -- activated before layout manager updates changes :)
+   
+   * Clear button on OutputConsole
+   * Multiple Tabs; ErrorList as well
 
 
 Highlighting a line of Text:

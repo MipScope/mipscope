@@ -58,7 +58,7 @@ class Program : public QObject {
    
       // Slots from Debugger -> Gui
       // --------------------------
-      void syscallReceived(int no);
+      void syscallReceived(int no, int valueOfa0);
       
       // only when debugger is paused
       void pcChangeReceived(ParseNode *pc);
@@ -81,11 +81,11 @@ class Program : public QObject {
       
    signals:
       // Signals -> Gui  only if m_current
-      void syscall(State *s, int status, int syscallNo);
+      void syscall(State *s, int status, int syscallNo, int valueOfa0);
       void undoSyscall(int syscallNo);
       
       void pcChanged(ParseNode *pc);
-      void registerChanged(int register, unsigned int current);
+      void registerChanged(unsigned int register, unsigned int current, int status);
       void memoryChanged(unsigned int address, unsigned int value);
       
       // emitted upon run, pause, stop of Debugger

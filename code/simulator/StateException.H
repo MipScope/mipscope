@@ -46,6 +46,12 @@ class AssertionFailure : public StateException {
       int m_val1, m_val2;
 };
 
+class DivideByZero : public StateException {
+   public:
+      DivideByZero() : StateException("Divide by Zero Exception") { }
+};
+
+
 
 #endif // STATEEXCEPTION_H_
 

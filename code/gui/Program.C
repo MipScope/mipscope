@@ -96,7 +96,8 @@ State *Program::getState() const {
 // Slots outside of Debugger/Gui Relationship
 // ------------------------------------------
 void Program::currentChanged(TextEditor *cur) {
-   m_current = (cur == m_parent);
+   if ((m_current = (cur == m_parent)))
+      m_gui->getErrorConsole()->updateSyntaxErrors(m_syntaxErrors, m_parent, false);
 }
 
 // TODO:  add contentChanged thing

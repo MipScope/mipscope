@@ -219,7 +219,12 @@ bool ParseList::insert(ParseNode *newNode) {
                m_semanticErrors[id]->push_back(newNode);
                break;
             } else { // This ParseNode references a label which has already been defined
+//               cerr << id.toStdString() << " set to " << m_labelMap[id]->getParseNode() << ",   parsing: " << newNode << endl;
+               
                cur->getID()->getAddressIdentifier()->setLabelParseNode(m_labelMap[id]->getParseNode());
+               
+//               cerr << "\t" << cur->getID()->getAddressIdentifier()->getParseNode() << endl;
+
             }
          }
       } // for
@@ -231,7 +236,14 @@ bool ParseList::insert(ParseNode *newNode) {
    // ------------------------------
    unsigned int address = SENTINEL_ADDRESS;
 
-   if (s != NULL) {
+   if (s == NULL && newNode->getLabel() != NULL) {
+
+      // TODO:  Hack;  when to ues text, and when to use data?!
+      if (m_nextTextAddress & 3)
+         m_nextTextAddress += 4 - (m_nextTextAddress & 3);
+
+      address = m_nextTextAddress;
+   } else if (s != NULL) {
       unsigned int *addr = NULL;
       
       if (s->isInstruction())
@@ -244,6 +256,7 @@ bool ParseList::insert(ParseNode *newNode) {
          address = *addr;
          ParseNode *prev = newNode->getPrevious();
          bool aligned = false;
+         
          if (prev != NULL) { // enforce .align directive
             Statement *s = prev->getStatement();
 
@@ -266,7 +279,9 @@ bool ParseList::insert(ParseNode *newNode) {
 //            assert(address > *addr);
          }
          
+         //cerr << "oldAddr: " << *addr;
          *addr = address + s->getSizeInBytes();
+         //cerr << "  vs newAddr: " << *addr << endl;
       }
    }
    
@@ -279,13 +294,12 @@ void ParseList::remove(ParseNode *node) {
    if (node == NULL)
       return;
    
-   
+   // TODO
 }
 
 void ParseList::remove(QTextBlock &block) {
    remove(ParseNode::Node(block));
 }
-
 
 SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 
    : ParseError(description, unrecognized), m_parseNode(parseNode)

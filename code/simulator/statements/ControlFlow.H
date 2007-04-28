@@ -6,6 +6,7 @@
 #include "../Identifier.H"
 #include "../State.H"
 #include "../ParseList.H"
+
 // ----------------------------------
 // Instruction j CONST
 // ----------------------------------
@@ -23,17 +24,22 @@ class J : public Instruction {
       }
       
       virtual void execute(State *s, ParseList* parseList) const {
-         s->setPC(parseList->getNodeForAddress((*m_args)[0]->getValue(s)));
+         //cerr << "addr: " << m_args->getValue(s, 0) << ", ";
+         //cerr << (void*)parseList->getNodeForAddress(m_args->getValue(s, 0)) << endl;
+         //cerr << parseList->getNodeForAddress(m_args->getValue(s, 0)) << endl;
+
+         s->setPC(parseList->getNodeForAddress(m_args->getValue(s, 0)));
       }
       
       bool autoIncrementPC() { return false; }
       
       // @overridden from Statement
       virtual const char *getName() const { return "j"; }
-      virtual const char *getSyntax() const { return "&lt;ADDRESS&gt;"; }
+      virtual const char *getSyntax() const { return "&lt;address&gt;"; }
       virtual const char *getDescription() const {
-         return "Unconditionally jumps to &lt;ADDRESS&gt;";
+         return "Unconditionally jumps to &lt;address&gt;";
       }
 };
 
-#endif /*CONTROLFLOW_H_*/
+#endif // CONTROLFLOW_H_
+

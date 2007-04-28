@@ -61,7 +61,9 @@ void Debugger::runAnotherStep(void) {
    }
    
    try {
-      // execute another parsenode  
+      // execute another parsenode
+//      cerr << m_state->getPC() << ",  " << m_state->getPC()->getAddress() << endl;
+
       m_state->getPC()->execute(m_state, m_parseList);
    } catch (StateException e) {
       setStatus(STOPPED);

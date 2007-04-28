@@ -80,9 +80,9 @@ class DataDirective : public Directive {
       
       // @overridden from Statement
       virtual const char *getName() const { return ".data"; }
-      virtual const char *getSyntax() const { return " <address>"; }
+      virtual const char *getSyntax() const { return " &lt;address&gt;"; }
       virtual const char *getDescription() const {
-         return "Declares the beginning of a data segment, optionally beginning at <address>";
+         return "Declares the beginning of a data segment, optionally beginning at &lt;<address&gt;";
       }
 
    protected:
@@ -102,9 +102,9 @@ class TextDirective : public Directive {
 
       // @overridden from Statement
       virtual const char *getName() const { return ".text"; }
-      virtual const char *getSyntax() const { return " <address>"; }
+      virtual const char *getSyntax() const { return " &lt;address&gt;"; }
       virtual const char *getDescription() const {
-         return "Declares the beginning of a text segment (code), optionally beginning at <address>";
+         return "Declares the beginning of a text segment (code), optionally beginning at &lt;address&gt;";
       }
       
    protected:
@@ -124,7 +124,7 @@ class KTextDirective : public Directive {
 
       // @overridden from Statement
       virtual const char *getName() const { return ".ktext"; }
-      virtual const char *getSyntax() const { return " <address>"; }
+      virtual const char *getSyntax() const { return " &lt;address&gt;"; }
       virtual const char *getDescription() const {
          return "Warning: not fully implemented; no different than .text";
       }

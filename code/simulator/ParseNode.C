@@ -6,13 +6,15 @@
 #include <QTextBlock>
 
 ParseNode::ParseNode(QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)
-   : QTextBlockUserData(), m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_statement(statement), 
-   m_textBlock(textBlock), m_isSemanticallyValid(true)
+   : QTextBlockUserData(), m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_statement(statement), m_textBlock(textBlock), m_isSemanticallyValid(true)
 {
 //   cerr << "<<< " << m_statement << ", '" << m_textBlock->text().toStdString() << "'\n";
    
-   if (m_label != NULL)
+   if (m_label != NULL) {
       m_label->setLabelParseNode(this);
+
+      //cerr << m_label->getID().toStdString() << " set (in constructor) to " << this << endl;
+   }
 
    if (m_textBlock != NULL)
       m_textBlock->setUserData(this);
@@ -41,10 +43,16 @@ Statement* ParseNode::getStatement(void) const {
 }
 
 void ParseNode::setAddress(unsigned int address) {
+   /*if (m_textBlock->text() == QString("main:"))
+      cerr << "equal\n\n\n\n";
+   cerr << "\t'" << m_textBlock->text().toStdString() << "' address is: " << m_address << endl;*/
+   
    m_address = address;
 }
 
 unsigned int ParseNode::getAddress() const {  // inclusive
+   //cerr << "\t'" << m_textBlock->text().toStdString() << "' address is: " << m_address << endl;
+   
    return m_address;
 }
 

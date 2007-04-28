@@ -142,6 +142,8 @@ int StatementArg::getValue(State *s) const {
       return (signed)registerVal;
    }
    
+//   cerr << "\tStatementArg::getValue() getting id's val: " << m_id->getID().toStdString() << " = " << m_id->getValue() << endl;
+
    // Must be identifier (value of label and/or immediate)
    return m_id->getValue();
 }

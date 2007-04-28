@@ -5,11 +5,11 @@
 #include <exception>
 
 // Include all Statement Implementations
-#include "Statements/Arithmetic.H"
-#include "Statements/DataTransfer.H"
-#include "Statements/Special.H"
-#include "Statements/Assert.H"
-#include "Statements/ControlFlow.H"
+#include "statements/Arithmetic.H"
+#include "statements/DataTransfer.H"
+#include "statements/Special.H"
+#include "statements/Assert.H"
+#include "statements/ControlFlow.H"
 
 Statement::Statement(unsigned int requiredSizeInBytes) 
    : m_size(requiredSizeInBytes)
@@ -74,6 +74,7 @@ void Instruction::InitializeInstructionMap() {
    insert(new Sub());
    insert(new Div());
    insert(new Mult());
+   insert(new Mul());
 
    // DataTransfer.H
    insert(new Li());

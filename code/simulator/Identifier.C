@@ -49,6 +49,8 @@ AddressIdentifier::AddressIdentifier(const QString &id, ParseNode *p)
 int AddressIdentifier::getValue() const {
    assert (m_parseNode != NULL);
    
+//   cerr << "\tAddressIdentifier::getValue() of " << getID().toStdString() << ", " << m_parseNode << ", " << m_parseNode->getAddress() << endl;
+   
    return m_parseNode->getAddress() + m_offset;
 }
 

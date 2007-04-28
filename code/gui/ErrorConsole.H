@@ -21,7 +21,7 @@ class ErrorConsole : public Console {
    public:
       ErrorConsole(Gui *parent, EditorPane *editorPane);
       
-      void updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor);
+      void updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool forceUpdate = true);
       virtual void reset();
    
    private slots:

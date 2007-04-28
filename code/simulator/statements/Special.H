@@ -23,7 +23,7 @@ class Nop : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "nop"; }
-      virtual const char *getSyntax() const { return "<void>"; }
+      virtual const char *getSyntax() const { return ""; }
       virtual const char *getDescription() const {
          return "Does nothing.";
       }
@@ -49,9 +49,9 @@ class Syscall : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "syscall"; }
-      virtual const char *getSyntax() const { return "<void>"; }
+      virtual const char *getSyntax() const { return ""; }
       virtual const char *getDescription() const {
-         return "Makes a system call to the operating system.";
+         return "System call to the operating system; $v0 holds syscall number.";
       }
 };
 

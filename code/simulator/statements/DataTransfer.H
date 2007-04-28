@@ -30,9 +30,9 @@ class Li : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "li"; }
-      virtual const char *getSyntax() const { return "$dest, <immediate>"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;immediate&gt;"; }
       virtual const char *getDescription() const {
-         return "Sets the register $dest to <immediate>.";
+         return "Sets the register $dest to &lt;immediate&gt;.";
       }
 };
 
@@ -58,9 +58,9 @@ class La : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "la"; }
-      virtual const char *getSyntax() const { return "$dest, <label>"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;label&gt;"; }
       virtual const char *getDescription() const {
-         return "Sets the register $dest to the memory address <label>";
+         return "Sets the register $dest to the memory address &lt;label&gt;";
       }
 };
 
@@ -86,9 +86,9 @@ class Lw : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "lw"; }
-      virtual const char *getSyntax() const { return "$dest, <addr>"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
       virtual const char *getDescription() const {
-         return "Sets $dest to the value of the word stored at <addr>";
+         return "Sets $dest to the value of the word stored at &lt;addr&gt;";
       }
 };
 
@@ -114,9 +114,9 @@ class Sw : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "sw"; }
-      virtual const char *getSyntax() const { return "$src, <addr>"; }
+      virtual const char *getSyntax() const { return "$src, &lt;addr&gt;"; }
       virtual const char *getDescription() const {
-         return "Stores the word in register $src into <addr>";
+         return "Stores the word in register $src into &lt;addr&gt;";
       }
 };
 

@@ -11,7 +11,7 @@
 #include "Identifier.H"
 #include "Statement.H"
 #include "../gui/Utilities.H"
-#include "Statements/Directives.H"
+#include "statements/Directives.H"
 
 #include <QTextDocument>
 #include <QTextBlock>

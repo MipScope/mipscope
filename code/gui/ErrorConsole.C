@@ -27,7 +27,7 @@ ErrorConsole::ErrorConsole(Gui *gui, EditorPane *editorPane)
    setWidget(browser);
 }
 
-void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor) {
+void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool forceUpdate) {
    if (s == NULL) {
       reset();
       return;
@@ -56,7 +56,9 @@ void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor) {
 
 //   m_display->setHtml(QString("<span style=\"font:10pt courier;\"><a href=\"test\">This is a test link.</a></span>"));
 //   updateDisplay();
-   m_gui->ensureVisibility(this);
+   
+   if (forceUpdate)
+      m_gui->ensureVisibility(this);
 }
 
 void ErrorConsole::anchorClicked(const QUrl &link) {

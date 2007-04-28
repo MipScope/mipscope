@@ -248,11 +248,12 @@ void Gui::setupDockWidgets() {
 }
 
 void Gui::ensureVisibility(QDockWidget *widget) {
-   cerr << "in: " << widget->isVisible() << endl;
+//   cerr << "in: " << widget->isVisible() << endl;
    
    if (widget == NULL)// || widget->isVisible())
       return;
    
+   setUpdatesEnabled(false);
    Qt::DockWidgetArea a = dockWidgetArea(widget);
    removeDockWidget(widget);
    addDockWidget(a, widget);
@@ -262,7 +263,8 @@ void Gui::ensureVisibility(QDockWidget *widget) {
    if (widget == m_errors)
       tabifyDockWidget(widget, m_output);
    else tabifyDockWidget(widget, m_errors);
-
+   
+   setUpdatesEnabled(true);
    //cerr << "out: " << widget->isVisible() << endl;
 }
 

@@ -11,6 +11,7 @@
 #include "../StatementArgList.H"
 #include "../Identifier.H"
 #include "../State.H"
+#include "../StateException.H"
 
 // ----------------------------------
 // Instruction add $dest, $src1, src2
@@ -38,7 +39,7 @@ class Add : public Instruction {
       // @overridden from Statement
       
       virtual const char *getName() const { return "add"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, $src2 OR <immediate>"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
          return "Adds two signed integers, storing the result in $dest.";
       }
@@ -65,7 +66,7 @@ class Addi : public Add {
       
       // @overridden from Statement
       virtual const char *getName() const { return "addi"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, <immediate>"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
       virtual const char *getDescription() const {
          return "Adds two signed integers, storing the result in $dest.";
       }
@@ -97,14 +98,14 @@ class Sub : public Instruction {
       // @overridden from Statement
       
       virtual const char *getName() const { return "sub"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, $src2 OR <immediate>"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
       virtual const char *getDescription() const {
          return "Subtracts $src2 from $src1, storing the result in $dest.";
       }
 };
 
 // ----------------------------------
-// Instruction Mult $dest, $src1, src2
+// Instruction Mult $src1, src2
 // ----------------------------------
 class Mult : public Instruction {
    public:
@@ -124,7 +125,7 @@ class Mult : public Instruction {
          int val2 = m_args->getValue(s, 1);
          
          long long int result = val1 * val2; // at least 64 bit
-
+         
          s->setRegister(lo , (result << 32) >> 32); // 32 least significant
          s->setRegister(hi , result >> 32); // 32 most significant
       }
@@ -138,6 +139,36 @@ class Mult : public Instruction {
       }
 };
 
+// ----------------------------------
+// Instruction Mul $dest, $src1, src2
+// ----------------------------------
+class Mul : public Instruction {
+   public:
+      Mul(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mul(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), val1 * val2);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mul"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Multiplies $src1 by &lt;src2&gt;, storing the result in $dest (without overflow).";
+      }
+};
 
 // ----------------------------------
 // Instruction Div $dest, $src1, src2
@@ -148,7 +179,7 @@ class Div : public Instruction {
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
       }
       
       virtual Instruction *create(StatementArgList *args) const {
@@ -156,20 +187,28 @@ class Div : public Instruction {
       }
 
       virtual void execute(State *s, ParseList* parseList) const {
-         int val1 = m_args->getValue(s, 0);
+         int val1 = m_args->getValue(s, 2);
          int val2 = m_args->getValue(s, 1);
-
-         s->setRegister(lo , (unsigned)(val1 / val2));
-         s->setRegister(hi , (unsigned)(val1 % val2));
+         
+         if (val2 == 0)
+            throw DivideByZero();
+         
+         s->setRegister((*m_args)[0]->getRegister(), val1 / val2);
+//         s->setRegister(lo , (unsigned)(val1 / val2));
+//         s->setRegister(hi , (unsigned)(val1 % val2));
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "div"; }
-      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Divides $src1 by $src2, storing the integer quotient in LO and the remainder in HI";
+         return "Divides $src1 by &lt;src2&gt;, storing the result in $dest.";
       }
+      /*      virtual const char *getName() const { return "div"; }
+              virtual const char *getSyntax() const { return "$src1, $src2"; }
+              virtual const char *getDescription() const {
+         return "Divides $src1 by $src2, storing the integer quotient in LO and the remainder in HI";
+      }*/
 };
 
 #endif // __ARITHMETIC_H__

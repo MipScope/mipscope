@@ -17,8 +17,7 @@ class StateException
 class InvalidAddress : public StateException {
 	public:
 		InvalidAddress(unsigned int attemptedAddress) : 
-			StateException("Attempt to access invalid address"),
-			m_attemptedAddress(attemptedAddress) {}
+			StateException(QString("Attempt to access invalid address: %1").arg(attemptedAddress)), m_attemptedAddress(attemptedAddress) {}
 		unsigned int m_attemptedAddress;
 };
 

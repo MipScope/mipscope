@@ -48,13 +48,21 @@ unsigned int State::getMemoryWord(unsigned int address) const {
 unsigned char State::getMemoryByte(unsigned int address) const {
    ensureValidAlignment(address, 0);
 
-   unsigned int word = getMemoryByte(address & ~3);
-   return (unsigned char)(word & (0xff << ((address & 3) << 3)));
+   unsigned int word = getMemoryWord(address & ~3);
+   if (word == 0)
+      return 0;
+
+   unsigned int shift = (address & 3) << 3;
+   
+   return (unsigned char)((word & (0xff << shift)) >> shift);
 }
 
 void State::ensureValidAlignment(unsigned int address, unsigned int align) const {
-   if (address + align >= STACK_BASE_ADDRESS || address < DATA_BASE_ADDRESS)
+   if (address + align > STACK_BASE_ADDRESS || address < DATA_BASE_ADDRESS) {
+      cerr << address << ", " << align << ", " << STACK_BASE_ADDRESS << ", " << DATA_BASE_ADDRESS << endl;
+      
       throw InvalidAddress(address);
+   }
    
    if (address & align)
       throw BusError(address);

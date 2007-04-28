@@ -2,6 +2,8 @@
 #include "StatementArgList.H"
 #include "SyntaxList.H"
 #include "typedefs.H"
+#include "ParseNode.H"
+#include "State.H"
 #include <exception>
 
 // Include all Statement Implementations
@@ -62,7 +64,22 @@ bool Instruction::autoIncrementPC() const {
    return true;
 }
 
+// Store the address of the next instruction in $a0 (by default)
+void Instruction::link(State *s, unsigned int registerNo) const {
+   ParseNode *p = s->getPC();
+   if (p == NULL)
+      return;
+   
+   ParseNode *next = p->getNext();
+   if (next == NULL)
+      s->setRegister(registerNo, p->getAddress() + 4); // best guess
+   else s->setRegister(registerNo, next->getAddress()); // accurate
+}
+
 void Instruction::insert(Instruction *instr) {
+   // try to ensure we didn't mess up w/ names of instructions..
+   assert(!instructionMap.contains(instr->getName()));
+   
    instructionMap.insert(instr->getName(), instr);
 }
 
@@ -88,13 +105,35 @@ void Instruction::InitializeInstructionMap() {
    // Special.H
    insert(new Nop());
    insert(new Syscall());
+   insert(new Done());
    
    // Assert.H
    insert(new AssertEquals());
    
    // ControlFlow.H
+   insert(new B());
+   insert(new Beq());
+   insert(new Bgez());
+   insert(new Bgezal());
+   insert(new Bgtz());
+   insert(new Blez());
+   insert(new Bltzal());
+   insert(new Bltz());
+   insert(new Bne());
+   insert(new Beqz());
+   insert(new Bge());
+   insert(new Bgeu());
+   insert(new Bgt());
+   insert(new Bgtu());
+   insert(new Ble());
+   insert(new Bleu());
+   insert(new Blt());
+   insert(new Bltu());
+   insert(new Bnez());
    insert(new J());
-   
+   insert(new Jal());
+   insert(new Jalr());
+   insert(new Jr());
    
    int i = 0; // temporary, to test parsing
    while(Instructions[i] != NULL) {// TODO:  remove eventually!

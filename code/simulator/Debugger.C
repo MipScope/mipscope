@@ -3,6 +3,7 @@
 #include "StateException.H"
 #include "ParseList.H"
 #include "ParseNode.H"
+#include "Statement.H"
 #include "State.H"
 #include <QMutexLocker>
 
@@ -52,14 +53,25 @@ void Debugger::programRun(void) {
 
 // private
 void Debugger::runAnotherStep(void) {
-   
    // Check if we're at the end of the program
-   if (m_state->getPC() == NULL) {
+   ParseNode *pc = m_state->getPC();
+   bool programCompleted = (pc == NULL);
+
+   if (!programCompleted) {
+      try { // see if the current instruction is a Done instruction
+         Done *d = dynamic_cast<Done*>(m_state->getPC());
+         if (d != NULL)
+            programCompleted = true;
+      } catch(bad_alloc&) { } // no, it's not a done instruction
+   }
+
+   if (programCompleted) {
       setStatus(STOPPED);
       m_terminationReason = T_COMPLETED;
+      cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
       return;
    }
-   
+      
    try {
       // execute another parsenode
 //      cerr << m_state->getPC() << ",  " << m_state->getPC()->getAddress() << endl;
@@ -67,12 +79,13 @@ void Debugger::runAnotherStep(void) {
       m_state->getPC()->execute(m_state, m_parseList);
    } catch (StateException e) {
       setStatus(STOPPED);
-      std::cerr << e.getMessage().toStdString() << endl;
+      std::cerr << e.getMessage().toStdString() << endl << endl;
    }
    
    // We run this below as well, so we stop the program immediately
    if (m_state->getPC() == NULL) {
       setStatus(STOPPED);
+      cerr << "<<< Program COMPLETED: " << (void*)m_state->getPC() << endl;
       m_terminationReason = T_COMPLETED;
       return;
    }
@@ -158,7 +171,7 @@ void Debugger::run(void) {
       runAnotherStep();
    }
    
-   cerr << "Debugger::end of run(); terminationReasion = " << m_terminationReason << endl;
+   cerr << "Debugger::end of run(); terminationReason = " << m_terminationReason << endl;
 }
 
 void Debugger::setStatus(int status) {

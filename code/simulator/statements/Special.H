@@ -55,7 +55,27 @@ class Syscall : public Instruction {
       }
 };
 
+// ----------------------------------
+// Instruction done
+// ----------------------------------
+Done::Done(StatementArgList *args) : Instruction(args) { }
 
+bool Done::isSyntacticallyValid(StatementArgList *args) const {
+   return args->matchesSyntax(NONE);
+}
 
+Instruction *Done::create(StatementArgList *args) const {
+   return new Done(args);
+}
 
-#endif /*SPECIAL_H_*/
+void Done::execute(State *s, ParseList* parseList) const { }
+
+// @overridden from Statement
+const char *Done::getName() const { return "done"; }
+const char *Done::getSyntax() const { return ""; }
+const char *Done::getDescription() const {
+   return "Terminates the program.";
+}
+
+#endif // SPECIAL_H_
+

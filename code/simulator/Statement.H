@@ -58,6 +58,9 @@ class Instruction : public Statement {
       virtual const char *getDescription() const = 0;
       
    protected:
+      // Store the address of the next instruction in registerNo
+      void link(State *s, unsigned int registerNo = ra) const;
+      
       StatementArgList *m_args;
 };
 
@@ -82,6 +85,26 @@ class Directive : public Statement {
       virtual const char *getSyntax() const = 0;
       virtual const char *getDescription() const = 0;
 };
+
+// (special, needs to go here to be referenced by Debugger)
+// ----------------------------------
+// Instruction done
+// ----------------------------------
+class Done : public Instruction {
+   public:
+      Done(StatementArgList *args = NULL);
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const;
+      virtual Instruction *create(StatementArgList *args) const;
+      virtual void execute(State *s, ParseList* parseList) const;
+      
+      // @overridden from Statement
+      virtual const char *getName() const;
+      virtual const char *getSyntax() const;
+      virtual const char *getDescription() const;
+};
+
 
 #endif /*STATEMENT_H_*/
 

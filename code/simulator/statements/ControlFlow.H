@@ -123,6 +123,7 @@ class Jr : public Instruction {
       
       virtual void execute(State *s, ParseList* parseList) const {
 //         cerr << "Jr '" << m_args->getValue(s, 0) << "'\n";
+//         cerr << "Jr '" << (*m_args)[0]->getRegister() << "'\n";
          // TODO:  DEBUG!!
 
          

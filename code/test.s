@@ -1,6 +1,11 @@
-
 main:
+   jal test
+   
    li $v0, 1
-   li $a0, 33
+   li $a0, 3333
    syscall
-   j main      # infinite loop test
+
+   done
+
+test:
+   jr $ra

@@ -50,8 +50,8 @@ class Debugger : public QThread {
    private slots:
       void threadTerminated();
       
-
    protected:
+      bool checkProgramCompleted();
       
       void setStatusConditionally(int desiredStatus);
       void setStatus(int status);

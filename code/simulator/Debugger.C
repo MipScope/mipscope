@@ -54,7 +54,9 @@ void Debugger::programRun(void) {
 // private
 void Debugger::runAnotherStep(void) {
    // Check if we're at the end of the program
-   ParseNode *pc = m_state->getPC();
+   if (checkProgramCompleted())
+      return;
+   /*ParseNode *pc = m_state->getPC();
    bool programCompleted = (pc == NULL);
 
    if (!programCompleted) {
@@ -64,13 +66,13 @@ void Debugger::runAnotherStep(void) {
             programCompleted = true;
       } catch(bad_alloc&) { } // no, it's not a done instruction
    }
-
+   
    if (programCompleted) {
       setStatus(STOPPED);
       m_terminationReason = T_COMPLETED;
       cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
       return;
-   }
+   }*/
       
    try {
       // execute another parsenode
@@ -83,12 +85,37 @@ void Debugger::runAnotherStep(void) {
    }
    
    // We run this below as well, so we stop the program immediately
+   //if (checkProgramCompleted())
+   //   return;
    if (m_state->getPC() == NULL) {
       setStatus(STOPPED);
       cerr << "<<< Program COMPLETED: " << (void*)m_state->getPC() << endl;
       m_terminationReason = T_COMPLETED;
       return;
    }
+}
+
+bool Debugger::checkProgramCompleted() {
+   ParseNode *pc = m_state->getPC();
+   bool programCompleted = (pc == NULL);
+
+   if (!programCompleted) {
+      try { // see if the current instruction is a Done instruction
+         Done *d = dynamic_cast<Done*>(pc->getStatement());
+
+         if (d != NULL)
+            programCompleted = true;
+      } catch(bad_alloc&) { } // no, it's not a done instruction
+   }
+   
+   if (programCompleted) {
+      setStatus(STOPPED);
+      m_terminationReason = T_COMPLETED;
+      cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
+      return true;
+   }
+   
+   return false;
 }
 
 bool Debugger::waitOnDebuggerThread(unsigned long timeout) {

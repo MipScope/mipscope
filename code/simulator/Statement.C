@@ -67,10 +67,11 @@ bool Instruction::autoIncrementPC() const {
 // Store the address of the next instruction in $a0 (by default)
 void Instruction::link(State *s, unsigned int registerNo) const {
    ParseNode *p = s->getPC();
+//   cerr << ">>>LINKING: " << p << ", registerNo = " << registerNo << endl;
    if (p == NULL)
       return;
    
-   ParseNode *next = p->getNext();
+   ParseNode *next = ParseList::getClosestInstruction(p->getNext());
    if (next == NULL)
       s->setRegister(registerNo, p->getAddress() + 4); // best guess
    else s->setRegister(registerNo, next->getAddress()); // accurate

@@ -280,6 +280,8 @@ void TextEditor::toggleComment() {
 
 void TextEditor::pcChanged(ParseNode *pc) {
    ParseNode *old = m_pc;
+//   cerr << "\tpcChanged id:" << QThread::currentThreadId() << "\n";
+   
    if (old == pc)
       return;
    
@@ -289,12 +291,18 @@ void TextEditor::pcChanged(ParseNode *pc) {
    
    if (old != NULL) {
       QTextBlock *b = old->getTextBlock();
-      b->setUserState(b->userState() & ~B_CURRENT_PC);
+      int state = b->userState();
+      if (state > 0)
+         b->setUserState(state & ~B_CURRENT_PC);
    }
 
    if (m_pc != NULL) {
       QTextBlock *b = m_pc->getTextBlock();
-      b->setUserState(b->userState() | B_CURRENT_PC);
+//      cerr << "b: " << b->text().toStdString() << endl;
+      int state = b->userState();
+      if (state < 0)
+         b->setUserState(B_CURRENT_PC);
+      else b->setUserState(state | B_CURRENT_PC);
       
       QTextCursor c = textCursor();
       c.setPosition(b->position());

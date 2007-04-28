@@ -116,6 +116,9 @@ void Program::syscallReceived(int no, int valueOfa0) {
 
 // only when debugger is paused
 void Program::pcChangeReceived(ParseNode *pc) {
+//   if (pc != NULL)
+//      cerr << pc << ", " << getStatus() << endl;
+   
    if (m_current && getStatus() == PAUSED)
       pcChanged(pc);
 }

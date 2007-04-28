@@ -19,3 +19,5 @@ main:
    
    syscall
    li $a0, 27
+
+	j main

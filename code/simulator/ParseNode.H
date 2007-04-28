@@ -1,4 +1,4 @@
-#ifndef PARSENODE_H_
+ #ifndef PARSENODE_H_
 #define PARSENODE_H_
 
 #include <QTextBlockUserData>

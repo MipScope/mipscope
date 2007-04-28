@@ -7,7 +7,7 @@
 #include <QMutexLocker>
 
 Debugger::Debugger(ParseList* parseList) 
-   : m_state(new State()), m_parseList(parseList), m_status(STOPPED), 
+   : m_state(new State(parseList)), m_parseList(parseList), m_status(STOPPED), 
      m_terminationReason(T_ABNORMAL)
 {
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));

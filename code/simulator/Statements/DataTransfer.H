@@ -148,5 +148,61 @@ class Move : public Instruction {
       }
 };
 
+// ----------------------------------
+// Instruction mflo $dest, $src
+// ----------------------------------
+class Mflo : public Instruction {
+   public:
+      Mflo(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mflo(args);
+      }
+      
+      virtual void execute(State *s) const {
+         s->setRegister(lo, (*m_args)[0]->getValue(s));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mflo"; }
+      virtual const char *getSyntax() const { return "$dest"; }
+      virtual const char *getDescription() const {
+         return "Sets the register $dest to the value in the special register LO";
+      }
+};
+
+// ----------------------------------
+// Instruction mfhi $dest, $src
+// ----------------------------------
+class Mfhi : public Instruction {
+   public:
+      Mfhi(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mfhi(args);
+      }
+      
+      virtual void execute(State *s) const {
+         s->setRegister(hi, (*m_args)[0]->getValue(s));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mfhi"; }
+      virtual const char *getSyntax() const { return "$dest"; }
+      virtual const char *getDescription() const {
+         return "Sets the register $dest to the value in the special register HI";
+      }
+};
+
 #endif // __DATATRANSFER_H__
 

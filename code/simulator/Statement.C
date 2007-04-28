@@ -9,6 +9,7 @@
 #include "Statements/DataTransfer.H"
 #include "Statements/Special.H"
 #include "Statements/Assert.H"
+#include "Statements/ControlFlow.H"
 
 Statement::Statement(unsigned int requiredSizeInBytes) 
    : m_size(requiredSizeInBytes)
@@ -71,6 +72,8 @@ void Instruction::InitializeInstructionMap() {
    insert(new Add());
    insert(new Addi());
    insert(new Sub());
+   insert(new Div());
+   insert(new Mult());
 
    // DataTransfer.H
    insert(new Li());
@@ -78,6 +81,8 @@ void Instruction::InitializeInstructionMap() {
    insert(new Lw());
    insert(new Sw());
    insert(new Move());
+   insert(new Mflo());
+   insert(new Mfhi());
    
    // Special.H
    insert(new Nop());
@@ -85,6 +90,9 @@ void Instruction::InitializeInstructionMap() {
    
    // Assert.H
    insert(new AssertEquals());
+   
+   // ControlFlow.H
+   insert(new J());
    
    
    int i = 0; // temporary, to test parsing

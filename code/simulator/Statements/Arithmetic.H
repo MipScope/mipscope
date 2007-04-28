@@ -72,7 +72,7 @@ class Addi : public Add {
 };
 
 // ----------------------------------
-// Instruction add $dest, $src1, src2
+// Instruction Sub $dest, $src1, src2
 // ----------------------------------
 class Sub : public Instruction {
    public:
@@ -100,6 +100,75 @@ class Sub : public Instruction {
       virtual const char *getSyntax() const { return "$dest, $src1, $src2 OR <immediate>"; }
       virtual const char *getDescription() const {
          return "Subtracts $src2 from $src1, storing the result in $dest.";
+      }
+};
+
+// ----------------------------------
+// Instruction Mult $dest, $src1, src2
+// ----------------------------------
+class Mult : public Instruction {
+   public:
+      Mult(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mult(args);
+      }
+
+      virtual void execute(State *s) const {
+         int val1 = m_args->getValue(s, 0);
+         int val2 = m_args->getValue(s, 1);
+         
+         long long int result = val1 * val2; // at least 64 bit
+
+         s->setRegister(lo , (result << 32) >> 32); // 32 least significant
+         s->setRegister(hi , result >> 32); // 32 most significant
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "mult"; }
+      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Multiplies $src1 by $src2, storing the 32 most-significant bits of the product in HI and the 32 least-significant bits in LO";
+      }
+};
+
+
+// ----------------------------------
+// Instruction Div $dest, $src1, src2
+// ----------------------------------
+class Div : public Instruction {
+   public:
+      Div(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Div(args);
+      }
+
+      virtual void execute(State *s) const {
+         int val1 = m_args->getValue(s, 0);
+         int val2 = m_args->getValue(s, 1);
+
+         s->setRegister(lo , (unsigned)(val1 / val2));
+         s->setRegister(hi , (unsigned)(val1 % val2));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "div"; }
+      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Divides $src1 by $src2, storing the integer quotient in LO and the remainder in HI";
       }
 };
 

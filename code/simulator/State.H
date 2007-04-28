@@ -6,12 +6,13 @@
 
 #include "typedefs.H"
 class ParseNode;
+class ParseList;
 
 class State : public QObject {
    Q_OBJECT
 
    public:
-      State();
+      State(ParseList* parseList);
 
       // increments timestamp
       TIMESTAMP newTimestamp();
@@ -50,6 +51,8 @@ class State : public QObject {
       // completely resets the state to its original state
       void reset();
       
+      ParseList* getParseList(void);
+      
    signals:
       void syscall(int, int);
       
@@ -67,6 +70,8 @@ class State : public QObject {
       ParseNode* m_pc;
 
       TIMESTAMP m_currentTimestamp;
+      
+      ParseList* m_parseList;
 };
 
 

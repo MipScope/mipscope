@@ -94,9 +94,10 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       c.movePosition(QTextCursor::StartOfLine/*PreviousWord*/, QTextCursor::KeepAnchor);
       const QString &selectedText = c.selectedText().trimmed();
 //      bool match = m_syntaxHighligher->matches(selectedText);
-      bool match1 = instructionMap.contains(selectedText), match2 = false; 
+      bool match1 = (selectedText != "" && instructionMap.contains(selectedText)), match2 = false;
       
-      //cerr << selectedText.toStdString() << ", " << match1 << ", " << match2 << endl;
+//      cerr << selectedText.toStdString() << ", " << match1 << ", " << match2 << endl;
+//      cerr << instructionMap.contains(selectedText) << ", " << (void*)instructionMap[selectedText] << endl;
 
       if (match1 || (match2 = directiveMap.contains(selectedText))) {
          // move cursor to start of matched word
@@ -108,25 +109,56 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
                //top + ((rect.bottom() - top) >> 3));
          
          const Statement *statement = (match1 ? (Statement*)instructionMap[selectedText] : (Statement*)directiveMap[selectedText]);
-         const QString text = QString("<p style='white-space:pre'><b>%1</b> %2").arg(selectedText, QString(statement->getSyntax()));
-         
-         const QString statusText = statement->getDescription();
-         //"Adds two signed integers, storing the result in $dest.";
-         
-         cerr << text.toStdString() << endl;
-         cerr << statusText.toStdString() << endl;
-         
-         m_syntaxTip->show(text, statusText, pos, c);
+         if (statement != NULL) {
+            const QString text = QString("<p style='white-space:pre'><b>%1</b> %2").arg(selectedText, QString(statement->getSyntax()));
+
+            const QString statusText = statement->getDescription();
+            //"Adds two signed integers, storing the result in $dest.";
+
+            //cerr << text.toStdString() << endl;
+            //cerr << statusText.toStdString() << endl;
+
+            m_syntaxTip->show(text, statusText, pos, c);
 
 //         highlightLine(c, Qt::red);
 //         QToolTip::showText(mapToGlobal(pos), text, this);
+         }
       }
    } else if (key == Qt::Key_Return) {
 //      QToolTip::hideText();
       m_syntaxTip->hide();
+      
+      QTextCursor c = textCursor();
+      int pos = c.position();
+      c.movePosition(QTextCursor::Up);
+      c.select(QTextCursor::LineUnderCursor);
+      const QString text = c.selectedText();
+      
+      // auto-insert comment
+      if (text.trimmed().at(0) == QChar('#')) { // previous line is a comment
+         int commentIndex = text.indexOf(QChar('#'));
+         if (commentIndex >= 0) {
+            const QString &whitespace = text.left(commentIndex + 1) + QString(" ");
+            c.setPosition(pos);
+            c.insertText(whitespace);
+         }
+      } else {
+         int nonWhiteSpaceInd = text.indexOf(QRegExp("[^ ]"));
+         if (nonWhiteSpaceInd == -1)
+            nonWhiteSpaceInd = text.length();
+
+         if (nonWhiteSpaceInd >= 0) {
+            const QString &whitespace = text.left(nonWhiteSpaceInd);
+
+            c.setPosition(pos);
+            c.insertText(whitespace);
+         }
+      }
    } else if (key == Qt::Key_Escape) {
       m_syntaxTip->hide();
-   } /*else if (key == Qt::Key_Tab) {
+   }/* else if (m_syntaxTip->isVisible()) {
+      m_syntaxTip->cursorPositionChanged(textCursor());
+   } else if (key == Qt::Key_Tab) {
       QTextCursor c = textCursor();
       c.deletePreviousChar();
       c.insertText("   ");
@@ -572,13 +604,18 @@ void SyntaxTip::testCursorPos() {
    QTextCursor c = m_parent->textCursor();
    if (c.block() != *m_block)
       hide();
+   c.movePosition(QTextCursor::StartOfLine);
+   c.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+   QString selectedText = c.selectedText().trimmed();
+   if (selectedText == "") {
+      c.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+      selectedText = c.selectedText().trimmed();
+   }
    
-   /*int pos = c.position();
-   c.setPosition(m_startPos);
-   c.movePosition(QTextCursor::Down);
-   
-   if (pos < m_startPos || pos >= c.position())
-      hide();*/
+//   cerr << "sel: '" << selectedText.toStdString() << "'\n";
+   if (!(instructionMap.contains(selectedText) || 
+       directiveMap.contains(selectedText)))
+      hide();
 }
 
 void SyntaxTip::editorScrolled(int val) {

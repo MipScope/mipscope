@@ -134,16 +134,16 @@ class SyntaxTip : public QLabel {
       SyntaxTip(TextEditor *parent);
        
       void show(const QString &tipText, const QString &statusText, const QPoint &pos, const QTextCursor&);
-
+      
       // @overridden
       void mousePressEvent(QMouseEvent*);
 
    public slots:
       void hide();
       void editorScrolled(int);
+      void cursorPositionChanged(const QTextCursor&);
 
    private slots:
-      void cursorPositionChanged(const QTextCursor&);
       void testCursorPos();
 
    protected:

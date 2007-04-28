@@ -89,7 +89,7 @@ void Instruction::InitializeInstructionMap() {
    
    int i = 0; // temporary, to test parsing
    while(Instructions[i] != NULL) {// TODO:  remove eventually!
-      if (!instructionMap.contains(Instructions[i]))
+      if (!instructionMap.contains(Instructions[i])) 
          instructionMap.insert(Instructions[i], NULL/*TEMP*/);
       ++i;
    }

@@ -67,7 +67,6 @@ void Gui::setupGui() {
 }
 
 void Gui::setupActions() {
-   // TODO: add more (standard) menu options
    setupFileActions();
    setupEditActions();
    setupDebugActions();
@@ -205,6 +204,7 @@ void Gui::setupDebugActions() {
 void Gui::setupOptionsMenu() {
    QMenu *menu = menuBar()->addMenu(tr("&Options"));
    
+   // TODO
    menu->addAction(new QAction(tr("&TODO"), this));
 }
 
@@ -317,7 +317,6 @@ const char *ABOUT_TEXT =
 "</html>";
 
 void Gui::aboutMipScope() {
-   // TODO:  Make this better..
    QMessageBox::about(this, tr("About "PROJECT_NAME), tr(ABOUT_TEXT));
 }
 
@@ -452,7 +451,9 @@ void Gui::updateDebugActions() {
          m_debugStepAction->setEnabled(true);
          m_debugBStepAction->setEnabled(true);
          //m_editorPane->setModifiable(true);
-         m_runningEditor->setModifiable(true);
+         
+         // TODO:  allow for on-the-fly editing!
+         //m_runningEditor->setModifiable(true);
  
          break;
       case STOPPED:
@@ -480,7 +481,6 @@ void Gui::debugStopAction() {
 // which switches automatically to 'pause' upon invocation.
 void Gui::debugStepAction() {
    stepForward();
-   // TODO
 }
 
 void Gui::debugBStepAction() {

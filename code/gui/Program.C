@@ -11,6 +11,7 @@
 #include "Gui.H"
 #include "SyscallHandler.H"
 #include "RegisterView.H"
+#include "ErrorConsole.H"
 #include "../simulator/Debugger.H"
 #include "../simulator/ParseList.H"
 #include "../simulator/ParseNode.H"
@@ -175,14 +176,15 @@ void Program::pause() {
 
 void Program::updateSyntaxErrors(SyntaxErrors *newS) {
    m_syntaxErrors = newS;
-
+   
+   m_gui->getErrorConsole()->updateSyntaxErrors(newS, m_parent);
 //   m_parent->
 }
 
 void Program::run() {
    if (!m_current)
       return;
-
+   
    if (getStatus() == STOPPED) {
       // reparse program; ensure it was successful
       
@@ -197,7 +199,8 @@ void Program::run() {
          updateSyntaxErrors(m_parseList->getSyntaxErrors());
          return;
       }
-
+      
+      updateSyntaxErrors(NULL);
       m_debugger->setParseList(m_parseList);
    }
    

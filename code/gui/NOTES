@@ -6,6 +6,7 @@ Gui TODO: (stuff i'll forget, otherwise)
    
    * Clear button on OutputConsole
    * Multiple Tabs; ErrorList as well
+   * Tie Register WatchPoints into Debugger
 
 
 Highlighting a line of Text:

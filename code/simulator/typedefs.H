@@ -44,6 +44,7 @@ enum TerminationReason { T_COMPLETED, T_TERMINATED, T_INVALID_PROGRAM, T_ABNORMA
 typedef unsigned int TIMESTAMP;
 
 typedef vector<ParseError> SyntaxErrors;
+typedef SyntaxErrors::iterator SyntaxErrorIterator;
 
 typedef QHash<QString, Instruction*> InstructionMap;
 typedef InstructionMap::iterator InstructionMapIterator;

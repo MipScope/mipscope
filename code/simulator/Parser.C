@@ -28,11 +28,12 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
    SyntaxErrors errors;
    int lineNo = 0;
    
-   _tab = "   ";
    for(QTextBlock cur = document->begin(); cur != document->end(); cur = cur.next(), lineNo++) {
       ParseNode *n = NULL;
       QTextBlock *actual = new QTextBlock(cur);
       
+      _tab = "   ";
+
       try {
          n = Parser::parseLine(actual, parseList);
       } catch(ParseError &e) {
@@ -173,7 +174,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
 
    if (i == instructionMap.end()) {
       cerr << "instr " << instr.toStdString() << " not found in map\n";
-      PARSE_ERRORL(QString("'") + instr + QString("' is not a valid instruction (expected)"), text, instr.length());
+      PARSE_ERRORL(QString("'") + instr + QString("' is not a valid instruction."), text, instr.length());
    }
 
    StatementArgList *argList;
@@ -217,7 +218,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    // --------------------------------------------------------------
    if (!instrFactory->isSyntacticallyValid(argList)) {
       cerr << _tab << "Error: arguments to instruction '" << instrFactory->getName() << "' are invalid!\n";
-      PARSE_ERRORL(QString("invalid arguments to instruction '%1'\n"
+      PARSE_ERRORL(QString("invalid arguments to instruction '%1'.\n"
                   "Syntax: '%2'").arg(instr, instrFactory->getName() + QString(" ") + instrFactory->getSyntax()), text, text.length());
    }
    
@@ -258,7 +259,7 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    }
    
    if (regIndex + 1 >= len)
-      PARSE_ERRORL(QString("misplaced '$' token"), copy, copy.length());
+      PARSE_ERRORL(QString("misplaced '$' token."), copy, copy.length());
    
    QString reg;
    QRegExp endOfReg("\\$[a-z0-9]+\\b");
@@ -268,11 +269,11 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
       reg = Parser::substring(text, regIndex + 0, 2);
    else reg = Parser::substring(text, regIndex + 0, 3);
 
-//   cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
-//   cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
+   cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
+   cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
    
    int registerNo = -1;
-   if (reg[1] == QChar('r')) { // determine which $r register
+   if (reg.at(1) == QChar('r') && reg.at(2) != QChar('a')) { // determine which $r register
       reg = Parser::substring(text, 2, reg.length() - 2);
       
       bool okay = false;
@@ -310,7 +311,7 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
       int parenEnd = text.indexOf(')');
 
       if (parenStart > regIndex || parenEnd <= parenStart + 3 || parenEnd < regIndex)
-         PARSE_ERROR(QString("parenthesis mismatch"), text);
+         PARSE_ERROR(QString("parenthesis mismatch."), text);
       
       validParens = true;
       
@@ -600,7 +601,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
             if (strIndex != 0)  // str must start w/ a quotation mark
                PARSE_ERRORL(QString("directive '%1' takes a string").arg(QString(directives[type])), text, text.length());
             
-            // TODO:  possibly remove simplified() -- cause it may remove white space from strings?
+            // TODO:  possibly remove simplified() -- cause it may remove white space from strings?  No -- don't think so
 
             text = text.remove(0, 1).trimmed();
            

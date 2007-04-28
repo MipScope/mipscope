@@ -21,6 +21,7 @@ class QAction;
 class QToolBar;
 class LineNoPane;
 class OutputConsole;
+class ErrorConsole;
 class RegisterView;
 class TextEditor;
 class DirectoryListing;
@@ -34,14 +35,15 @@ class Gui : public QMainWindow {
       Gui(int argc, char **argv);
 	   virtual ~Gui(void);
       
+      void ensureVisibility(QDockWidget *widget);
+
       QAction *getSaveAction();
-//      QAction *getSaveAsAction();
       QAction *getSaveAllAction();
-      
       QMenu *getEditMenu();
-      
+
       SyscallListener *getSyscallListener() const;
       RegisterView *getRegisterView() const;
+      ErrorConsole *getErrorConsole() const;
    
       // Proxy-DEBUGGER Related
       // ----------------------
@@ -117,6 +119,7 @@ class Gui : public QMainWindow {
               
               // View-Related
               *m_viewOutputAction, 
+              *m_viewErrorsAction, 
               *m_viewRegistersAction, 
               *m_viewDirectoryListingAction;
       
@@ -125,6 +128,7 @@ class Gui : public QMainWindow {
       LineNoPane *m_lineNoPane;
       QStatusBar *m_statusBar;
       OutputConsole *m_output;
+      ErrorConsole *m_errors;
       RegisterView *m_registerView;
       DirectoryListing *m_directorylisting;
       

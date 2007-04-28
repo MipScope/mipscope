@@ -8,6 +8,7 @@
 #include "EditorPane.H"
 #include "LineNoPane.H"
 #include "OutputConsole.H"
+#include "ErrorConsole.H"
 #include "RegisterView.H"
 #include "DirectoryListing.H"
 #include "SyscallHandler.H"
@@ -218,29 +219,52 @@ void Gui::setupStatusBar() {
 
 void Gui::setupDockWidgets() {
    QMenu *menu = menuBar()->addMenu(tr("&View"));
+   
+   m_errors = new ErrorConsole(this, m_editorPane);
+   m_viewErrorsAction  = m_errors->toggleViewAction();
+   m_viewErrorsAction->setIcon(QIcon(ICONS"/viewErrors.png"));
+   
    m_output = new OutputConsole(this, m_editorPane);
-   
-   addDockWidget(Qt::BottomDockWidgetArea, m_output);
-   
    m_viewOutputAction = m_output->toggleViewAction();
    m_viewOutputAction->setIcon(QIcon(ICONS"/viewOutput.png"));
    menu->addAction(m_viewOutputAction);
+   menu->addAction(m_viewErrorsAction);
    
    m_registerView = new RegisterView(this, m_editorPane);
-   addDockWidget(Qt::RightDockWidgetArea, m_registerView);
-   
    m_viewRegistersAction = m_registerView->toggleViewAction();
    m_viewRegistersAction->setIcon(QIcon(ICONS"/viewRegisters.png"));
    menu->addAction(m_viewRegistersAction);
 
    m_directorylisting = new DirectoryListing(this, m_editorPane);
-   addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
-   
    m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
    m_viewDirectoryListingAction->setIcon(QIcon(ICONS"/viewDirectoryListing.png"));
    menu->addAction(m_viewDirectoryListingAction);
+
+   addDockWidget(Qt::BottomDockWidgetArea, m_output);
+   addDockWidget(Qt::BottomDockWidgetArea, m_errors);
+   addDockWidget(Qt::RightDockWidgetArea, m_registerView);
+   addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
+   tabifyDockWidget(m_output, m_errors);
 }
 
+void Gui::ensureVisibility(QDockWidget *widget) {
+   cerr << "in: " << widget->isVisible() << endl;
+   
+   if (widget == NULL)// || widget->isVisible())
+      return;
+   
+   Qt::DockWidgetArea a = dockWidgetArea(widget);
+   removeDockWidget(widget);
+   addDockWidget(a, widget);
+   if (!widget->isVisible())
+      widget->toggleViewAction()->trigger();
+   
+   if (widget == m_errors)
+      tabifyDockWidget(widget, m_output);
+   else tabifyDockWidget(widget, m_errors);
+
+   //cerr << "out: " << widget->isVisible() << endl;
+}
 
 SyscallListener *Gui::getSyscallListener() const {
    return m_syscallListener;
@@ -248,6 +272,10 @@ SyscallListener *Gui::getSyscallListener() const {
 
 RegisterView *Gui::getRegisterView() const {
    return m_registerView;
+}
+
+ErrorConsole *Gui::getErrorConsole() const {
+   return m_errors;
 }
 
 // -----------------------

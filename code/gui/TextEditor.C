@@ -329,11 +329,14 @@ void TextEditor::paintEvent(QPaintEvent *e) {
    
    if (m_pc != NULL && m_program->getStatus() == PAUSED) {
       QTextCursor c = textCursor();
-      c.setPosition(m_pc->getTextBlock()->position());
-      
-      QRect r(0, cursorRect(c).y(), width, height);
-      //    255, 240, 117  -- yellow
-      p.fillRect(r, QBrush(QColor(255, 240, 117)));
+      int pos = m_pc->getTextBlock()->position();
+      if (pos >= 0) {
+         c.setPosition(pos);
+
+         QRect r(0, cursorRect(c).y(), width, height);
+         //    255, 240, 117  -- yellow
+         p.fillRect(r, QBrush(QColor(255, 240, 117)));
+      }
    }
    
    p.end();
@@ -626,6 +629,7 @@ void SyntaxTip::editorScrolled(int val) {
          const QRect &geom = geometry();
          //m_startPos = m_block->position();
          QTextCursor c = m_parent->textCursor();
+
          c.setPosition(m_block->position());//m_startPos);
          const QRect &rect = m_parent->cursorRect(c);
          val = 0;
@@ -765,6 +769,8 @@ QTextBlock *TextEditor::getBlockForLine(int lineNo, QTextBlock *last) {
 // Moves text cursor to given line, scrolling editor if necessary
 void TextEditor::gotoLine(int lineNo) {
    int max = noLines();
+//   cerr << "lineNo: " << lineNo << ", max=" << max << endl;
+
    if (lineNo > max) // cap to ensure lineNo is valid
       lineNo = max;
    else if (lineNo < 0)
@@ -772,7 +778,9 @@ void TextEditor::gotoLine(int lineNo) {
    
    QTextCursor c = textCursor();
    QTextBlock *b = getBlockForLine(lineNo);
-   c.setPosition(b->position());
+   int pos = b->position();
+   if (pos < 0) pos = 0;
+   c.setPosition(pos);
    delete b;
    setTextCursor(c);
    ensureCursorVisible();

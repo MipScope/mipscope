@@ -65,7 +65,7 @@ void Debugger::runAnotherStep(void) {
       m_state->getPC()->execute(m_state, m_parseList);
    } catch (StateException e) {
       setStatus(STOPPED);
-      std::cerr << e.getMessage().toStdString();  
+      std::cerr << e.getMessage().toStdString() << endl;
    }
    
    // We run this below as well, so we stop the program immediately

@@ -19,17 +19,19 @@ class EditorContextMenu;
 class LineNoPane;
 class LineNoDisplay;
 class Gui;
+class ErrorConsole;
 
 class EditorPane : public QTabWidget {
    
    Q_OBJECT
    
-   public:
+   public: // yeah for good design :)
       friend class Gui;
       friend class EditorContextMenu;
       friend class TextEditor;
       friend class LineNoDisplay;
       friend class LineNo;
+      friend class ErrorConsole;
       
       EditorPane(Gui *parent, const char *fileName = NULL);
 	   virtual ~EditorPane(void);

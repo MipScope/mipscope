@@ -11,13 +11,11 @@ main:
    #addi $a0, $t0, 40
    #lw $a0, addr
    li $t0, 33
-   sw $t0, 4+addr
+   s $t0, 4+addr
    la $t0, addr
    lw $a0, 4($t0)
    
    assertequals $a0, 33
    
-   syscall
+   yscall
    li $a0, 27
-
-	j main

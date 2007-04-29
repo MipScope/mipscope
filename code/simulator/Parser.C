@@ -70,8 +70,11 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    string orig = _tab;
    _tab += "   ";
    
-   // remove commented parts  TODO:  don't remove # if it appears in a string
-   int commentIndex = text.indexOf('#'), index;
+   // remove commented parts
+   // we want the FIRST hash(#) after the LAST quote(")
+   int lastQuote = text.lastIndexOf('"');
+   if (lastQuote == -1) lastQuote = 0; // not found
+   int commentIndex = text.indexOf('#', lastQuote), index;
    bool comment;//, breakPoint = ((b->userState() & B_BREAKPOINT) != 0);
    
    if ((comment = (commentIndex >= 0))) {

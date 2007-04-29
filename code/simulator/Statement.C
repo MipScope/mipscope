@@ -93,12 +93,15 @@ void Instruction::InitializeInstructionMap() {
    insert(new Div());
    insert(new Mult());
    insert(new Mul());
+   
 
    // DataTransfer.H
    insert(new Li());
    insert(new La());
    insert(new Lw());
+   insert(new Lb());
    insert(new Sw());
+   insert(new Sb());
    insert(new Move());
    insert(new Mflo());
    insert(new Mfhi());

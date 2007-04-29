@@ -73,7 +73,7 @@ class Lw : public Instruction {
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS);
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
       }
       
       virtual Instruction *create(StatementArgList *args) const {
@@ -93,6 +93,34 @@ class Lw : public Instruction {
 };
 
 // ----------------------------------
+// Instruction ln $dest, addr
+// ----------------------------------
+class Lb : public Instruction {
+   public:
+      Lb(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Lb(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setRegister((*m_args)[0]->getRegister(), s->getMemoryByte((*m_args)[1]->getValue(s)));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "lb"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Sets $dest to the value of the word stored at &lt;addr&gt;";
+      }
+};
+
+// ----------------------------------
 // Instruction sw $src, addr
 // ----------------------------------
 class Sw : public Instruction {
@@ -101,7 +129,7 @@ class Sw : public Instruction {
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS);
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
       }
       
       virtual Instruction *create(StatementArgList *args) const {
@@ -119,6 +147,35 @@ class Sw : public Instruction {
          return "Stores the word in register $src into &lt;addr&gt;";
       }
 };
+
+// ----------------------------------
+// Instruction sb $src, addr
+// ----------------------------------
+class Sb : public Instruction {
+   public:
+      Sb(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Sb(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setMemoryByte(m_args->getValue(s, 1), (char) (m_args->getValue(s, 0) & 255) );
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "sb"; }
+      virtual const char *getSyntax() const { return "$src, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Stores the least-significant byte of register $src into &lt;addr&gt;";
+      }
+};
+
 
 // ----------------------------------
 // Instruction move $dest, $src

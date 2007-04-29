@@ -179,7 +179,7 @@ class Div : public Instruction {
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE | NONE);
       }
       
       virtual Instruction *create(StatementArgList *args) const {
@@ -187,15 +187,32 @@ class Div : public Instruction {
       }
 
       virtual void execute(State *s, ParseList* parseList) const {
-         int val1 = m_args->getValue(s, 2);
-         int val2 = m_args->getValue(s, 1);
          
-         if (val2 == 0)
+         /* There are two syntaxes for Div:
+          * div $src1, $src2 -- store $src1 / $src2 in LO, $src1 % $src2 in HI
+          * div $dest, $src1, $src2 -- store $src1 / $src2 in $dest
+          */
+         
+         int numerator, denominator, dest;
+         if (m_args->noArgs() == 2) {
+            numerator = m_args->getValue(s, 0);
+            denominator = m_args->getValue(s, 1);
+         }
+         else {
+            numerator = m_args->getValue(s, 1);
+            denominator = m_args->getValue(s, 2);
+         }
+         
+         if (denominator == 0)
             throw DivideByZero();
-         
-         s->setRegister((*m_args)[0]->getRegister(), val1 / val2);
-//         s->setRegister(lo , (unsigned)(val1 / val2));
-//         s->setRegister(hi , (unsigned)(val1 % val2));
+            
+         if (m_args->noArgs() == 2) {
+            s->setRegister(lo , (unsigned)(numerator / denominator));
+            s->setRegister(hi , (unsigned)(numerator % denominator));
+         }
+         else {
+            s->setRegister((*m_args)[0]->getRegister(), numerator / denominator);
+         }
       }
       
       // @overridden from Statement

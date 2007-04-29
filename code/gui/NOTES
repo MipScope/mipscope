@@ -7,6 +7,7 @@ Gui TODO: (stuff i'll forget, otherwise)
    * Tie Register WatchPoints into Debugger
    * Add 'last modified by' to RegisterView (and last pc to StackView)
    * Add 'Find and/or Replace' Dialog
+   * Incorporate Template into TextEditor for quickly beginning new projects (template.s)
 
 
 Highlighting a line of Text:

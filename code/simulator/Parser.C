@@ -282,8 +282,9 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
    
    int registerNo = -1;
-   if (reg.at(1) == QChar('r') && reg.at(2) != QChar('a')) { // determine which $r register
-      reg = Parser::substring(text, 2, reg.length() - 2);
+   // determine which $r register
+   if (reg.at(1).isDigit()) {// == QChar('r') && reg.at(2) != QChar('a')) {
+      reg = Parser::substring(text, 1, reg.length() - 1);  //2, reg.length() - 2);  (old, for $r3 type syntax -- which doesn't exist)
       
       bool okay = false;
       registerNo = reg.toInt(&okay, 10);

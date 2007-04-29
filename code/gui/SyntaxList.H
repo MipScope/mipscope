@@ -95,8 +95,9 @@ const char *const Directives[] = {
 };
 
 const char *const Registers[] = {
-   "\\$r?[0-2]?\\d",  // $r10
-   "\\$r?3[0-1]",     // $31
+   "\\$[0-2]?\\d",  // $10       // TODO, fix this one to not catch $32 as the $3 being valid and 2 invalid
+                                 // the whole thing should just not be caught at all.
+   "\\$3[0-1]",     // $31
 
    "\\$a[0-3t]",       // $a0-3
    "\\$v[0-1]",        // $v0-1

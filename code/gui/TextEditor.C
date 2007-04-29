@@ -143,7 +143,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
             c.insertText(whitespace);
          }
       } else {
-         int nonWhiteSpaceInd = text.indexOf(QRegExp("[^ ]"));
+         int nonWhiteSpaceInd = text.indexOf(QRegExp("[^ \t]"));
          if (nonWhiteSpaceInd == -1)
             nonWhiteSpaceInd = text.length();
 

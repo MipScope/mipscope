@@ -71,10 +71,16 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    _tab += "   ";
    
    // remove commented parts
-   // we want the FIRST hash(#) after the LAST quote(")
-   int lastQuote = text.lastIndexOf('"');
+   // we want the first hash(#) after the LAST quote(")
+   int lastQuote = text.lastIndexOf('"'), firstQ = -1;
    if (lastQuote == -1) lastQuote = 0; // not found
+   else firstQ = text.lastIndexOf('"');
+   
    int commentIndex = text.indexOf('#', lastQuote), index;
+   int comment2Index = text.indexOf('#');
+   if (comment2Index < firstQ || firstQ == -1)
+      commentIndex = comment2Index;
+   
    bool comment;//, breakPoint = ((b->userState() & B_BREAKPOINT) != 0);
    
    if ((comment = (commentIndex >= 0))) {

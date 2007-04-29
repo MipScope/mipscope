@@ -5,7 +5,6 @@ Gui TODO: (stuff i'll forget, otherwise)
    * QTextDocument::contentsChanged(int position, int charsRemoved, int charsAdded)  [signal]  -- activated before layout manager updates changes :)
    
    * Clear button on OutputConsole
-   * Multiple Tabs; ErrorList as well
    * Tie Register WatchPoints into Debugger
 
 

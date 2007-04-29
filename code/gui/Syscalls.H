@@ -30,7 +30,11 @@ enum SYSCALL {
    S_CLOSE = 15, 
    S_EXIT2 = 16, 
 
-   S_PRINT = 17,           // combination of all prints
+   S_PRINT = 17,           // combination of all print functionality
+
+   // Additions
+   // ---------
+   S_CLEAR_OUTPUT = 18
 };
 
 #endif // __SYSCALLS_H__

@@ -322,14 +322,14 @@ class Bltz : public Blez {
 };
 
 // -------------------------------------
-// Instruction bne $src1, $src2 address
+// Instruction bne $src1, src2 address
 // -------------------------------------
 class Bne : public Instruction {
    public:
       Bne(StatementArgList *args = NULL) : Instruction(args) { }
       
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, ADDRESS | IMMEDIATE);
       }
       
       virtual Instruction *create(StatementArgList *args) const {
@@ -349,14 +349,14 @@ class Bne : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "bne"; }
-      virtual const char *getSyntax() const { return "$src1, $src2, &lt;address&gt;"; }
+      virtual const char *getSyntax() const { return "$src1, src2, &lt;address&gt;"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is not equal to $src2";
+         return "Conditionally branch to &lt;address&gt; if $src1 is not equal to src2";
       }
 };
 
 // -------------------------------------
-// Instruction beq $src1, $src2 address
+// Instruction beq $src1, src2 address
 // -------------------------------------
 class Beq : public Bne {
    public:
@@ -377,9 +377,9 @@ class Beq : public Bne {
       
       // @overridden from Statement
       virtual const char *getName() const { return "beq"; }
-      virtual const char *getSyntax() const { return "$src1, $src2, &lt;address&gt;"; }
+      virtual const char *getSyntax() const { return "$src1, src2, &lt;address&gt;"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is equal to $src2";
+         return "Conditionally branch to &lt;address&gt; if $src1 is equal to src2";
       }
 };
 
@@ -411,7 +411,7 @@ class Beqz : public Blez {
 };
 
 // -------------------------------------
-// Instruction bge $src1, $src2 address
+// Instruction bge $src1, src2 address
 // -------------------------------------
 class Bge : public Bne {
    public:
@@ -433,12 +433,12 @@ class Bge : public Bne {
       // @overridden from Statement
       virtual const char *getName() const { return "bge"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to $src2";
+         return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to src2";
       }
 };
 
 // -------------------------------------
-// Instruction bgeu $src1, $src2 address
+// Instruction bgeu $src1, src2 address
 // -------------------------------------
 class Bgeu : public Bge {
    public:
@@ -459,12 +459,12 @@ class Bgeu : public Bge {
       
       virtual const char *getName() const { return "bgeu"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to $src2 (unsigned)";
+         return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to src2 (unsigned)";
       }
 };
 
 // -------------------------------------
-// Instruction bgt $src1, $src2 address
+// Instruction bgt $src1, src2 address
 // -------------------------------------
 class Bgt : public Bne {
    public:
@@ -485,12 +485,12 @@ class Bgt : public Bne {
       
       virtual const char *getName() const { return "bgt"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is greater than $src2";
+         return "Conditionally branch to &lt;address&gt; if $src1 is greater than src2";
       }
 };
 
 // -------------------------------------
-// Instruction bgtu $src1, $src2 address
+// Instruction bgtu $src1, src2 address
 // -------------------------------------
 class Bgtu : public Bgt {
    public:
@@ -511,12 +511,12 @@ class Bgtu : public Bgt {
       
       virtual const char *getName() const { return "bgtu"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is greater than $src2 (unsigned)";
+         return "Conditionally branch to &lt;address&gt; if $src1 is greater than src2 (unsigned)";
       }
 };
 
 // -------------------------------------
-// Instruction ble $src1, $src2 address
+// Instruction ble $src1, src2 address
 // -------------------------------------
 class Ble : public Bne {
    public:
@@ -537,12 +537,12 @@ class Ble : public Bne {
       
       virtual const char *getName() const { return "ble"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to $src2";
+         return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to src2";
       }
 };
 
 // -------------------------------------
-// Instruction bleu $src1, $src2 address
+// Instruction bleu $src1, src2 address
 // -------------------------------------
 class Bleu : public Ble {
    public:
@@ -563,12 +563,12 @@ class Bleu : public Ble {
       
       virtual const char *getName() const { return "bleu"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to $src2 (unsigned)";
+         return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to src2 (unsigned)";
       }
 };
 
 // -------------------------------------
-// Instruction blt $src1, $src2 address
+// Instruction blt $src1, src2 address
 // -------------------------------------
 class Blt : public Bne {
    public:
@@ -589,12 +589,12 @@ class Blt : public Bne {
       
       virtual const char *getName() const { return "blt"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is less than $src2";
+         return "Conditionally branch to &lt;address&gt; if $src1 is less than src2";
       }
 };
 
 // -------------------------------------
-// Instruction bltu $src1, $src2 address
+// Instruction bltu $src1, src2 address
 // -------------------------------------
 class Bltu : public Blt {
    public:
@@ -615,7 +615,7 @@ class Bltu : public Blt {
       
       virtual const char *getName() const { return "bltu"; }
       virtual const char *getDescription() const {
-         return "Conditionally branch to &lt;address&gt; if $src1 is less than $src2 (unsigned)";
+         return "Conditionally branch to &lt;address&gt; if $src1 is less than src2 (unsigned)";
       }
 };
 

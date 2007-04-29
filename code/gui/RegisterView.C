@@ -10,6 +10,10 @@
 #include "Gui.H"
 #include <QtGui>
 
+// TODO:  Make ExtendedView movement smooth
+// Better Colors for register text
+// 
+
 const char *const registerAliases[] = {
    "r0", "at",       // $r0-1
    "v0", "v1",       // $r2-3
@@ -330,7 +334,8 @@ IDLabel::IDLabel(RegisterPane *regPane, unsigned int id)
 {
    //QFont f = font();
    QPalette pal = palette();
-   QColor c(0, 79, 175);
+   // reddish
+   QColor c(140, 72, 22);//(0, 79, 175);
    
 //   pal.setColor(QPalette::Window, orange);
    pal.setColor(QPalette::Foreground, c);

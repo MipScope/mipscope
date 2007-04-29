@@ -56,23 +56,72 @@ void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) 
       case S_PRINT_CHAR:
          output = QString::number((char)(valueOfa0 & 0xFF));
          break;
+      case S_CLEAR_OUTPUT:
+         m_outputActions.push_back(new ClearOutputAction(this, m_strings));
+         break;
       case S_PRINT_FLOAT:  // Unimplemented
       case S_PRINT_DOUBLE:
       default:
          return;
    }
    
-   push(output);
+   m_outputActions.push_back(new NewOutputAction(this, output, syscallNo));
 }
 
 void OutputConsole::undoSyscall(int syscallNo) {
-   if (syscallNo == S_PRINT_CHAR || syscallNo == S_PRINT_INT || 
-       syscallNo == S_PRINT_STRING)
-      pop();
+   if (!m_outputActions.isEmpty() && 
+      (syscallNo == S_PRINT_CHAR || syscallNo == S_PRINT_INT || 
+       syscallNo == S_PRINT_STRING)) {
+      OutputAction *a = m_outputActions.back();
+      if (a == NULL)
+         return;
+      
+      a->undo(this);
+      m_outputActions.pop_back();
+      delete a;
+   }
 }
 
 void OutputConsole::reset() {
    flush();
    m_first = true;
+
+   foreach(OutputAction *a, m_outputActions) {
+      if (a != NULL)
+         delete a;
+   }
+
+   m_outputActions.clear();
+}
+
+void OutputConsole::setStrings(QVector<QString> *strings) {
+   m_strings = QVector<QString>(*strings);
+}
+
+OutputAction::OutputAction(int syscallNo) : m_syscallNo(syscallNo) { }
+OutputAction::~OutputAction() { }
+
+NewOutputAction::NewOutputAction(OutputConsole *out, const QString &s, int syscallNo) 
+   : OutputAction(syscallNo), m_string(s)
+{
+   out->push(s);
+}
+
+void NewOutputAction::undo(OutputConsole *output) {
+   output->pop();
+}
+
+ClearOutputAction::ClearOutputAction(OutputConsole *out, QVector<QString> strings) 
+   : OutputAction(S_CLEAR_OUTPUT), m_strings(new QVector<QString>(strings))
+{
+   out->flush();
+}
+
+ClearOutputAction::~ClearOutputAction() {
+   safeDelete(m_strings);
+}
+
+void ClearOutputAction::undo(OutputConsole *output) {
+   output->setStrings(m_strings);
 }
 

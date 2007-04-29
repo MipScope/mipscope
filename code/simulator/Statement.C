@@ -87,13 +87,34 @@ void Instruction::insert(Instruction *instr) {
 InstructionMap instructionMap;
 void Instruction::InitializeInstructionMap() {
    // Arithmetic.H
+   insert(new Abs());
    insert(new Add());
+   insert(new Addu());
    insert(new Addi());
-   insert(new Sub());
+   insert(new Addiu());
+   insert(new And());
+   insert(new Andi());
+   insert(new Clo());
+   insert(new Clz());
    insert(new Div());
+   insert(new Divu());
    insert(new Mult());
+   insert(new Multu());
    insert(new Mul());
-   
+   insert(new Mulo());
+   insert(new Mulou());
+   insert(new Madd());
+   /*insert(new Maddu());
+   insert(new Msub());
+   insert(new Msubu());
+   insert(new Neg());
+   insert(new Negu());
+   insert(new Nor());
+   insert(new Not());
+   insert(new Or());
+   insert(new Ori());
+   insert(new Rem());
+   insert(new Remu());*/
 
    // DataTransfer.H
    insert(new Li());
@@ -104,7 +125,7 @@ void Instruction::InitializeInstructionMap() {
    insert(new Sb());
    insert(new Move());
    insert(new Mflo());
-   insert(new Mfhi());
+   
    
    // Special.H
    insert(new Nop());

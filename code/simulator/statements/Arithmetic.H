@@ -13,6 +13,38 @@
 #include "../State.H"
 #include "../StateException.H"
 
+#include <cmath>
+
+// ----------------------------------
+// Instruction add $dest, $src1
+// ----------------------------------
+class Abs : public Instruction {
+   public:
+      Abs(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Abs(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val = m_args->getValue(s, 1);
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)( fabs(val) ));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "abs"; }
+      virtual const char *getSyntax() const { return "$dest, $src"; }
+      virtual const char *getDescription() const {
+         return "Stores the absolute value of register $src in register $dest.";
+      }
+};
+
 // ----------------------------------
 // Instruction add $dest, $src1, src2
 // ----------------------------------
@@ -41,13 +73,13 @@ class Add : public Instruction {
       virtual const char *getName() const { return "add"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Adds two signed integers, storing the result in $dest.";
+         return "Adds two integers, storing the result in $dest.";
       }
 };
 
 
 // ----------------------------------
-// Instruction addi $dest, $src1, CONSTANT
+// Instruction addi $dest, $src1, src2
 // We implement it as a type of Add.
 // ----------------------------------
 class Addi : public Add {
@@ -68,16 +100,47 @@ class Addi : public Add {
       virtual const char *getName() const { return "addi"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
       virtual const char *getDescription() const {
-         return "Adds two signed integers, storing the result in $dest.";
+         return "Adds two integers, storing the result in $dest.";
       }
 };
 
 // ----------------------------------
-// Instruction Sub $dest, $src1, src2
+// Instruction addu $dest, $src1, CONSTANT
+// We implement it as a type of Add.
 // ----------------------------------
-class Sub : public Instruction {
+class Addu : public Add {
    public:
-      Sub(StatementArgList *args = NULL) : Instruction(args) { }
+      Addu(StatementArgList *args = NULL) : Add(args) { }
+      
+      // @overridden from Add
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Addu(args);
+      }      
+      // @overridden from Statement
+      virtual const char *getName() const { return "addu"; }
+};
+
+// Instruction addiu $dest, $src1, CONSTANT
+// We implement it as a type of Addi.
+// ----------------------------------
+class Addiu : public Addi {
+   public:
+      Addiu(StatementArgList *args = NULL) : Addi(args) { }
+      
+      // @overridden from Add
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Addiu(args);
+      }      
+      // @overridden from Statement
+      virtual const char *getName() const { return "addiu"; }
+};
+
+// ----------------------------------
+// Instruction and $dest, $src1, src2
+// ----------------------------------
+class And : public Instruction {
+   public:
+      And(StatementArgList *args = NULL) : Instruction(args) { }
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
@@ -85,88 +148,113 @@ class Sub : public Instruction {
       }
       
       virtual Instruction *create(StatementArgList *args) const {
-         return new Sub(args);
+         return new And(args);
       }
 
       virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 1);
          int val2 = m_args->getValue(s, 2);
 
-         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 - val2));
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 & val2));
       }
       
       // @overridden from Statement
       
-      virtual const char *getName() const { return "sub"; }
+      virtual const char *getName() const { return "and"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
       virtual const char *getDescription() const {
-         return "Subtracts $src2 from $src1, storing the result in $dest.";
+         return "Stores in $dest the result of AND'ing the bits of $src1 and &lt;src3&gt;.";
       }
 };
 
 // ----------------------------------
-// Instruction Mult $src1, src2
+// Instruction andi $dest, $src1, src2
 // ----------------------------------
-class Mult : public Instruction {
+class Andi : public And {
    public:
-      Mult(StatementArgList *args = NULL) : Instruction(args) { }
+      Andi(StatementArgList *args = NULL) : And(args) { }
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
       }
       
       virtual Instruction *create(StatementArgList *args) const {
-         return new Mult(args);
-      }
-
-      virtual void execute(State *s, ParseList* parseList) const {
-         int val1 = m_args->getValue(s, 0);
-         int val2 = m_args->getValue(s, 1);
-         
-         long long int result = val1 * val2; // at least 64 bit
-         
-         s->setRegister(lo , (result << 32) >> 32); // 32 least significant
-         s->setRegister(hi , result >> 32); // 32 most significant
+         return new Andi(args);
       }
       
       // @overridden from Statement
       
-      virtual const char *getName() const { return "mult"; }
-      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getName() const { return "andi"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;constant&gt;"; }
       virtual const char *getDescription() const {
-         return "Multiplies $src1 by $src2, storing the 32 most-significant bits of the product in HI and the 32 least-significant bits in LO";
+         return "Stores in $dest the result of AND'ing the bits of $src1 and &lt;constant&gt;.";
       }
 };
 
 // ----------------------------------
-// Instruction Mul $dest, $src1, src2
+// Instruction clo $dest, $src1
 // ----------------------------------
-class Mul : public Instruction {
+class Clo : public Instruction {
    public:
-      Mul(StatementArgList *args = NULL) : Instruction(args) { }
+      Clo(StatementArgList *args = NULL) : Instruction(args) { }
       
       // @overridden from Instruction
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE);
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
       }
       
       virtual Instruction *create(StatementArgList *args) const {
-         return new Mul(args);
+         return new Clo(args);
       }
 
       virtual void execute(State *s, ParseList* parseList) const {
-         int val1 = m_args->getValue(s, 1);
-         int val2 = m_args->getValue(s, 2);
-
-         s->setRegister((*m_args)[0]->getRegister(), val1 * val2);
+         int val = m_args->getValue(s, 1);
+         
+         for (int count = 0 ; (val << 1) >> 1 != val ; count++, val <<= 1);
+            
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)( fabs(val) ));
       }
       
       // @overridden from Statement
-      virtual const char *getName() const { return "mul"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      
+      virtual const char *getName() const { return "clo"; }
+      virtual const char *getSyntax() const { return "$dest, $src"; }
       virtual const char *getDescription() const {
-         return "Multiplies $src1 by &lt;src2&gt;, storing the result in $dest (without overflow).";
+         return "Stores in $dest the number of leading 1's in $src.";
+      }
+};
+
+// ----------------------------------
+// Instruction clo $dest, $src1
+// ----------------------------------
+class Clz : public Instruction {
+   public:
+      Clz(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Clz(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val = m_args->getValue(s, 1);
+         
+         for (int count = 0 ; (val << 1) >> 1 == val ; count++, val <<= 1);
+            
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)( fabs(val) ));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "clz"; }
+      virtual const char *getSyntax() const { return "$dest, $src"; }
+      virtual const char *getDescription() const {
+         return "Stores in $dest the number of leading 0's in $src.";
       }
 };
 
@@ -217,16 +305,267 @@ class Div : public Instruction {
       
       // @overridden from Statement
       virtual const char *getName() const { return "div"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt; OR div $src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Divides $src1 by &lt;src2&gt;, storing the result in $dest. OR: divides $src1 by $src2, storing the integer quotient in LO and the remainder in HI.";
+      }
+};
+
+// ----------------------------------
+// Instruction Divu $dest, $src1, src2
+// ----------------------------------
+class Divu : public Div {
+   public:
+      Divu(StatementArgList *args = NULL) : Div(args) { }
+      
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Divu(args);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "divu"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt; OR divu $src1, $src2"; }
+      
+};
+
+// ----------------------------------
+// Instruction Mult $src1, src2
+// ----------------------------------
+class Mult : public Instruction {
+   public:
+      Mult(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mult(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 0);
+         int val2 = m_args->getValue(s, 1);
+         
+         long long int result = val1 * val2; // at least 64 bit
+         
+         s->setRegister(lo , (result << 32) >> 32); // 32 least significant
+         s->setRegister(hi , result >> 32); // 32 most significant
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "mult"; }
+      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Multiplies (signed) $src1 by $src2, storing the 32 most-significant bits of the product in HI and the 32 least-significant bits in LO";
+      }
+};
+
+
+// ----------------------------------
+// Instruction Mult $src1, src2
+// ----------------------------------
+class Multu : public Instruction {
+   public:
+      Multu(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Multu(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         unsigned int val1 = m_args->getValue(s, 0);
+         unsigned int val2 = m_args->getValue(s, 1);
+         
+         long long unsigned int result = val1 * val2; //  64 bit
+         
+         s->setRegister(lo , (result << 32) >> 32); // 32 least significant
+         s->setRegister(hi , result >> 32); // 32 most significant
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "multu"; }
+      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Multiplies (unsigned) $src1 by $src2, storing the 32 most-significant bits of the product in HI and the 32 least-significant bits in LO";
+      }
+};
+
+// ----------------------------------
+// Instruction Mul $dest, $src1, src2
+// ----------------------------------
+class Mul : public Instruction {
+   public:
+      Mul(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mul(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), val1 * val2);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mul"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Divides $src1 by &lt;src2&gt;, storing the result in $dest.";
+         return "Multiplies (signed) $src1 by &lt;src2&gt;, storing the result in $dest.";
       }
-      /*      virtual const char *getName() const { return "div"; }
-              virtual const char *getSyntax() const { return "$src1, $src2"; }
-              virtual const char *getDescription() const {
-         return "Divides $src1 by $src2, storing the integer quotient in LO and the remainder in HI";
-      }*/
 };
+
+// ----------------------------------
+// Instruction Mul $dest, $src1, src2
+// ----------------------------------
+class Mulo : public Mul {
+   public:
+      Mulo(StatementArgList *args = NULL) : Mul(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mulo(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), val1 * val2);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mulo"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Multiplies (signed) $src1 by &lt;src2&gt;, storing the result in $dest.";
+      }
+};
+
+// ----------------------------------
+// Instruction Mul $dest, $src1, src2
+// ----------------------------------
+class Mulou : public Mul {
+   public:
+      Mulou(StatementArgList *args = NULL) : Mul(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mulou(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         unsigned int val1 = m_args->getValue(s, 1);
+         unsigned int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), val1 * val2);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mulou"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Multiplies (unsigned) $src1 by &lt;src2&gt;, storing the result in $dest.";
+      }
+};
+
+// ----------------------------------
+// Instruction Sub $dest, $src1, src2
+// ----------------------------------
+class Madd : public Instruction {
+   public:
+      Madd(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Madd(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+         
+         long long int sum = (((long long int) s->getRegister(hi)) << 32) + s->getRegister(lo);
+         sum += val1 * val2;
+         s->setRegister(hi, (unsigned)( sum >> 32 ));
+         s->setRegister(lo, (unsigned)( sum << 32 ) >> 32);
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "madd"; }
+      virtual const char *getSyntax() const { return "$src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Multiply registers $src1 and $src2, and add the resulting 64-bit product to the 64-bit value in the concatenated registers LO and HI.";
+      }
+};
+
+
+// ----------------------------------
+// Instruction Sub $dest, $src1, src2
+// ----------------------------------
+class Sub : public Instruction {
+   public:
+      Sub(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Sub(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 - val2));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "sub"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
+      virtual const char *getDescription() const {
+         return "Subtracts $src2 from $src1, storing the result in $dest.";
+      }
+};
+
+
+
+
+
+
 
 #endif // __ARITHMETIC_H__
 

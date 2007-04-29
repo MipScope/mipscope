@@ -7,19 +7,24 @@
 
 #define INTERNAL_MEMORY_SIZE (16384)
 
-State::State() : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP)
+State::State() : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP), 
+                 m_undoList(4096), m_undoIsAvailable(false)
 {
    m_memory.reserve(INTERNAL_MEMORY_SIZE);
    reset();
 }
 
 TIMESTAMP State::newTimestamp() {
+   if (m_currentTimestamp != CLEAN_TIMESTAMP)
+      setUndoAvailability(true);
+
    return ++m_currentTimestamp;
 }
 
 void State::setMemoryWord(unsigned int address, unsigned int value) {
    ensureValidAlignment(address, 3);   
-   // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+      m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, address, m_memory[address]));
    
    m_memory[address] = value;
    memoryChanged(address, value);
@@ -29,10 +34,13 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
    ensureValidAlignment(address, 0);   
 
    // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+   const unsigned int aligned = (address & ~3);
    unsigned int result = 
-      (m_memory[address & ~3] |= (value << ((address & 3) << 3)));
+      (m_memory[aligned] |= (value << ((address & 3) << 3)));
 
-   memoryChanged(address & ~3, result);
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+      m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, aligned, m_memory[aligned]));
+   memoryChanged(aligned, result);
 }
 
 unsigned int State::getMemoryWord(unsigned int address) const {
@@ -99,6 +107,8 @@ void State::setRegister(int reg, unsigned int value) {
       throw InvalidRegister(reg);
    }
    
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+      m_undoList.push_back(new RegisterChangedAction(m_currentTimestamp, reg, m_registers[reg]));
    m_registers[reg] = value;
    registerChanged((unsigned)reg, value);
 }
@@ -117,10 +127,11 @@ void State::incrementPC() {
 }
 
 void State::setPC(ParseNode* value) {
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+      m_undoList.push_back(new PCChangedAction(this));
+   
    m_pc = value;
 //   cerr << (void*)value << endl; 
-   // TODO:  detect when next node does not exit and signal program completion/termination -- done in Debugger?
-   
    
    pcChanged(m_pc);
 }
@@ -129,9 +140,36 @@ ParseNode* State::getPC(void) const {
    return m_pc;	
 }
 
-void State::undoUntilTimestamp(TIMESTAMP timestamp) {
-   // TODO: unimplemented
-   timestamp = 0;
+void State::undoLastInstruction() {
+   undoUntilTimestamp(m_currentTimestamp - 1);
+}
+
+void State::undoUntilTimestamp(TIMESTAMP targetTimestamp) {
+   StateAction *action;
+   if (targetTimestamp >= m_currentTimestamp || m_undoList.isEmpty() || (action = m_undoList.back()) == NULL)
+      return;
+
+   //cerr << "<<<Undo: cur = " << m_currentTimestamp << ", target = " << targetTimestamp << endl;
+   
+   do {
+      action->undo(this);
+      m_currentTimestamp = action->m_timestamp;
+      m_undoList.pop_back();
+      delete action;
+   } while(!m_undoList.isEmpty() && (action = m_undoList.back()) != NULL && action->m_timestamp >= targetTimestamp);
+
+   pcChanged(m_pc);
+   if (m_undoList.isEmpty() || action == NULL)
+      setUndoAvailability(false, true);
+   //cerr << ">>>done: cur = " << m_currentTimestamp << ", pc = '" << m_pc << "'\n";
+}
+
+void State::setUndoAvailability(bool isAvailable, bool force) {
+   if (m_undoIsAvailable == isAvailable && !force)
+      return;
+   
+   m_undoIsAvailable = isAvailable;
+   undoAvailabilityChanged(isAvailable);
 }
 
 TIMESTAMP State::getCurrentTimestamp(void) const {
@@ -143,16 +181,68 @@ void State::reset() {
    m_currentTimestamp = CLEAN_TIMESTAMP;
    m_pc = NULL;
    m_memory.clear();
+   foreach(StateAction *s, m_undoList) {
+      if (s != NULL)
+         delete s;
+   }
+   m_undoList.clear();
+
+   setUndoAvailability(false, true);
 }
 
 // does the OS action depending on what's in $v0
 void State::doSyscall(void) {
-   cerr << "\t\tSyscall called v0 = " << getRegister(v0) << ", a0 = " << getRegister(a0) << endl;
+   int syscallNo = getRegister(v0);
+   cerr << "\t\tSyscall called v0 = " << syscallNo << ", a0 = " << getRegister(a0) << endl;
    
-   syscall(getRegister(v0), getRegister(a0));
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+      m_undoList.push_back(new SyscallAction(m_currentTimestamp, syscallNo));
+   syscall(syscallNo, getRegister(a0));
 }
 
 void State::assertEquals(int val1, int val2) {
    if (val1 != val2) throw AssertionFailure(val1, val2);
+}
+
+StateAction::StateAction(TIMESTAMP timestamp) : m_timestamp(timestamp) { }
+StateAction::~StateAction() { }
+
+SyscallAction::SyscallAction(TIMESTAMP timestamp, int syscallNo)
+   : StateAction(timestamp), m_syscallNo(syscallNo)
+{ }
+
+void SyscallAction::undo(State *s) {
+   s->undoSyscall(m_syscallNo);
+   //cerr << "Undoing syscall " << m_syscallNo << endl;
+}
+
+PCChangedAction::PCChangedAction(State *s) 
+   : StateAction(s->m_currentTimestamp), m_oldPC(s->m_pc)
+{ }
+
+void PCChangedAction::undo(State *s) {
+   s->m_pc = m_oldPC;
+   //cerr << "PC -> " << m_oldPC << endl;
+}
+
+RegisterChangedAction::RegisterChangedAction(TIMESTAMP timestamp, unsigned int reg, unsigned int oldVal) 
+   : StateAction(timestamp), m_register(reg), m_value(oldVal)
+{ }
+
+void RegisterChangedAction::undo(State *s) {
+   s->m_registers[m_register] = m_value;
+   s->registerChanged(m_register, m_value);
+   //cerr << "Reg " << registerAliases[m_register] << " -> " << m_value << endl;
+}
+
+MemoryChangedAction::MemoryChangedAction(TIMESTAMP timestamp, unsigned int address, unsigned int oldVal) 
+   : StateAction(timestamp), m_address(address), m_value(oldVal)
+{ }
+
+void MemoryChangedAction::undo(State *s) {
+   s->m_memory[m_address] = m_value;
+   s->memoryChanged(m_address, m_value);
+   
+   //cerr << "Mem " << m_address << " -> " << m_value << endl;
 }
 

@@ -134,6 +134,7 @@ bool ParseList::initialize(State *state) {
    if (!this->isValid())
       return false;
    
+   state->reset();
    ParseNode *l = last();
    for(ParseNode *cur = first(); cur != l && cur != NULL; cur = cur->getNext()) {
       if (cur == NULL) {
@@ -151,6 +152,9 @@ bool ParseList::initialize(State *state) {
 
    // Move PC to closest executable instruction after the entry point at __start: or main:
    state->setPC(getClosestInstruction(getEntryPoint()));
+
+   // Important:  has to go last!
+   state->newTimestamp();
    return true;
 }
 

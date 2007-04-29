@@ -45,6 +45,8 @@ class Gui : public QMainWindow {
       RegisterView *getRegisterView() const;
       ErrorConsole *getErrorConsole() const;
    
+      bool handleProgramTerminated(int reason);
+
       // Proxy-DEBUGGER Related
       // ----------------------
    signals:
@@ -64,6 +66,8 @@ class Gui : public QMainWindow {
       void validityChanged(bool isValid);
       // passes on to RegisterView
       void registerChanged(unsigned int reg, unsigned int value, int status);
+      
+      void programUndoAvailabilityChanged(bool isAvailable);
       
       
       // Normal Gui/Menu Related
@@ -140,6 +144,7 @@ class Gui : public QMainWindow {
       int m_mode;
       // TextEditor which is currently running / being debugged
       TextEditor *m_runningEditor;
+      bool m_restarted;
       
    private:  // methods
       void setupGui();

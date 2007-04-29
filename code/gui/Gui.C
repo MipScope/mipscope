@@ -18,7 +18,7 @@ Gui::Gui(int argc, char **argv) : QMainWindow(),
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
-   m_runningEditor(NULL)
+   m_runningEditor(NULL), m_restarted(false)
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
@@ -438,13 +438,15 @@ void Gui::loadSettings() {
 // DEBUGGER - RELATED
 // ------------------
 void Gui::debugRunAction() {
+   m_restarted = false;
+
    if (m_mode == STOPPED) {
-      if (m_editorPane->m_activeEditor->isModified()) {
+      /*if (m_editorPane->m_activeEditor->isModified()) {
          QMessageBox::StandardButton ret = m_editorPane->m_activeEditor->promptUnsavedChanges();
          
          if (ret == QMessageBox::Cancel)
             return;
-      }
+      }*/
       
       m_syscallListener->reset();
       m_registerView->reset();
@@ -501,6 +503,7 @@ void Gui::updateDebugActions() {
 }
 
 void Gui::debugStopAction() {
+   m_restarted = false;
    stop();
    //m_mode = STOPPED;
 //   updateDebugActions();
@@ -518,9 +521,8 @@ void Gui::debugBStepAction() {
 }
 
 void Gui::debugRestartAction() {
+   m_restarted = true;
    stop();
-   run();
-   
    // TODO
    //m_mode = RUNNING;
    //updateDebugActions();
@@ -597,6 +599,18 @@ void Gui::programStatusChanged(int s) {
       m_registerView->updateDisplay();
 }
 
+// returns true if the Gui wants control over handling program termination
+bool Gui::handleProgramTerminated(int reason) {
+   if (reason == T_TERMINATED && m_restarted) {
+      m_restarted = false;
+      debugRunAction();
+      
+      return true;
+   }
+
+   return false;
+}
+
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
    // TODO!
@@ -607,5 +621,9 @@ void Gui::validityChanged(bool isValid) {
 void Gui::registerChanged(unsigned int reg, unsigned int value, int status) {
    if (m_registerView != NULL)
       m_registerView->registerChanged(reg, value, status);
+}
+
+void Gui::programUndoAvailabilityChanged(bool isAvailable) {
+   m_debugBStepAction->setEnabled(isAvailable);
 }
 

@@ -32,6 +32,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
 
    // Initialize relationship between Proxy and State
    connect(s, SIGNAL(syscall(int,int)), this, SLOT(syscallReceived(int,int)));
+   connect(s, SIGNAL(undoSyscall(int)), this, SLOT(undoSyscallReceived(int)));
+   connect(s, SIGNAL(undoAvailabilityChanged(bool)), this, SLOT(undoAvailabilityChangeReceived(bool)));
    connect(s, SIGNAL(memoryChanged(unsigned int, unsigned int)), this, SLOT(memoryChangeReceived(unsigned int, unsigned int)));
    connect(s, SIGNAL(registerChanged(unsigned int, unsigned int)), this, SLOT(registerChangeReceived(unsigned int, unsigned int)));
    connect(s, SIGNAL(pcChanged(ParseNode*)), this, SLOT(pcChangeReceived(ParseNode*)));
@@ -51,6 +53,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    // Proxy -> Gui
    connect(this, SIGNAL(programStatusChanged(int)), m_gui, SLOT(programStatusChanged(int)));
    connect(this, SIGNAL(syscall(State*,int,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int,int)));
+   connect(this, SIGNAL(undoSyscall(int)), m_gui->getSyscallListener(), SLOT(undoSyscall(int)));
+   connect(this, SIGNAL(undoAvailabilityChanged(bool)), m_gui, SLOT(programUndoAvailabilityChanged(bool)));
 
    // Initialize relationship between parent TextEditor and Proxy
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
@@ -114,6 +118,14 @@ void Program::syscallReceived(int no, int valueOfa0) {
       syscall(getState(), getStatus(), no, valueOfa0);
 }
 
+void Program::undoSyscallReceived(int no) {
+   undoSyscall(no);
+}
+
+void Program::undoAvailabilityChangeReceived(bool isAvailable) {
+   undoAvailabilityChanged(isAvailable);
+}
+
 // only when debugger is paused
 void Program::pcChangeReceived(ParseNode *pc) {
 //   if (pc != NULL)
@@ -144,6 +156,9 @@ void Program::programTerminated(int reason) {
    if (STATUS_BAR == NULL)
       return;
    
+   if (m_gui->handleProgramTerminated(reason))
+      return;
+
    const int delay = STATUS_DELAY + 2000;
    const QString &name = m_parent->fileName();
 

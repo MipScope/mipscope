@@ -56,23 +56,6 @@ void Debugger::runAnotherStep(void) {
    // Check if we're at the end of the program
    if (checkProgramCompleted())
       return;
-   /*ParseNode *pc = m_state->getPC();
-   bool programCompleted = (pc == NULL);
-
-   if (!programCompleted) {
-      try { // see if the current instruction is a Done instruction
-         Done *d = dynamic_cast<Done*>(m_state->getPC());
-         if (d != NULL)
-            programCompleted = true;
-      } catch(bad_alloc&) { } // no, it's not a done instruction
-   }
-   
-   if (programCompleted) {
-      setStatus(STOPPED);
-      m_terminationReason = T_COMPLETED;
-      cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
-      return;
-   }*/
       
    try {
       // execute another parsenode
@@ -132,12 +115,12 @@ void Debugger::executionInit(void) {
       m_terminationReason = T_INVALID_PROGRAM;
       return;
    }
-
+   
    if (!m_parseList->initialize(m_state)) {
       cerr << "Debugger: parseList couldn't be initialized.\n";
       m_terminationReason = T_INVALID_PROGRAM;
       return; 
-   }  
+   }
 }
 
 // public
@@ -153,7 +136,9 @@ void Debugger::programStepForward(void) {
    }
 }
 
-void Debugger::programStepBackward() { } // TODO
+void Debugger::programStepBackward() {
+   m_state->undoLastInstruction();
+}
 
 void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) { stamp=0;} // TODO
 

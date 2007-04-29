@@ -7,16 +7,22 @@
 #include "typedefs.H"
 class ParseNode;
 class ParseList;
+class StateAction;
 
 class State : public QObject {
    Q_OBJECT
 
    public:
+      friend class SyscallAction;
+      friend class PCChangedAction;
+      friend class RegisterChangedAction;
+      friend class MemoryChangedAction;
+      
       State();
 
       // increments timestamp
       TIMESTAMP newTimestamp();
-
+      
       // memory
       void setMemoryWord(unsigned int address, unsigned int value);
       void setMemoryByte(unsigned int address, unsigned char value);
@@ -41,6 +47,7 @@ class State : public QObject {
       ParseNode* getPC(void) const;
 
       // undo
+      void undoLastInstruction();
       void undoUntilTimestamp(TIMESTAMP timestamp);
       TIMESTAMP getCurrentTimestamp(void) const;
 
@@ -53,6 +60,10 @@ class State : public QObject {
       
    signals:
       void syscall(int, int);
+      void undoSyscall(int);
+      
+      // emitted whenever the availability of 'undo' or 'step back' changes
+      void undoAvailabilityChanged(bool isAvailable);
       
       /* this is emitted whenever a word in memory is changed, even if only
        * one byte of this word was changed with a call to setMemoryByte. */
@@ -68,10 +79,59 @@ class State : public QObject {
       ParseNode* m_pc;
 
       TIMESTAMP m_currentTimestamp;
-      
+      QVector<StateAction*> m_undoList;
+      bool m_undoIsAvailable;
+
+      void setUndoAvailability(bool isAvailable, bool force = false);
 };
 
+class StateAction {
+   public:
+      StateAction(TIMESTAMP timestamp);
+      virtual ~StateAction();
 
+      TIMESTAMP m_timestamp;
+      virtual void undo(State *s) = 0;
+};
+
+class SyscallAction : public StateAction {
+   public:
+      SyscallAction(TIMESTAMP timestamp, int syscallNo);
+      
+      void undo(State *s);
+   private:
+      int m_syscallNo;
+};
+
+class PCChangedAction : public StateAction {
+   public:
+      PCChangedAction(State *s);
+      
+      void undo(State *s);
+   private:
+      ParseNode *m_oldPC;
+};
+
+class RegisterChangedAction : public StateAction {
+   public:
+      RegisterChangedAction(TIMESTAMP timestamp, unsigned int reg, unsigned int oldVal);
+      
+      void undo(State *s);
+   private:
+      unsigned int m_register;
+      unsigned int m_value;
+};
+
+// Records a change of one *word* of memory (bytes are handled w/ their associated words)
+class MemoryChangedAction : public StateAction {
+   public:
+      MemoryChangedAction(TIMESTAMP timestamp, unsigned int address, unsigned int oldVal);
+      
+      void undo(State *s);
+   private:
+      unsigned int m_address;
+      unsigned int m_value;
+};
 
 #endif // STATE_H_
 

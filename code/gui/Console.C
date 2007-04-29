@@ -23,6 +23,7 @@ Console::Console(Gui *gui, EditorPane *editorPane, const QString &name, bool cre
       m_display->setReadOnly(true);
       m_display->setAcceptRichText(false);
       m_display->setFont(*m_editorPane->font());
+      m_display->setLineWrapMode(QTextEdit::NoWrap);
       
       setWidget(m_display);
    }

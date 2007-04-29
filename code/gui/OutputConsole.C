@@ -44,7 +44,7 @@ void OutputConsole::pop() {
 void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    QString output;
    
-   cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;
+   //cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;
    
    switch(syscallNo) {
       case S_PRINT_INT:

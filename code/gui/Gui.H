@@ -23,9 +23,11 @@ class LineNoPane;
 class OutputConsole;
 class ErrorConsole;
 class RegisterView;
+class StackView;
 class TextEditor;
 class DirectoryListing;
 class SyscallListener;
+class ParseNode;
 
 class Gui : public QMainWindow {
    
@@ -43,7 +45,9 @@ class Gui : public QMainWindow {
 
       SyscallListener *getSyscallListener() const;
       RegisterView *getRegisterView() const;
+      StackView *getStackView() const;
       ErrorConsole *getErrorConsole() const;
+      TextEditor *getActiveProgram() const;
    
       bool handleProgramTerminated(int reason);
 
@@ -65,7 +69,9 @@ class Gui : public QMainWindow {
       // emitted whenever the runnability of a program changes
       void validityChanged(bool isValid);
       // passes on to RegisterView
-      void registerChanged(unsigned int reg, unsigned int value, int status);
+      void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode*);
+      // passes on to StackView
+      void memoryChanged(unsigned int address, unsigned int value, ParseNode*);
       
       void programUndoAvailabilityChanged(bool isAvailable);
       
@@ -125,6 +131,7 @@ class Gui : public QMainWindow {
               *m_viewOutputAction, 
               *m_viewErrorsAction, 
               *m_viewRegistersAction, 
+              *m_viewStackAction, 
               *m_viewDirectoryListingAction;
       
       // Central EditorPane and Dockable Widgets
@@ -134,6 +141,7 @@ class Gui : public QMainWindow {
       OutputConsole *m_output;
       ErrorConsole *m_errors;
       RegisterView *m_registerView;
+      StackView *m_stackView;
       DirectoryListing *m_directorylisting;
       
       //@overridden

@@ -51,8 +51,9 @@ class State : public QObject {
       void undoUntilTimestamp(TIMESTAMP timestamp);
       TIMESTAMP getCurrentTimestamp(void) const;
       
-      // convenience-method
+      // convenience-methods
       void getLastXInstructions(int no, QVector<ParseNode*> &instrs) const;
+      void getStack(QVector<int> &stack) const;
       
       // special
       void doSyscall(void);
@@ -70,8 +71,8 @@ class State : public QObject {
       
       /* this is emitted whenever a word in memory is changed, even if only
        * one byte of this word was changed with a call to setMemoryByte. */
-      void memoryChanged(unsigned int address, unsigned int value);
-      void registerChanged(unsigned int register, unsigned int value);
+      void memoryChanged(unsigned int address, unsigned int value, ParseNode *pc);
+      void registerChanged(unsigned int register, unsigned int value, ParseNode *pc);
       void pcChanged(ParseNode *pc);
 
    private:

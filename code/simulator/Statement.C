@@ -115,6 +115,7 @@ void Instruction::InitializeInstructionMap() {
    insert(new Ori());
    insert(new Rem());
    insert(new Remu());*/
+   insert(new Sub());
 
    // DataTransfer.H
    insert(new Li());

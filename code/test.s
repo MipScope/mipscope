@@ -1,6 +1,3 @@
-
-# "  " #
-
 main:
    jal test
    

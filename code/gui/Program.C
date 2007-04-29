@@ -11,6 +11,7 @@
 #include "Gui.H"
 #include "SyscallHandler.H"
 #include "RegisterView.H"
+#include "StackView.H"
 #include "ErrorConsole.H"
 #include "../simulator/Debugger.H"
 #include "../simulator/ParseList.H"
@@ -34,8 +35,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(s, SIGNAL(syscall(int,int)), this, SLOT(syscallReceived(int,int)));
    connect(s, SIGNAL(undoSyscall(int)), this, SLOT(undoSyscallReceived(int)));
    connect(s, SIGNAL(undoAvailabilityChanged(bool)), this, SLOT(undoAvailabilityChangeReceived(bool)));
-   connect(s, SIGNAL(memoryChanged(unsigned int, unsigned int)), this, SLOT(memoryChangeReceived(unsigned int, unsigned int)));
-   connect(s, SIGNAL(registerChanged(unsigned int, unsigned int)), this, SLOT(registerChangeReceived(unsigned int, unsigned int)));
+   connect(s, SIGNAL(memoryChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(memoryChangeReceived(unsigned int, unsigned int, ParseNode*)));
+   connect(s, SIGNAL(registerChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(registerChangeReceived(unsigned int, unsigned int, ParseNode*)));
    connect(s, SIGNAL(pcChanged(ParseNode*)), this, SLOT(pcChangeReceived(ParseNode*)));
    
    // Initialize relationship between Proxy and Debugger
@@ -60,7 +61,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
    connect(this, SIGNAL(pcChanged(ParseNode*)), m_parent, SLOT(pcChanged(ParseNode*)));
    connect(this, SIGNAL(programStatusChanged(int)), m_parent, SLOT(programStatusChanged(int)));
-   connect(this, SIGNAL(registerChanged(unsigned int, unsigned int, int)), m_gui, SLOT(registerChanged(unsigned int, unsigned int, int)));
+   connect(this, SIGNAL(registerChanged(unsigned int, unsigned int, int, ParseNode*)), m_gui, SLOT(registerChanged(unsigned int, unsigned int, int, ParseNode*)));
+   connect(this, SIGNAL(memoryChanged(unsigned int, unsigned int, ParseNode*)), m_gui, SLOT(memoryChanged(unsigned int, unsigned int, ParseNode*)));
 
    // TODO:  content changed during Pause textEditor->notifies Proxy
    
@@ -132,25 +134,33 @@ void Program::pcChangeReceived(ParseNode *pc) {
 //   if (pc != NULL)
 //      cerr << pc << ", " << getStatus() << endl;
    
-   if (m_current && getStatus() == PAUSED)
+   if (m_current && getStatus() == PAUSED && pc == getPC()) {
       pcChanged(pc);
+      m_gui->getStackView()->updateDisplay(getState(), PAUSED);
+   }
 }
 
-void Program::registerChangeReceived(unsigned int reg, unsigned int current) {
+void Program::registerChangeReceived(unsigned int reg, unsigned int current, ParseNode *pc) {
 //   cerr << "reg " << reg << " = " << current << endl;
 
    if (m_current)// && getStatus() == PAUSED)
-      registerChanged(reg, current, getStatus());
+      registerChanged(reg, current, getStatus(), pc);
 }
 
-void Program::memoryChangeReceived(unsigned int address, unsigned int value) {
+void Program::memoryChangeReceived(unsigned int address, unsigned int value, ParseNode *pc) {
    if (m_current && getStatus() == PAUSED)
-      memoryChanged(address, value);
+      memoryChanged(address, value, pc);
 }
 
 void Program::programStatusChangeReceived(int s) {
-   if (m_current)
+   if (m_current) {
       emit programStatusChanged(s);
+      
+      if (s != RUNNING) {
+         m_gui->getStackView()->updateDisplay(getState(), s);
+         m_gui->getRegisterView()->updateDisplay(s);
+      }
+   }
 }
 
 void Program::programTerminated(int reason) {
@@ -247,6 +257,8 @@ void Program::stepBackwardToTimestamp(TIMESTAMP stamp) {
 }
 
 void Program::jumpTo(const QTextBlock &b) {
+   // TODO!
+   
 //   if (m_current)
 //      m_debugger->jumpTo(b);
 }

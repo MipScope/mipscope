@@ -31,6 +31,7 @@ class QPaintEvent;
 class ParseNode;
 class QPainter;
 class QColor;
+class QResizeEvent;
 
 typedef map<int, int> LineToPosMap;
 typedef LineToPosMap::const_iterator LineToMapIterator;
@@ -133,7 +134,9 @@ class TextEditor : public QTextEdit {
       //virtual void contextMenuEvent(QContextMenuEvent *e);
       // @overridden to provide custom highlighting
       virtual void paintEvent(QPaintEvent *e);
-
+      
+      virtual void resizeEvent(QResizeEvent *e);
+      
       void highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height);
 };
 

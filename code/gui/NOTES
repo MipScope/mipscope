@@ -1,11 +1,12 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * Add MemoryView, StackView?
-   * Look into transparency & background images for widgets -- improve ExtendedView;
+   * Add MemoryView
    * QTextDocument::contentsChanged(int position, int charsRemoved, int charsAdded)  [signal]  -- activated before layout manager updates changes :)
    
-   * Clear button on OutputConsole
+   * Clear button on OutputConsole?
    * Tie Register WatchPoints into Debugger
+   * Add 'last modified by' to RegisterView (and last pc to StackView)
+   * Add 'Find and/or Replace' Dialog
 
 
 Highlighting a line of Text:

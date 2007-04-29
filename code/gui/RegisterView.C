@@ -81,7 +81,8 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
 
 class BackgroundWidget : public QWidget {
    public:
-      BackgroundWidget(QString path, QWidget *parent = NULL) : QWidget(parent) {
+      BackgroundWidget(QString path, RegisterPane *pane, QWidget *parent = NULL) : QWidget(parent), m_registerPane(pane) {
+         setMouseTracking(true);
          m_background = QImage(path);
          m_pixMap = QPixmap::fromImage(m_background);
          
@@ -94,6 +95,7 @@ class BackgroundWidget : public QWidget {
    protected:
       QPixmap m_pixMap;
       QImage m_background;
+      RegisterPane *m_registerPane;
       
       // @overridden
       void paintEvent(QPaintEvent *e) {
@@ -114,6 +116,9 @@ class BackgroundWidget : public QWidget {
          p.drawPixmap(r, m_pixMap);
       }
 
+      virtual void mousePressEvent(QMouseEvent *);
+      virtual void mouseReleaseEvent(QMouseEvent *);
+      virtual void mouseMoveEvent(QMouseEvent *);
 //      void resizeEvent(QResizeEvent *e) {
 //         QWidget::resizeEvent(e);
 //      }
@@ -190,6 +195,17 @@ void RegisterView::reset() {
 void RegisterPane::reset() {
    for(int i = NO_REGISTERS; i--;)
       m_registerLabels[i]->reset();
+   
+   m_extended->hide();
+}
+
+void BackgroundWidget::mousePressEvent(QMouseEvent *e) { e->ignore(); }
+void BackgroundWidget::mouseReleaseEvent(QMouseEvent *e) {
+   m_registerPane->testMousePress(e, e->pos());
+}
+
+void BackgroundWidget::mouseMoveEvent(QMouseEvent *e) {
+   m_registerPane->testMouseMove(e, e->pos());
 }
 
 void RegisterPane::leaveEvent(QEvent *e) {
@@ -198,56 +214,95 @@ void RegisterPane::leaveEvent(QEvent *e) {
 }
 
 void RegisterPane::testMouseMove(QMouseEvent *e, const QPoint &pos) {
+   unsigned int bestDist = 999999999;
+   RegisterLabel *best = NULL;
+   
    for(int i = NO_REGISTERS; i--;) {
-      if (m_registerLabels[i]->geometry().contains(pos)) {
+      QRect r = m_registerLabels[i]->geometry();
+      if (r.contains(pos)) {
          m_registerLabels[i]->testMouseMove(e, pos);
          break;
       }
+      const QPoint &center = r.center();
+      unsigned int dist = pos.x() - center.x();
+      dist *= dist;
+      unsigned int distY = pos.y() - center.y();distY *= distY;
+      dist += distY;
+      if (dist < bestDist) {
+         bestDist = dist;
+         best = m_registerLabels[i];
+      }
+      
       ValueLabel *v = m_registerLabels[i]->getValueLabel();
 
-      if (v->geometry().contains(pos)) {
+      r = v->geometry();
+      if (r.contains(pos)) {
          v->testMouseMove(e, pos);
          break;
       }
+
+      const QPoint &center2 = r.center();
+      dist = pos.x() - center2.x();
+      dist *= dist;
+      distY = pos.y() - center2.y();distY *= distY;
+      dist += distY;
+      if (dist < bestDist) {
+         bestDist = dist;
+         best = v;
+      }
    }
+
+   if (best != NULL)
+      best->testMouseMove(e, pos);
 }
 
 void RegisterPane::testMousePress(QMouseEvent *e, const QPoint &pos) {
    for(int i = NO_REGISTERS; i--;) {
       if (m_registerLabels[i]->geometry().contains(pos)) {
-         m_registerLabels[i]->mousePressed(e, pos);
+         m_registerLabels[i]->clicked(e, pos);
          break;
       }
       ValueLabel *v = m_registerLabels[i]->getValueLabel();
 
       if (v->geometry().contains(pos)) {
-         v->mousePressed(e, pos);
+         v->clicked(e, pos);
          break;
       }
    }
 }
 
 void RegisterLabel::testMouseMove(QMouseEvent *e, const QPoint &parentPos) {
-   m_lastPos = parentPos;
+//   m_lastPos = parentPos;
 
-   m_time->restart();
+   //m_time->restart();
 
    e->accept();
-   checkForExtended();
+
+   showExtended(parentPos);//, true);
+   //checkForExtended();
 //   QTimer::singleShot(REGISTER_HOVER_DELAY + 1, this, SLOT(checkForExtended()));
 }
 
-void RegisterLabel::mousePressed(QMouseEvent *e, const QPoint &parentPos) {
+void RegisterLabel::clicked(QMouseEvent *e, const QPoint &parentPos) {
    handleClick(e);
 }
 
+//void RegisterLabel::mousePressed(QMouseEvent *e, const QPoint &parentPos) {
+//   handleClick(e);
+//}
+
 // Updates display of modified register
-void RegisterView::registerChanged(unsigned int reg, unsigned int value, int status) {
+void RegisterView::registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc) {
 //   assert(reg < register_count);
    
    m_registerPane->m_registerLabels[reg]->setValue(value);
    if (status == PAUSED)
       m_registerPane->m_registerLabels[reg]->updateDisplay();
+}
+
+void RegisterView::updateDisplay(int state) {
+   if (state == STOPPED)
+      reset();
 }
 
 void RegisterView::updateDisplay() {
@@ -265,8 +320,8 @@ void RegisterPane::displayTypeChanged() {
 }
 
 RegisterLabel::RegisterLabel(RegisterPane *regPane) 
-   : QLabel(), m_parent(regPane), m_isInside(false), 
-   m_time(new QTime())
+   : QLabel(), m_parent(regPane), m_isInside(false)
+   //m_time(new QTime())
 {
    setMouseTracking(true);
    
@@ -286,35 +341,35 @@ RegisterLabel::RegisterLabel(RegisterPane *regPane)
    QWidget::setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
-void RegisterLabel::mousePressEvent(QMouseEvent *e) { e->ignore(); }
-void RegisterLabel::mouseReleaseEvent(QMouseEvent *e) {
-   if (rect().contains(e->pos())) {
+//void RegisterLabel::mousePressEvent(QMouseEvent *e) { e->ignore(); }
+/*void RegisterLabel::mouseReleaseEvent(QMouseEvent *e) {
+//   if (rect().contains(e->pos())) {
       handleClick(e);
       e->accept();
-   } else e->ignore();
-}
+//   } else e->ignore();
+}*/
 
-void RegisterLabel::checkForExtended() {
+/*void RegisterLabel::checkForExtended() {
 //   int ms = m_time->elapsed();
 //   cerr << m_isInside <<  " ms " << ms << endl;
    
-   if (!m_isInside) {
-      if (!m_parent->m_extended->isVisible())// || m_parent->m_extended->m_orig == this)
-         return;
-   }
+   //if (!m_isInside) {
+      //if (!m_parent->m_extended->isVisible())// || m_parent->m_extended->m_orig == this)
+         //return;
+   //}
    
    //if (ms >= REGISTER_HOVER_DELAY) {
       showExtended(m_lastPos, true);
       
       m_time->restart();
    //}
-}
+}*/
 
 void RegisterLabel::mouseMoveEvent(QMouseEvent *e) {
    testMouseMove(e, mapToParent(e->pos()));
 }
 
-void RegisterLabel::enterEvent(QEvent *e) {
+/*void RegisterLabel::enterEvent(QEvent *e) {
    m_time->restart();
    m_isInside = true;
    e->accept();
@@ -325,7 +380,7 @@ void RegisterLabel::leaveEvent(QEvent *e) {
    
    m_time->restart();
    e->accept();
-}
+}*/
 
 IDLabel::IDLabel(RegisterPane *regPane, unsigned int id) 
    : RegisterLabel(regPane), m_register(id), m_value(0), 
@@ -414,23 +469,19 @@ void IDLabel::handleClick(QMouseEvent *e) {
    // TODO: actually set watchpoint in debugger
 }
 
-void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel *v) {
-   QPoint p2 = p;
+void IDLabel::showExtended(const QPoint &p) {//, bool alreadyAdjusted, RegisterLabel *v) {
+/*   QPoint p2 = p;
    if (!alreadyAdjusted)
       p2 = mapToParent(p);
 
    if (v == NULL)
-      v = this;
+      v = this;*/
 
 /*   if (m_parent->m_extended->m_orig == this || m_parent->m_extended->m_orig == v) {
       m_parent->m_extended->move(p2);
       return;
    }*/
 
-//#define STYLE_LEFT   "style=\"clear: both;float: left; width: 40%;\""
-//#define STYLE_RIGHT  "style=\"float: left;width: 60%;padding-left: 2px;" 
-   //
-   //"border: 1px dotted #99BB57;\""
    QString alias = getRegisterText(m_register, D_ALIAS);
    QString regName = ((m_register >= 32) ? 
       QString("<b>%1</b>").arg(alias) : 
@@ -468,7 +519,7 @@ void IDLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel 
          "<li "STYLE_LEFT">Unsigned</li><li "STYLE_RIGHT">%5</li>"*/
       //"</ul>"
    
-   m_parent->showExtended(p2, mText, v);
+   m_parent->showExtended(p, mText, this);
 }
 
 ValueLabel *IDLabel::getValueLabel() {
@@ -486,9 +537,8 @@ void ValueLabel::handleClick(QMouseEvent *e) {
    m_idLabel->handleClick(e);
 }
 
-void ValueLabel::showExtended(const QPoint &p, bool alreadyAdjusted, RegisterLabel *v) {
-   v = NULL;
-   m_idLabel->showExtended(p, true || alreadyAdjusted, this);
+void ValueLabel::showExtended(const QPoint &p) {
+   m_idLabel->showExtended(p);//, true || alreadyAdjusted, this);
 }
 
 void ValueLabel::setValue(unsigned int newValue) {

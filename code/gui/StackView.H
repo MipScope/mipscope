@@ -1,0 +1,77 @@
+/* ---------------------------------------------- *\
+   file: StackView.H
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 4/29/2007
+\* ---------------------------------------------- */
+#ifndef __STACK_VIEW_H__
+#define __STACK_VIEW_H__
+
+#include "Utilities.H"
+#include <QDockWidget>
+#include <QTextEdit>
+#include <QVector>
+#include <QPixmap>
+#include <QImage>
+#include <QHash>
+
+typedef QHash<unsigned int, ParseNode*> ModifedMap;
+typedef ModifedMap::iterator ModifedMapIterator;
+
+class Gui;
+class EditorPane;
+class State;
+class ParseNode;
+class CustomTextEdit;
+class QFont;
+class QPaintEvent;
+
+class StackView : public QDockWidget {
+
+   Q_OBJECT
+   
+   public:
+      StackView(Gui *parent, EditorPane *editorPane);
+      
+      void updateDisplay(State *s, int state);
+      
+   public slots:
+      void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc);
+      void memoryChanged(unsigned int address, unsigned int value, ParseNode *pc);
+      
+   private slots:
+      void reset();
+      
+      // Keeps the console's font in sync w/ that of the EditorPane
+      void fontChanged(const QFont &newFont);
+      
+   protected:
+      QVector<int> m_stack; // values on the stack
+      
+      Gui *m_gui;
+      EditorPane *m_editorPane;
+      
+      CustomTextEdit *m_display;
+      bool m_dirty;
+      unsigned int m_sp; // current (always) value of stack pointer register
+      
+      // Keeps track of which ParseNode is responsible for last modifying 
+      // a specific memory address
+      ModifedMap m_modifiedMap;
+};
+
+class CustomTextEdit : public QTextEdit {
+   public:
+      CustomTextEdit(StackView *parent, const QString &background);
+
+   protected:
+      StackView *m_stackView;
+      QPixmap m_pixMap;
+      QImage m_background;
+
+      // @overridden
+      virtual void paintEvent(QPaintEvent *e);
+};
+
+#endif // __STACK_VIEW_H__
+

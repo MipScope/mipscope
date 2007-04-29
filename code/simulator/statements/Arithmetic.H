@@ -13,7 +13,8 @@
 #include "../State.H"
 #include "../StateException.H"
 
-#include <cmath>
+//#include <cmath>  // want to keep as cross-platform and portable as possible..
+#define fabs(x)  ((signed)(x) >= 0 ? (signed)(x) : -(signed)(x))
 
 // ----------------------------------
 // Instruction add $dest, $src1
@@ -161,9 +162,9 @@ class And : public Instruction {
       // @overridden from Statement
       
       virtual const char *getName() const { return "and"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Stores in $dest the result of AND'ing the bits of $src1 and &lt;src3&gt;.";
+         return "Stores in $dest the result of AND'ing the bits of $src1 and &lt;src2&gt;.";
       }
 };
 
@@ -281,7 +282,7 @@ class Div : public Instruction {
           * div $dest, $src1, $src2 -- store $src1 / $src2 in $dest
           */
          
-         int numerator, denominator, dest;
+         int numerator, denominator;
          if (m_args->noArgs() == 2) {
             numerator = m_args->getValue(s, 0);
             denominator = m_args->getValue(s, 1);
@@ -366,7 +367,7 @@ class Mult : public Instruction {
 
 
 // ----------------------------------
-// Instruction Mult $src1, src2
+// Instruction Multu $src1, src2
 // ----------------------------------
 class Multu : public Instruction {
    public:
@@ -431,9 +432,9 @@ class Mul : public Instruction {
       }
 };
 
-// ----------------------------------
-// Instruction Mul $dest, $src1, src2
-// ----------------------------------
+// -----------------------------------
+// Instruction Mulo $dest, $src1, src2
+// -----------------------------------
 class Mulo : public Mul {
    public:
       Mulo(StatementArgList *args = NULL) : Mul(args) { }
@@ -462,9 +463,9 @@ class Mulo : public Mul {
       }
 };
 
-// ----------------------------------
-// Instruction Mul $dest, $src1, src2
-// ----------------------------------
+// -----------------------------------
+// Instruction mulou $dest, $src1, src2
+// -----------------------------------
 class Mulou : public Mul {
    public:
       Mulou(StatementArgList *args = NULL) : Mul(args) { }
@@ -493,9 +494,9 @@ class Mulou : public Mul {
       }
 };
 
-// ----------------------------------
-// Instruction Sub $dest, $src1, src2
-// ----------------------------------
+// -----------------------------------
+// Instruction madd $src1, $src2
+// -----------------------------------
 class Madd : public Instruction {
    public:
       Madd(StatementArgList *args = NULL) : Instruction(args) { }
@@ -516,11 +517,10 @@ class Madd : public Instruction {
          long long int sum = (((long long int) s->getRegister(hi)) << 32) + s->getRegister(lo);
          sum += val1 * val2;
          s->setRegister(hi, (unsigned)( sum >> 32 ));
-         s->setRegister(lo, (unsigned)( sum << 32 ) >> 32);
+         s->setRegister(lo, ((unsigned long long int)( sum << 32 )) >> 32);
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "madd"; }
       virtual const char *getSyntax() const { return "$src1, $src2"; }
       virtual const char *getDescription() const {
@@ -555,9 +555,9 @@ class Sub : public Instruction {
       // @overridden from Statement
       
       virtual const char *getName() const { return "sub"; }
-      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Subtracts $src2 from $src1, storing the result in $dest.";
+         return "Subtracts &lt;src2&gt; from $src1, storing the result in $dest.";
       }
 };
 

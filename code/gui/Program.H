@@ -65,8 +65,8 @@ class Program : public QObject {
       
       // only when debugger is paused
       void pcChangeReceived(ParseNode *pc);
-      void registerChangeReceived(unsigned int reg, unsigned int current);
-      void memoryChangeReceived(unsigned int address, unsigned int value);
+      void registerChangeReceived(unsigned int reg, unsigned int current, ParseNode *pc);
+      void memoryChangeReceived(unsigned int address, unsigned int value, ParseNode *pc);
       
       void programStatusChangeReceived(int s);
       // called whenever Debugger thread exits
@@ -89,8 +89,8 @@ class Program : public QObject {
       void undoAvailabilityChanged(bool isAvailable);
       
       void pcChanged(ParseNode *pc);
-      void registerChanged(unsigned int register, unsigned int current, int status);
-      void memoryChanged(unsigned int address, unsigned int value);
+      void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc);
+      void memoryChanged(unsigned int address, unsigned int value, ParseNode *pc);
       
       // emitted upon run, pause, stop of Debugger
       void programStatusChanged(int s);

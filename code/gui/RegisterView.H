@@ -28,7 +28,9 @@ class RegisterPane;
 class QTime;
 class QPixmap;
 class ExtendedView;
+class ParseNode;
 class RegisterOptionsPane;
+class BackgroundWidget;
 extern QString getNoInBase(unsigned int no, int base);
 extern QString getRegisterText(int register, int displayType);
 
@@ -42,6 +44,7 @@ class RegisterView : public QDockWidget {
       RegisterView(Gui *parent, EditorPane *editorPane);
    
       void displayTypeChanged();
+      void updateDisplay(int state);
       
    public slots:
       // Clears all registers
@@ -51,7 +54,7 @@ class RegisterView : public QDockWidget {
       void updateDisplay();
       
       // Updates display of modified register
-      void registerChanged(unsigned int reg, unsigned int value, int status);
+      void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc);
       
    protected:
       Gui *m_gui;
@@ -86,13 +89,12 @@ class RegisterPane : public QWidget {
       // View tab contains a 9x12 QGridLayout of RegViewLabels (generic)
       IDLabel *m_registerLabels[NO_REGISTERS];
       QRect m_bounds;
-      QWidget *m_widget;
+      BackgroundWidget *m_widget;
       ExtendedView *m_extended;
       
       // @override
+//      virtual void leaveEvent(QEvent *);
       virtual void leaveEvent(QEvent *);
-      //virtual QSize sizeHint() const;
-      //virtual QSize minimumSize() const;
 };
 
 // View of Value of a label
@@ -104,27 +106,28 @@ class RegisterLabel : public QLabel {
       RegisterLabel(RegisterPane *regPane);
       
       virtual void handleClick(QMouseEvent *e) = 0;
-      virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL) = 0;
+      virtual void showExtended(const QPoint &p) = 0;//, bool alreadyAdjusted = false, RegisterLabel *v = NULL) = 0;
       virtual void testMouseMove(QMouseEvent *e, const QPoint &parentPos);
-      void mousePressed(QMouseEvent *e, const QPoint &parentPos);
+      //void mousePressed(QMouseEvent *e, const QPoint &parentPos);
+      void clicked(QMouseEvent *e, const QPoint &pos);
       
-   protected slots:
-      void checkForExtended();
+//   protected slots:
+//      void checkForExtended();
    
    protected:
       RegisterPane *m_parent;
 
       // Pertaining to detection of extended popup info
       bool m_isInside;
-      QTime *m_time;
-      QPoint m_lastPos;
+      //QTime *m_time;
+      //QPoint m_lastPos;
       
       // @overridden mouse hover/click detection
-      virtual void mousePressEvent(QMouseEvent *);
-      virtual void mouseReleaseEvent(QMouseEvent *);
+      //virtual void mousePressEvent(QMouseEvent *);
+      //virtual void mouseReleaseEvent(QMouseEvent *);
       virtual void mouseMoveEvent(QMouseEvent *);
-      virtual void enterEvent(QEvent *);
-      virtual void leaveEvent(QEvent *);
+      //virtual void enterEvent(QEvent *);
+      //virtual void leaveEvent(QEvent *);*/
 };
 
 class ValueLabel;
@@ -139,7 +142,7 @@ class IDLabel : public RegisterLabel {
       
       void reset();
       void handleClick(QMouseEvent *e);
-      void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
+      void showExtended(const QPoint &p);//, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
       void setValue(unsigned int value);
       
       QPixmap merge(const QPixmap *pix, const QString &txt);
@@ -176,7 +179,7 @@ class ValueLabel : public RegisterLabel {
       ValueLabel(RegisterPane *regVew, IDLabel *idLabel);
       
       virtual void handleClick(QMouseEvent *e);
-      virtual void showExtended(const QPoint &p, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
+      virtual void showExtended(const QPoint &p);//, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
       void setValue(unsigned int newValue);
       
    protected:
@@ -191,7 +194,7 @@ class ExtendedView : public QLabel {
       ExtendedView(RegisterPane *regPane, QWidget *parent);
        
       void show(const QString &text, const QString &statusText, const QPoint &pos, RegisterLabel *orig);
-
+      
       // @overridden
       virtual void mousePressEvent(QMouseEvent*);
       virtual void mouseMoveEvent(QMouseEvent *);

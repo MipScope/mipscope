@@ -27,7 +27,7 @@ void State::setMemoryWord(unsigned int address, unsigned int value) {
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, address, m_memory[address]));
    
    m_memory[address] = value;
-   memoryChanged(address, value);
+   memoryChanged(address, value, m_pc);
 }
 
 void State::setMemoryByte(unsigned int address, unsigned char value) {
@@ -40,7 +40,7 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
 
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, aligned, m_memory[aligned]));
-   memoryChanged(aligned, result);
+   memoryChanged(aligned, result, m_pc);
 }
 
 unsigned int State::getMemoryWord(unsigned int address) const {
@@ -110,7 +110,7 @@ void State::setRegister(int reg, unsigned int value) {
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
       m_undoList.push_back(new RegisterChangedAction(m_currentTimestamp, reg, m_registers[reg]));
    m_registers[reg] = value;
-   registerChanged((unsigned)reg, value);
+   registerChanged((unsigned)reg, value, m_pc);
 }
 
 unsigned int State::getRegister(int reg) const {
@@ -138,6 +138,19 @@ void State::setPC(ParseNode* value) {
 
 ParseNode* State::getPC(void) const {
    return m_pc;	
+}
+
+void State::getStack(QVector<int> &stack) const {
+   unsigned int stackAddr = m_registers[sp];
+
+   stack.clear();
+   if (stackAddr > STACK_BASE_ADDRESS)
+      return;
+   
+//   unsigned int stackSize = STACK_BASE_ADDRESS - stackAddr;
+   for(unsigned int i = STACK_BASE_ADDRESS - 4; 
+         i >= stackAddr; i -= 4)
+      stack.push_back(getMemoryWord(i));
 }
 
 void State::getLastXInstructions(int no, QVector<ParseNode*> &instrs) const {
@@ -262,7 +275,7 @@ RegisterChangedAction::RegisterChangedAction(TIMESTAMP timestamp, unsigned int r
 
 void RegisterChangedAction::undo(State *s) {
    s->m_registers[m_register] = m_value;
-   s->registerChanged(m_register, m_value);
+   s->registerChanged(m_register, m_value, s->m_pc);
    //cerr << "Reg " << registerAliases[m_register] << " -> " << m_value << endl;
 }
 
@@ -272,7 +285,7 @@ MemoryChangedAction::MemoryChangedAction(TIMESTAMP timestamp, unsigned int addre
 
 void MemoryChangedAction::undo(State *s) {
    s->m_memory[m_address] = m_value;
-   s->memoryChanged(m_address, m_value);
+   s->memoryChanged(m_address, m_value, s->m_pc);
    
    //cerr << "Mem " << m_address << " -> " << m_value << endl;
 }

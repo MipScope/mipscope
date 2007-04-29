@@ -315,7 +315,9 @@ void TextEditor::pcChanged(ParseNode *pc) {
    }
    
    m_parent->updateLineNumbers(0);
-   m_program->getLastXInstructions(3, m_lastInstructions);
+   // the 2 can be changed according to preferences later
+   // just be sure to also change the fading factors in paintEvent.
+   m_program->getLastXInstructions(2, m_lastInstructions);
    viewport()->update();
 }
 
@@ -345,11 +347,10 @@ void TextEditor::paintEvent(QPaintEvent *e) {
       QColor highlightColor = QColor(255, 240, 117); // yellow
       highlightLine(p, m_pc, highlightColor, width, height);
       
-      highlightColor = highlightColor.lighter(105);
+//      highlightColor = highlightColor.lighter(105);
 //      cerr << "<<<Painting: size = " << m_lastInstructions.size() << endl;
-      
       foreach(ParseNode *parseNode, m_lastInstructions) {
-         highlightColor = highlightColor.lighter(115);
+         highlightColor = highlightColor.lighter(120);
          if (highlightColor == Qt::white) {
             //cerr << "\t" << i << " painted!\n";
             break;
@@ -365,6 +366,13 @@ void TextEditor::paintEvent(QPaintEvent *e) {
    //setTabStopWidth(4 * QFontMetrics(f).width(' '));
    
    QTextEdit::paintEvent(e);
+}
+
+void TextEditor::resizeEvent(QResizeEvent *e) {
+   QTextEdit::resizeEvent(e);
+   
+   if (m_parent != NULL)
+      m_parent->updateLineNumbers(0);
 }
 
 void TextEditor::highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height) {

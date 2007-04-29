@@ -22,8 +22,8 @@ ErrorConsole::ErrorConsole(Gui *gui, EditorPane *editorPane)
    
    connect(browser, SIGNAL(anchorClicked(const QUrl&)), this, SLOT(anchorClicked(const QUrl&)));
 
-   //m_display->setAcceptRichText(true);
    m_display = browser;
+   m_display->setLineWrapMode(QTextEdit::NoWrap);
    setWidget(browser);
 }
 

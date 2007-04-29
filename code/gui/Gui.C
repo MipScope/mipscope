@@ -10,6 +10,7 @@
 #include "OutputConsole.H"
 #include "ErrorConsole.H"
 #include "RegisterView.H"
+#include "StackView.H"
 #include "DirectoryListing.H"
 #include "SyscallHandler.H"
 #include <QtGui>
@@ -234,6 +235,11 @@ void Gui::setupDockWidgets() {
    m_viewRegistersAction = m_registerView->toggleViewAction();
    m_viewRegistersAction->setIcon(QIcon(ICONS"/viewRegisters.png"));
    menu->addAction(m_viewRegistersAction);
+ 
+   m_stackView = new StackView(this, m_editorPane);
+   m_viewStackAction = m_stackView->toggleViewAction();
+   m_viewStackAction->setIcon(QIcon(ICONS"/viewStack.png"));
+   menu->addAction(m_viewStackAction);
 
    m_directorylisting = new DirectoryListing(this, m_editorPane);
    m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
@@ -242,6 +248,7 @@ void Gui::setupDockWidgets() {
 
    addDockWidget(Qt::BottomDockWidgetArea, m_output);
    addDockWidget(Qt::BottomDockWidgetArea, m_errors);
+   addDockWidget(Qt::RightDockWidgetArea, m_stackView);
    addDockWidget(Qt::RightDockWidgetArea, m_registerView);
    addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    tabifyDockWidget(m_output, m_errors);
@@ -275,8 +282,17 @@ RegisterView *Gui::getRegisterView() const {
    return m_registerView;
 }
 
+StackView *Gui::getStackView() const {
+   return m_stackView;
+}
+
 ErrorConsole *Gui::getErrorConsole() const {
    return m_errors;
+}
+
+// Returns the currently active (running) programing for debugging purposes
+TextEditor *Gui::getActiveProgram() const {
+   return (m_runningEditor == NULL ? m_editorPane->m_activeEditor : m_runningEditor);
 }
 
 // -----------------------
@@ -618,9 +634,16 @@ void Gui::validityChanged(bool isValid) {
 }
 
 // passes on to RegisterView
-void Gui::registerChanged(unsigned int reg, unsigned int value, int status) {
+void Gui::registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc) {
    if (m_registerView != NULL)
-      m_registerView->registerChanged(reg, value, status);
+      m_registerView->registerChanged(reg, value, status, pc);
+   if (m_stackView != NULL && reg == sp)
+      m_stackView->registerChanged(reg, value, status, pc);
+}
+
+// passes on to StackView
+void Gui::memoryChanged(unsigned int address, unsigned int value, ParseNode *pc) {
+   m_stackView->memoryChanged(address, value, pc);
 }
 
 void Gui::programUndoAvailabilityChanged(bool isAvailable) {

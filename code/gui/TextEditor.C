@@ -278,6 +278,10 @@ void TextEditor::toggleComment() {
    }
 }
 
+void TextEditor::clearLastInstructions() {
+   m_lastInstructions.clear();
+}
+
 void TextEditor::pcChanged(ParseNode *pc) {
    ParseNode *old = m_pc;
 //   cerr << "\tpcChanged id:" << QThread::currentThreadId() << "\n";
@@ -311,6 +315,7 @@ void TextEditor::pcChanged(ParseNode *pc) {
    }
    
    m_parent->updateLineNumbers(0);
+   m_program->getLastXInstructions(3, m_lastInstructions);
    viewport()->update();
 }
 
@@ -330,20 +335,29 @@ void TextEditor::updateCursorPosition() {
 void TextEditor::paintEvent(QPaintEvent *e) {
    int width = viewport()->width(), height = fontMetrics().height();
    QRect cRect(0, cursorRect().y(), viewport()->width(), height);
+   const int cursorPos = textCursor().block().position();
    
    QPainter p(viewport());
    // good for highlighting line during paused execution:
    p.fillRect(cRect, QBrush(QColor(215, 227, 255)));
    
    if (m_pc != NULL && m_program->getStatus() == PAUSED) {
-      QTextCursor c = textCursor();
-      int pos = m_pc->getTextBlock()->position();
-      if (pos >= 0) {
-         c.setPosition(pos);
-
-         QRect r(0, cursorRect(c).y(), width, height);
-         //    255, 240, 117  -- yellow
-         p.fillRect(r, QBrush(QColor(255, 240, 117)));
+      QColor highlightColor = QColor(255, 240, 117); // yellow
+      highlightLine(p, m_pc, highlightColor, width, height);
+      
+      highlightColor = highlightColor.lighter(105);
+//      cerr << "<<<Painting: size = " << m_lastInstructions.size() << endl;
+      
+      foreach(ParseNode *parseNode, m_lastInstructions) {
+         highlightColor = highlightColor.lighter(115);
+         if (highlightColor == Qt::white) {
+            //cerr << "\t" << i << " painted!\n";
+            break;
+         }
+         
+         const QTextBlock *block = parseNode->getTextBlock();
+         if (block != NULL && parseNode != m_pc && cursorPos != block->position())
+            highlightLine(p, parseNode, highlightColor, width, height);
       }
    }
    
@@ -351,6 +365,22 @@ void TextEditor::paintEvent(QPaintEvent *e) {
    //setTabStopWidth(4 * QFontMetrics(f).width(' '));
    
    QTextEdit::paintEvent(e);
+}
+
+void TextEditor::highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height) {
+   const QTextBlock *block;
+   if (parseNode == NULL || ((block = parseNode->getTextBlock()) == NULL))
+      return;
+   
+   int pos = block->position();
+//   cerr << "\tPos = " << pos << ", block=" << block->text().toStdString() << endl;
+   if (pos >= 0) {
+      QTextCursor c = textCursor();
+      c.setPosition(pos);
+      
+      QRect r(0, cursorRect(c).y(), width, height);
+      p.fillRect(r, QBrush(color));
+   }
 }
 
 bool TextEditor::openFile(QFile *file) {

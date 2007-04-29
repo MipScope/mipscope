@@ -50,7 +50,10 @@ class State : public QObject {
       void undoLastInstruction();
       void undoUntilTimestamp(TIMESTAMP timestamp);
       TIMESTAMP getCurrentTimestamp(void) const;
-
+      
+      // convenience-method
+      void getLastXInstructions(int no, QVector<ParseNode*> &instrs) const;
+      
       // special
       void doSyscall(void);
       void assertEquals(int val1, int val2); // throws AssertionFailure
@@ -108,7 +111,7 @@ class PCChangedAction : public StateAction {
       PCChangedAction(State *s);
       
       void undo(State *s);
-   private:
+      
       ParseNode *m_oldPC;
 };
 

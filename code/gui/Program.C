@@ -93,9 +93,10 @@ State *Program::getState() const {
    return m_debugger->getState();
 }
 
-/*void Program::customEvent(QEvent *e) {
-//   if (e->type() == )
-}*/
+void Program::getLastXInstructions(int no, QVector<ParseNode*> &instrs) const
+{
+   getState()->getLastXInstructions(no, instrs);
+}
 
 // Slots outside of Debugger/Gui Relationship
 // ------------------------------------------
@@ -219,6 +220,7 @@ void Program::run() {
          return;
       }
       
+      m_parent->clearLastInstructions();
       updateSyntaxErrors(NULL);
       m_debugger->setParseList(m_parseList);
    }

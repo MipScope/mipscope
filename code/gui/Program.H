@@ -44,6 +44,7 @@ class Program : public QObject {
       ParseNode *getPC() const;
       State *getState() const;
       
+      void getLastXInstructions(int no, QVector<ParseNode*> &instrs) const;
 //      void customEvent(QEvent *e);
       
    protected:

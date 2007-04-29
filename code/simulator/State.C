@@ -140,6 +140,34 @@ ParseNode* State::getPC(void) const {
    return m_pc;	
 }
 
+void State::getLastXInstructions(int no, QVector<ParseNode*> &instrs) const {
+   instrs.clear();
+   if (no < 1 || m_undoList.isEmpty() || m_undoList.back() == NULL)
+      return;
+   
+//   cerr << "<<<getLast: cur = " << m_currentTimestamp << endl;
+   int index = m_undoList.indexOf(m_undoList.back());
+   if (index < 0)
+      return;
+   
+   do {
+      StateAction *action = m_undoList[index--];//*i;
+      if (action == NULL)
+         return;
+      
+      PCChangedAction *pcAction = NULL;
+      try { // see if we have a PCChangedAction
+         pcAction = dynamic_cast<PCChangedAction*>(action);
+      } catch(bad_alloc&) { }
+
+      if (pcAction != NULL) {
+         instrs.push_back(pcAction->m_oldPC);
+         if (--no <= 0)
+            return;
+      }
+   } while(index >= 0);
+}
+
 void State::undoLastInstruction() {
    undoUntilTimestamp(m_currentTimestamp - 1);
 }
@@ -204,7 +232,10 @@ void State::assertEquals(int val1, int val2) {
    if (val1 != val2) throw AssertionFailure(val1, val2);
 }
 
-StateAction::StateAction(TIMESTAMP timestamp) : m_timestamp(timestamp) { }
+StateAction::StateAction(TIMESTAMP timestamp)//, ParseNode *isPC) 
+   : m_timestamp(timestamp)//, m_isPCAction(isPC)
+{ }
+
 StateAction::~StateAction() { }
 
 SyscallAction::SyscallAction(TIMESTAMP timestamp, int syscallNo)

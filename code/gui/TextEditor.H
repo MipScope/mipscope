@@ -9,6 +9,7 @@
 #include <QTextEdit>
 #include <QMessageBox>
 #include <QLabel>
+#include <QVector>
 #include <QList>
 #include <map>
 using namespace std;
@@ -27,6 +28,9 @@ class QTextCharFormat;
 class QShortcut;
 class QContextMenuEvent;
 class QPaintEvent;
+class ParseNode;
+class QPainter;
+class QColor;
 
 typedef map<int, int> LineToPosMap;
 typedef LineToPosMap::const_iterator LineToMapIterator;
@@ -81,6 +85,8 @@ class TextEditor : public QTextEdit {
       void highlightLine(const QTextCursor &c, const QColor &color);
       //const QTextCharFormat &f);
       
+      void clearLastInstructions();
+      
 // returns actual filename of open file
       QString fileName() const;
       QFile *file() const { return m_file; }
@@ -116,14 +122,19 @@ class TextEditor : public QTextEdit {
       SyntaxHighlighter *m_syntaxHighligher;
       QList<ExtraSelection> m_highlighted;
       LineToPosMap m_lineToPosMap;
+      
+      // Debugging and program-Related
       Program *m_program; // proxy to Debugger and ParseList
       ParseNode *m_pc;
+      QVector<ParseNode*> m_lastInstructions;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);
       //virtual void contextMenuEvent(QContextMenuEvent *e);
       // @overridden to provide custom highlighting
       virtual void paintEvent(QPaintEvent *e);
+
+      void highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height);
 };
 
 class SyntaxTip : public QLabel {

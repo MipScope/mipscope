@@ -22,6 +22,8 @@
 
 string _tab;
 
+extern bool VERBOSE;
+
 ParseList *Parser::parseDocument(QTextDocument *document) {
    ParseList *parseList = new ParseList(document);
    vector<ParseNode*> parseNodes;
@@ -66,7 +68,7 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
 ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    QString text = b->text().simplified(); // removed leading/trailing whitespace
    
-   cerr << "Parsing line: " << text.toStdString() << endl;
+   if (VERBOSE) cerr << "Parsing line: " << text.toStdString() << endl;
    string orig = _tab;
    _tab += "   ";
    
@@ -87,11 +89,11 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
       text.truncate(commentIndex);
       text = text.simplified();
       
-      cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
+      if (VERBOSE) cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
    }
    
    if (text == "") {
-      cerr << _tab << "Recognized as blank or comment\n";
+      if (VERBOSE) cerr << _tab << "Recognized as blank or comment\n";
       _tab = orig;
       return new ParseNode(b);
    }
@@ -167,7 +169,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
       return p;
    }
    
-   cerr << _tab << "Parsing instr: " << text.toStdString() << endl;
+   if (VERBOSE) cerr << _tab << "Parsing instr: " << text.toStdString() << endl;
 
    index = text.indexOf(' ');
    QString instr = text.section(' ', 0, 0);
@@ -177,12 +179,12 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    // remove instr from text
    else text = text.remove(0, index + 1);
    
-   cerr << _tab << "Found instr: " << instr.toStdString() << "  '" << text.toStdString() << "'  is left" << endl;
+   if (VERBOSE) cerr << _tab << "Found instr: " << instr.toStdString() << "  '" << text.toStdString() << "'  is left" << endl;
 
    InstructionMapIterator i = instructionMap.find(instr);
 
    if (i == instructionMap.end()) {
-      cerr << "instr " << instr.toStdString() << " not found in map\n";
+      if (VERBOSE) cerr << "instr " << instr.toStdString() << " not found in map\n";
       PARSE_ERRORL(QString("'") + instr + QString("' is not a valid instruction."), text, instr.length());
    }
 
@@ -214,7 +216,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    }
    
    argList = new StatementArgList(args[0], args[1], args[2]);
-   cerr << _tab << "NoArgs: " << argList->noArgs() << endl;
+   if (VERBOSE) cerr << _tab << "NoArgs: " << argList->noArgs() << endl;
    Instruction *instrFactory = *i;
    
    if (instrFactory == NULL) {
@@ -278,8 +280,8 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
       reg = Parser::substring(text, regIndex + 0, 2);
    else reg = Parser::substring(text, regIndex + 0, 3);
 
-   cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
-   cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
+   if (VERBOSE) cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
+   if (VERBOSE) cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
    
    int registerNo = -1;
    // determine which $r register
@@ -310,7 +312,7 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    }
    
    // at this point, should know register number
-   cerr << _tab << "Register: " << registerNo << " \t $" << registerAliases[registerNo] << "\n";
+   if (VERBOSE) cerr << _tab << "Register: " << registerNo << " \t $" << registerAliases[registerNo] << "\n";
    
    // --------------------
    // Test for dereference
@@ -373,7 +375,7 @@ AddressIdentifier *Parser::parseLabelWithOffset(QString text, ParseList *list) {
    QString labelStr = text.remove(index, len - index);
    QString immediate = orig2.remove(0, index + 1);
 
-   cerr << _tab << "Parsing Labelw/Offset: label = '" << labelStr.toStdString() << "' \timm = '" << immediate.toStdString() << "'\n";
+   if (VERBOSE) cerr << _tab << "Parsing Labelw/Offset: label = '" << labelStr.toStdString() << "' \timm = '" << immediate.toStdString() << "'\n";
    
    ImmediateIdentifier *imm = Parser::parseImmediate(QString(immediate), list);
    if (imm == NULL) {
@@ -437,7 +439,7 @@ AddressIdentifier *Parser::parseLabel(QString text) {
       return NULL;
    }
    
-   cerr << _tab << "Found Label: " << text.toStdString() << endl;
+   if (VERBOSE) cerr << _tab << "Found Label: " << text.toStdString() << endl;
 
    _tab = orig;
    // don't yet know corresponding ParseNode*
@@ -470,9 +472,9 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
    
    // includes hex and binary conversion :)
    if (okay) {// text was parsed as a valid int, according to the c-language!
-      cerr << _tab << "Found Immediate: " << value;
+      if (VERBOSE) cerr << _tab << "Found Immediate: " << value;
       if (pasted)
-         cerr << "  (from const '" << copy.toStdString() << "')";
+         if (VERBOSE) cerr << "  (from const '" << copy.toStdString() << "')";
       cerr << endl;
 
       _tab = orig;
@@ -532,7 +534,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
    string orig = _tab;
    _tab += "   ";
    
-   cerr << _tab << "Parsing directive: '" << text.toStdString() << "'\n";
+   if (VERBOSE) cerr << _tab << "Parsing directive: '" << text.toStdString() << "'\n";
    if (text[0] != QChar('.'))
       PARSE_ERROR(QString("error parsing directive"), text);
    
@@ -561,7 +563,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
             AddressIdentifier *symbol = parseLabel(text);
 
             if (symbol != NULL) {
-               cerr << _tab << "Found global symbol '" << symbol->getID().toStdString() << "'\n";
+               if (VERBOSE) cerr << _tab << "Found global symbol '" << symbol->getID().toStdString() << "'\n";
 
                directive = new GlobalDirective(symbol);
             }
@@ -584,10 +586,12 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                offset = imm->getValue();
             }
             
-            cerr << _tab << "Found directive '" << directives[type];
-            if (offset >= 0)
-               cerr << "' with offset/value of '" << offset;
-            cerr << "'\n";
+            if (VERBOSE) {
+               cerr << _tab << "Found directive '" << directives[type];
+               if (offset >= 0)
+                  cerr << "' with offset/value of '" << offset;
+               cerr << "'\n";
+            }
             
             if (type == DATA)
                directive = new DataDirective(offset);
@@ -655,7 +659,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                PARSE_ERRORL(QString("unrecognized character(s) following string"), text, text.length());
             
             text = text.left(strIndex);
-            cerr << _tab << "Found String: '" << text.toStdString() << "'\n";
+            if (VERBOSE) cerr << _tab << "Found String: '" << text.toStdString() << "'\n";
             
             if (type == ASCII)
                directive = new AsciiDirective(text);
@@ -682,7 +686,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                      
                      int value = imm->getValue();
                      
-                     cerr << _tab << "Reserving " << "1" << " '" << directives[type] << "' with initial value '" << value << "'\n";
+                     if (VERBOSE) cerr << _tab << "Reserving " << "1" << " '" << directives[type] << "' with initial value '" << value << "'\n";
                      
                      if (type == BYTE)
                         directive = new ByteDirective(value);
@@ -694,7 +698,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                      int noValues = 1;
                      int j = 0;
                      while((j = text.indexOf(',', j)) >= 0) { ++j; ++noValues; }
-                     cerr << _tab << noValues << " values found:\n";
+                     if (VERBOSE) cerr << _tab << noValues << " values found:\n";
                      vector<int> values;
                      int i = 0;
                      
@@ -720,7 +724,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                                     directives[type]), text, text.length());
                      }
                      
-                     cerr << _tab << "Reserving " << values.size() << " '" << directives[type] << "'s with values listed\n";
+                     if (VERBOSE) cerr << _tab << "Reserving " << values.size() << " '" << directives[type] << "'s with values listed\n";
                      
                      if (type == BYTE)
                         directive = new ByteDirective(values);
@@ -744,7 +748,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                                  directives[type]), sizeStr, sizeStr.length());
                   }
                   
-                  cerr << _tab << "Reserving " << size << " '" << directives[type] << "'s with value '" << value << "'\n";
+                  if (VERBOSE) cerr << _tab << "Reserving " << size << " '" << directives[type] << "'s with value '" << value << "'\n";
                   
                   if (type == BYTE)
                      directive = new ByteDirective(value, size);
@@ -782,7 +786,7 @@ ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier
     string orig = _tab;
    _tab += "   ";
    
-   cerr << _tab << "Parsing constant: '" << text.toStdString() << "'\n";
+   if (VERBOSE) cerr << _tab << "Parsing constant: '" << text.toStdString() << "'\n";
    
    // TODO!
    QString labelStr = substring(text, 0, equalsIndex).simplified();
@@ -797,7 +801,7 @@ ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier
       PARSE_ERRORL(QString("invalid value assigned to '%1'").arg(labelStr), valueStr, valueStr.length());
    
    const QString &id = name->getID();
-   cerr << _tab << "Const found: " << id.toStdString() << " = " << imm->getValue() << endl;
+   if (VERBOSE) cerr << _tab << "Const found: " << id.toStdString() << " = " << imm->getValue() << endl;
    if (list->m_preProcessorMap.contains(id))
       PARSE_ERRORL(QString("multiple declarations of const '%1'").arg(name->getID()), labelStr, labelStr.length());
    

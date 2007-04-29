@@ -234,7 +234,7 @@ void State::reset() {
 // does the OS action depending on what's in $v0
 void State::doSyscall(void) {
    int syscallNo = getRegister(v0);
-   cerr << "\t\tSyscall called v0 = " << syscallNo << ", a0 = " << getRegister(a0) << endl;
+   if (VERBOSE) cerr << "\t\tSyscall called v0 = " << syscallNo << ", a0 = " << getRegister(a0) << endl;
    
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
       m_undoList.push_back(new SyscallAction(m_currentTimestamp, syscallNo));

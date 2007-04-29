@@ -9,6 +9,8 @@ class ParseNode;
 class ParseList;
 class StateAction;
 
+extern bool VERBOSE;
+
 class State : public QObject {
    Q_OBJECT
 

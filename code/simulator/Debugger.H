@@ -12,6 +12,8 @@
 class ParseList;
 class State;
 
+extern bool VERBOSE;
+
 /* The Debugger class is the interface to the debugger. It's a normal QObject,
  * and uses signals and slots to communicate with the GUI. 
  * 

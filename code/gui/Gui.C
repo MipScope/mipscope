@@ -357,7 +357,7 @@ const char *ABOUT_TEXT =
    "Written by:"
    "<ul>"
       "<li><a href=\"mailto:fisch0920@gmail.com\">Travis Fischer</a> (tfischer)</li>"
-      "<li><a href=\"mailto:timodonnell@gmail.com\">Tim O'Donnell</a> (tim)</li>"
+      "<li><a href=\"mailto:tim@cs.brown.edu\">Tim O'Donnell</a> (tim)</li>"
    "</ul>"
 "</html>";
 

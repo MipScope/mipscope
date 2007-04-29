@@ -43,7 +43,7 @@ void Debugger::programPause(void) {
 }
 
 void Debugger::programRun(void) {
-   cerr << "Debugger::programRun()\n";
+   if (VERBOSE) cerr << "Debugger::programRun()\n";
 
    if (getStatus() != RUNNING) {
       setStatus(RUNNING);
@@ -72,7 +72,7 @@ void Debugger::runAnotherStep(void) {
    //   return;
    if (m_state->getPC() == NULL) {
       setStatus(STOPPED);
-      cerr << "<<< Program COMPLETED: " << (void*)m_state->getPC() << endl;
+      if (VERBOSE) cerr << "<<< Program COMPLETED: " << (void*)m_state->getPC() << endl;
       m_terminationReason = T_COMPLETED;
       return;
    }
@@ -94,7 +94,7 @@ bool Debugger::checkProgramCompleted() {
    if (programCompleted) {
       setStatus(STOPPED);
       m_terminationReason = T_COMPLETED;
-      cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
+      if (VERBOSE) cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
       return true;
    }
    
@@ -108,7 +108,7 @@ bool Debugger::waitOnDebuggerThread(unsigned long timeout) {
 //private
 void Debugger::executionInit(void) {
    
-   cerr << "Debugger::run\n";
+   if (VERBOSE) cerr << "Debugger::run\n";
 
    if (!m_parseList->isValid()) {
       cerr << "Debugger: parseList isn't valid.\n";
@@ -153,7 +153,7 @@ void Debugger::run(void) {
    executionInit();   
    
    // let's run!
-   cerr << "Debugger::run: now executing the program.\n";
+   if (VERBOSE) cerr << "Debugger::run: now executing the program.\n";
    
    m_terminationReason = T_TERMINATED;
    while (getStatus() != STOPPED) {
@@ -167,11 +167,11 @@ void Debugger::run(void) {
          m_terminationReason = T_COMPLETED;
          break;
       }
-      cerr << "\tExecuting: " << m_state->getPC() << endl;
+      if (VERBOSE) cerr << "\tExecuting: " << m_state->getPC() << endl;
 
       // Check for a breakpoint
       if (m_state->getPC()->containsBreakPoint()) {
-         cerr << ">>> BREAKPOINT\n";
+         if (VERBOSE) cerr << ">>> BREAKPOINT\n";
 
          setStatus(PAUSED);
          waitOnStatus(PAUSED);
@@ -203,7 +203,7 @@ void Debugger::setStatusConditionally(int status) {
     
     if (m_status != status) {
        m_status = status;
-       cerr << "Debugger::emitting status: " << status << endl;
+       if (VERBOSE) cerr << "Debugger::emitting status: " << status << endl;
        emit programStatusChanged(status);
     }
     

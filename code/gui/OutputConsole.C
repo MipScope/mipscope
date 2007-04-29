@@ -4,6 +4,9 @@
    acct: tfischer, tim
    date: 4/18/2007
 \* ---------------------------------------------- */
+
+#include <iostream>
+
 #include "OutputConsole.H"
 #include "Utilities.H"
 #include "EditorPane.H"
@@ -32,6 +35,9 @@ void OutputConsole::push(const QString &newOutput) {
       m_first = false;
       m_gui->ensureVisibility(this);
    }
+   
+   // write it out to the console too
+   cout << newOutput.toStdString()  ;
 }
 
 void OutputConsole::pop() {

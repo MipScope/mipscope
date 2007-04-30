@@ -64,7 +64,7 @@ class TextEditor : public QTextEdit {
       QMessageBox::StandardButton saveAs();
       // proxy for document()->isModified()
       bool isModified() const;
-
+      
       void setModifiable(bool isModifiable);
 
       // Utility methods
@@ -78,6 +78,9 @@ class TextEditor : public QTextEdit {
       int currentLineNumber() const;
       int noLines() const; // returns the total number of lines
       void gotoLine(int); // moves text cursor to given line, scrolling editor if necessary
+      
+      QTextDocument *getTextDocument() const;
+      void changeTextCursor(const QTextCursor &cursor);
       
       // Returns the QTextBlock pertaining to the given line number
       // Returns NULL if the given line number is invalid
@@ -94,6 +97,9 @@ class TextEditor : public QTextEdit {
 
    signals:
       void jumpTo(const QTextBlock&); // Jump PC to given text block
+
+      // called whenever the modifiability of this texteditor is changed
+      void updateModifiability(bool isCurrentlyModifiable);
       
    private slots:
       void codeChanged();

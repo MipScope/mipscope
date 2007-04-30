@@ -11,6 +11,7 @@
 #include "ErrorConsole.H"
 #include "RegisterView.H"
 #include "StackView.H"
+#include "FindDialog.H"
 #include "DirectoryListing.H"
 #include "SyscallHandler.H"
 #include <QtGui>
@@ -54,7 +55,11 @@ void Gui::setupGui() {
    
    QPalette palette(qApp->palette());
    palette.setColor(QPalette::Highlight, QColor(157, 187, 227));//180, 201, 233));
+   palette.setColor(QPalette::Window, QColor(239, 239, 239));
    qApp->setPalette(palette);
+   m_originalFont = qApp->font();
+//   m_guiFont = QFont("tahoma", 12);
+//   qApp->setFont(m_guiFont);
    
    setupActions();
    setCentralWidget(m_lineNoPane);
@@ -152,6 +157,12 @@ void Gui::setupEditActions() {
    menu->addSeparator();
    tb->addSeparator();
 
+   m_editFindAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editFind.png"), tr("&Find.."), this), m_editorPane, SLOT(find()), QKeySequence(tr("CTRL+F")), true);
+   m_editReplaceAction = addAction(tb, menu, new QAction(/*QIcon(ICONS"/editReplace.png"), */tr("&Replace.."), this), m_editorPane, SLOT(findAndReplace()), QKeySequence(tr("CTRL+R")), true);  // TODO: find suitable editReplace icon
+ 
+   menu->addSeparator();
+   tb->addSeparator();
+   
    m_editSelectAllAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editSelectAll.png"), tr("&Select All"), this), m_editorPane, SLOT(selectAll()), QKeySequence(tr("CTRL+A")), true);
    m_editToggleCommentAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editToggleComment.png"), tr("&Toggle Comment"), this), m_editorPane, SLOT(toggleComment()), QKeySequence(tr("CTRL+D")), true);
    m_editGotoLineAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editGotoLine.png"), tr("&Goto Line.."), this), m_editorPane, SLOT(gotoLine()), QKeySequence(tr("CTRL+G")), true);
@@ -163,6 +174,8 @@ void Gui::setupEditActions() {
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editPasteAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editSelectAllAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editToggleCommentAction, SLOT(setEnabled(bool)));
+   //connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editReplaceAction, SLOT(setEnabled(bool)));
+   connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editorPane->m_findDialog, SLOT(setModifiable(bool)));
    
    connect(m_editorPane, SIGNAL(undoAvailabile(bool)), m_editUndoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(redoAvailabile(bool)), m_editRedoAction, SLOT(setEnabled(bool)));
@@ -345,7 +358,8 @@ void Gui::closeEvent(QCloseEvent *event) {
 
 const char *ABOUT_TEXT = 
 "<html>"
-   "<span style=\"font-size:17pt;font-weight:bold\">"PROJECT_NAME"</span>"
+   "<span style=\"font-size: 17pt;font-family: arial;font-weight:bold\">"PROJECT_NAME"</span>"
+   "<span style=\"font-size: 12pt;font-family: arial;\">"
    "<p>"PROJECT_NAME" is a full-featured <c>MIPS</c> development environment aimed at students who are learning assembly for the first time.</p>"
    "<p>In addition to common features found in traditional IDEs, "PROJECT_NAME" includes a visual, reversible debugger which allows the user to edit code during a program run and see the aggregate results <b>without re-running their program</b>.</p>"
    "<br>"
@@ -358,7 +372,7 @@ const char *ABOUT_TEXT =
    "<ul>"
       "<li><a href=\"mailto:fisch0920@gmail.com\">Travis Fischer</a> (tfischer)</li>"
       "<li><a href=\"mailto:tim@cs.brown.edu\">Tim O'Donnell</a> (tim)</li>"
-   "</ul>"
+   "</ul></span>"
 "</html>";
 
 void Gui::aboutMipScope() {

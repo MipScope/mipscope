@@ -6,6 +6,8 @@
 \* ---------------------------------------------- */
 #ifndef __REGISTER_VIEW_H__
 #define __REGISTER_VIEW_H__
+
+#include "Utilities.H"
 #include <QDockWidget>
 #include <QLabel>
 
@@ -13,7 +15,6 @@
 #define NO_REGISTERS    (32 + 3)
 #define EXTENDED_FADE_INTERVAL   (33)
 #define EXTENDED_FADE_DURATION   (EXTENDED_FADE_INTERVAL * 10)
-
 
 extern const char *const registerAliases[];
 extern QPixmap *watchPoint;
@@ -40,6 +41,7 @@ class RegisterView : public QDockWidget {
    
    public:
       friend class RegisterOptionsPane;
+      friend class IDLabel;
       
       RegisterView(Gui *parent, EditorPane *editorPane);
    
@@ -116,9 +118,8 @@ class RegisterLabel : public QLabel {
    
    protected:
       RegisterPane *m_parent;
-
+      
       // Pertaining to detection of extended popup info
-      bool m_isInside;
       //QTime *m_time;
       //QPoint m_lastPos;
       
@@ -143,7 +144,7 @@ class IDLabel : public RegisterLabel {
       void reset();
       void handleClick(QMouseEvent *e);
       void showExtended(const QPoint &p);//, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
-      void setValue(unsigned int value);
+      void setValue(unsigned int value, ParseNode *pc = NULL);
       
       QPixmap merge(const QPixmap *pix, const QString &txt);
       ValueLabel *getValueLabel();
@@ -158,9 +159,8 @@ class IDLabel : public RegisterLabel {
       ValueLabel *m_valueLabel;
       bool m_watchPoint;
 
-
-      // etwas for who last changed register
-
+      // who was last to modify this register
+      ParseNode *m_lastModified;
 };
 
 enum IDDisplay { D_REGISTER, D_ALIAS };

@@ -8,11 +8,8 @@
 #include "Utilities.H"
 #include "EditorPane.H"
 #include "Gui.H"
+#include "../simulator/ParseNode.H"
 #include <QtGui>
-
-// TODO:  Make ExtendedView movement smooth
-// Better Colors for register text
-// 
 
 const char *const registerAliases[] = {
    "r0", "at",       // $r0-1
@@ -295,7 +292,7 @@ void RegisterLabel::clicked(QMouseEvent *e, const QPoint &parentPos) {
 void RegisterView::registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc) {
 //   assert(reg < register_count);
    
-   m_registerPane->m_registerLabels[reg]->setValue(value);
+   m_registerPane->m_registerLabels[reg]->setValue(value, pc);
    if (status == PAUSED)
       m_registerPane->m_registerLabels[reg]->updateDisplay();
 }
@@ -320,8 +317,7 @@ void RegisterPane::displayTypeChanged() {
 }
 
 RegisterLabel::RegisterLabel(RegisterPane *regPane) 
-   : QLabel(), m_parent(regPane), m_isInside(false)
-   //m_time(new QTime())
+   : QLabel(), m_parent(regPane)
 {
    setMouseTracking(true);
    
@@ -385,7 +381,7 @@ void RegisterLabel::leaveEvent(QEvent *e) {
 IDLabel::IDLabel(RegisterPane *regPane, unsigned int id) 
    : RegisterLabel(regPane), m_register(id), m_value(0), 
    m_valueLabel(new ValueLabel(regPane, this)), 
-   m_watchPoint(false)
+   m_watchPoint(false), m_lastModified(NULL)
 {
    //QFont f = font();
    QPalette pal = palette();
@@ -401,12 +397,14 @@ IDLabel::IDLabel(RegisterPane *regPane, unsigned int id)
 }
 
 void IDLabel::reset() {
-   m_watchPoint = false;
+   m_watchPoint   = false;
+   m_lastModified = NULL;
    setValue(0);
 }
 
-void IDLabel::setValue(unsigned int value) {
+void IDLabel::setValue(unsigned int value, ParseNode *pc) {
    m_value = value;
+   m_lastModified = pc;
    //updateDisplay();
 }
 
@@ -507,7 +505,15 @@ void IDLabel::showExtended(const QPoint &p) {//, bool alreadyAdjusted, RegisterL
       if (three != four)
          mText += QString("<br>UDecimal: %1").arg(four);
    }
-
+   
+   // Display the line which is responsible for setting 
+   // the value currently in this register.
+   TextEditor *active = NULL;
+   if (m_lastModified != NULL && m_lastModified->isValid() && m_lastModified->getTextBlock() != NULL && (active = m_parent->m_parent->m_gui->getActiveProgram()) != NULL) {
+      mText += QString("<br>"
+                       "(Set by line <i>%1</i>)").arg(active->lineNumber(*m_lastModified->getTextBlock()));
+   }
+   
    mText += QString("</pre>");
    /*
       QString("");

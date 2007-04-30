@@ -67,6 +67,7 @@ void TextEditor::setupEditor(QFont *font) {
    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_parent, SLOT(updateLineNumbers(int)));
    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), m_syntaxTip, SLOT(editorScrolled(int)));
 //   connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
+   connect(this, SIGNAL(updateModifiability(bool)), m_parent, SLOT(modifiabilityChanged(bool)));
    connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
    
    //modifiabilityChanged(m_parent->isModifiable());
@@ -577,6 +578,8 @@ void TextEditor::modifiabilityChanged(bool isModifiable) {
 void TextEditor::setModifiable(bool isModifiable) {
    setReadOnly(!isModifiable);
    resetTabText(m_modified);
+
+   updateModifiability(isModifiable);
 }
 
 bool TextEditor::isModifiable() const {
@@ -830,6 +833,17 @@ void TextEditor::gotoLine(int lineNo) {
    delete b;
    setTextCursor(c);
    ensureCursorVisible();
+}
+
+void TextEditor::changeTextCursor(const QTextCursor &cursor) {
+   if (!cursor.isNull() && cursor.position() >= 0) {
+      setTextCursor(cursor);
+      ensureCursorVisible();
+   }
+}
+
+QTextDocument *TextEditor::getTextDocument() const {
+   return document();
 }
 
 void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {

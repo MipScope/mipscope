@@ -9,11 +9,12 @@
 #include "SyntaxHighlighter.H"
 #include "LineNoPane.H"
 #include "TextEditor.H"
+#include "FindDialog.H"
 #include "Gui.H"
 #include "Utilities.H"
 #include <QtGui>
 
-EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_parent(parent), m_font(new QFont("Courier", 11)), m_modifiable(true)
+EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_parent(parent), m_font(new QFont("Courier", 11)), m_findDialog(new FindDialog(this)), m_modifiable(true)
 {
    m_font->setFixedPitch(true);
    m_activeEditor = new TextEditor(this, m_font);
@@ -339,6 +340,15 @@ void EditorPane::selectAll() {
    m_activeEditor->selectAll();
 }
 
+void EditorPane::find() {
+   m_findDialog->show(false, m_activeEditor->textCursor().hasSelection());
+}
+
+void EditorPane::findAndReplace() {
+   m_findDialog->show(true, m_activeEditor->textCursor().hasSelection());
+}
+
+
 // Proxy signals from active TextEditor to Gui
 // -------------------------------------------
 void EditorPane::copyAvailabilityModified(bool isAvailable) {
@@ -366,6 +376,10 @@ void EditorPane::setModifiable(bool modifiable) {
    
    // alert all listeners of change in read-only status
    isModifiable(modifiable);
+}
+// called whenever the modifiability of a texteditor is changed
+void EditorPane::modifiabilityChanged(bool isModifiable) {
+   setModifiable(isModifiable);
 }
 
 void EditorPane::updateLineNumbers(int val) {

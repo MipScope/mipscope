@@ -15,6 +15,8 @@
 #include <QImage>
 #include <QHash>
 
+class ParseNode;
+// For keeping track of the last line to modify: register/memory/stack
 typedef QHash<unsigned int, ParseNode*> ModifedMap;
 typedef ModifedMap::iterator ModifedMapIterator;
 

@@ -28,6 +28,7 @@ class TextEditor;
 class DirectoryListing;
 class SyscallListener;
 class ParseNode;
+class QFont;
 
 class Gui : public QMainWindow {
    
@@ -118,6 +119,8 @@ class Gui : public QMainWindow {
               *m_editSelectAllAction, 
               *m_editToggleCommentAction, 
               *m_editGotoLineAction, 
+              *m_editFindAction, 
+              *m_editReplaceAction, 
               
               // Debugger-Related
               *m_debugRunAction, 
@@ -143,6 +146,9 @@ class Gui : public QMainWindow {
       RegisterView *m_registerView;
       StackView *m_stackView;
       DirectoryListing *m_directorylisting;
+      
+      QFont m_guiFont;
+      QFont m_originalFont;
       
       //@overridden
       void closeEvent(QCloseEvent *event);

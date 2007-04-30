@@ -2,13 +2,12 @@
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView
    * QTextDocument::contentsChanged(int position, int charsRemoved, int charsAdded)  [signal]  -- activated before layout manager updates changes :)
-   
-   * Clear button on OutputConsole?
    * Tie Register WatchPoints into Debugger
-   * Add 'last modified by' to RegisterView (and last pc to StackView)
    * Add 'Find and/or Replace' Dialog
    * Incorporate Template into TextEditor for quickly beginning new projects (template.s)
 
+   * Clear button on OutputConsole?
+   * Add 'last pc' to StackView?
 
 Highlighting a line of Text:
    QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )

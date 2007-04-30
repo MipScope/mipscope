@@ -20,18 +20,20 @@ class LineNoPane;
 class LineNoDisplay;
 class Gui;
 class ErrorConsole;
+class FindDialog;
 
 class EditorPane : public QTabWidget {
    
    Q_OBJECT
    
-   public: // yeah for good design :)
+   public: // yeah for good design :)  Huzzah!
       friend class Gui;
       friend class EditorContextMenu;
       friend class TextEditor;
       friend class LineNoDisplay;
       friend class LineNo;
       friend class ErrorConsole;
+      friend class FindDialog;
       
       EditorPane(Gui *parent, const char *fileName = NULL);
 	   virtual ~EditorPane(void);
@@ -70,6 +72,8 @@ class EditorPane : public QTabWidget {
       void toggleComment();
       void selectAll();
       void resetModified();
+      // called whenever the modifiability of a texteditor is changed
+      void modifiabilityChanged(bool isModifiable);
       
       // Proxy slots for active TextEditor
       void cut();
@@ -82,6 +86,9 @@ class EditorPane : public QTabWidget {
       void redoAvailabilityModified(bool);
       void copyAvailabilityModified(bool);
       
+      void find();
+      void findAndReplace();
+      
       // Context-menu related
       void contextMenuRequested(const QPoint & pos);
       void newBlankTabAction();
@@ -90,6 +97,7 @@ class EditorPane : public QTabWidget {
       void closeOtherTabsAction();
       void closeAction();
       
+      
    protected:
       TextEditor *m_activeEditor;
       SyntaxHighlighter *m_highlighter;
@@ -97,6 +105,7 @@ class EditorPane : public QTabWidget {
       Gui *m_parent;
       LineNoDisplay *m_lineNoDisplay;
       QFont *m_font; // font used by all TextEditors
+      FindDialog *m_findDialog;
       
       bool m_modifiable; // opposite of being read-only
       void setModifiable(bool);

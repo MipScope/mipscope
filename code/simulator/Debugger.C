@@ -26,7 +26,7 @@ State *Debugger::getState() {
 }
 
 void Debugger::threadTerminated(void) {
-   cerr << "Debugger::threadTerminated\n";
+   if (VERBOSE) cerr << "Debugger::threadTerminated\n";
    
    emit programStatusChanged(STOPPED);
    if (m_terminationReason != T_COMPLETED && m_terminationReason != T_TERMINATED)
@@ -183,16 +183,16 @@ void Debugger::run(void) {
       runAnotherStep();
    }
    
-   cerr << "Debugger::end of run(); terminationReason = " << m_terminationReason << endl;
+   if (VERBOSE) cerr << "Debugger::end of run(); terminationReason = " << m_terminationReason << endl;
 }
 
 void Debugger::setStatus(int status) {
    QMutexLocker locker(&m_statusMutex);
    
    m_status = status;
-   cerr << "Debugger emitting status: " << 
-      (status == STOPPED ? "stopped" : 
-       (status == PAUSED ? "paused" : "running")) << endl;
+   if (VERBOSE) cerr << "Debugger emitting status: " << 
+               (status == STOPPED ? "stopped" : 
+               (status == PAUSED ? "paused" : "running")) << endl;
    emit programStatusChanged(status);
    
    m_statusChangedWaitCondition.wakeAll();

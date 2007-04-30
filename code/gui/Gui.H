@@ -15,6 +15,7 @@
 
 class QMenu;
 class QAction;
+class QStringList;
 class EditorPane;
 class QCloseEvent;
 class QAction;
@@ -35,7 +36,7 @@ class Gui : public QMainWindow {
    Q_OBJECT
    
    public:
-      Gui(int argc, char **argv);
+      Gui(QStringList args);
 	   virtual ~Gui(void);
       
       void ensureVisibility(QDockWidget *widget);

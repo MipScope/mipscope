@@ -54,7 +54,9 @@ class SyscallListener : public QObject {
  * and provide it with a valid SyscallListener.
  *
  */
-class SyscallHandler {
+class SyscallHandler : public QObject{
+   
+   Q_OBJECT
    
    public:
       // Initializes and registers this SyscallHandler with the given SyscallListener

@@ -472,14 +472,16 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
    
    // includes hex and binary conversion :)
    if (okay) {// text was parsed as a valid int, according to the c-language!
-      if (VERBOSE) cerr << _tab << "Found Immediate: " << value;
-      if (pasted)
-         if (VERBOSE) cerr << "  (from const '" << copy.toStdString() << "')";
-      cerr << endl;
+      if (VERBOSE) {
+         cerr << _tab << "Found Immediate: " << value;
+         if (pasted)
+            if (VERBOSE) cerr << "  (from const '" << copy.toStdString() << "')";
+         cerr << endl;
+      }
 
       _tab = orig;
       return new ImmediateIdentifier(text, value);
-   } else cerr << _tab << "Invalid immediate: '" << text.toStdString() << "'\n";
+   } else if (VERBOSE) cerr << _tab << "Invalid immediate: '" << text.toStdString() << "'\n";
    
    _tab = orig;
    return NULL;

@@ -6,8 +6,13 @@
 \* ---------------------------------------------- */
 #ifndef __OUTPUT_CONSOLE_H__
 #define __OUTPUT_CONSOLE_H__
+
+#include <QObject>
+
 #include "Console.H"
 #include "SyscallHandler.H"
+
+
 
 class Gui;
 class EditorPane;
@@ -71,6 +76,21 @@ class ClearOutputAction : public OutputAction {
    protected:
       QVector<QString> *m_strings;
 };
+
+class TextOutputConsole : public SyscallHandler
+{
+   Q_OBJECT
+   
+   public:
+      
+      TextOutputConsole(SyscallListener* listener);
+     
+      // @overridden from SyscallHandler
+      virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
+      virtual void undoSyscall(int);
+      virtual void reset(void);
+};
+
 
 #endif // __OUTPUT_CONSOLE_H__
 

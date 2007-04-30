@@ -14,6 +14,8 @@
 #include "Utilities.H"
 #include <QtGui>
 
+#include <iostream>
+
 EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_parent(parent), m_font(new QFont("Courier", 11)), m_findDialog(new FindDialog(this)), m_modifiable(true)
 {
    m_font->setFixedPitch(true);
@@ -70,7 +72,7 @@ void EditorPane::setActiveEditor(TextEditor *newlyActive) {
       QTabBar *tabbar = tabBar();
       tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    }
-   
+   cout << "THIS: " << this;
    m_activeEditor = newlyActive;
    setCurrentWidget(m_activeEditor);
   

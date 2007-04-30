@@ -16,7 +16,7 @@
 #include "SyscallHandler.H"
 #include <QtGui>
 
-Gui::Gui(int argc, char **argv) : QMainWindow(), 
+Gui::Gui(QStringList args) : QMainWindow(), 
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
@@ -24,22 +24,14 @@ Gui::Gui(int argc, char **argv) : QMainWindow(),
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
-   if (argc > 1) {
-      int i = 1;
-      
-      // load multiple files via the command-line
-      while(i < argc) {
-//         if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "-file")) {
-            //QString fileName(argv[++i]);
-            QString fileName(argv[i]);
-
-            if (!QFile::exists(fileName))
-               cerr << "Error loading file '" << argv[i] << "'\n";
-            else m_editorPane->openFile(fileName);
-//         }
-
-         ++i;
-      }
+   // TODO: THIS (SOMEWHERE DEEP IN THE BOWLS) SEG FAULTS WHEN GIVEN MORE THAN 1 FILE
+   // load files
+   args.removeFirst(); // first element is argv[0]
+   foreach (QString fileName, args) {
+      if (QFile::exists(fileName))
+         m_editorPane->openFile(fileName);
+      else
+         cerr << "Error loading file '" << fileName.toStdString() << "'\n";
    }
    
    setupGui();

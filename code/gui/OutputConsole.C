@@ -36,8 +36,7 @@ void OutputConsole::push(const QString &newOutput) {
       m_gui->ensureVisibility(this);
    }
    
-   // write it out to the console too
-   cout << newOutput.toStdString()  ;
+   
 }
 
 void OutputConsole::pop() {
@@ -104,6 +103,46 @@ void OutputConsole::setStrings(QVector<QString> *strings) {
    m_strings = QVector<QString>(*strings);
 }
 
+/* used in command-line mode */
+TextOutputConsole::TextOutputConsole(SyscallListener* listener) :
+     SyscallHandler(listener, S_PRINT, false) // false=we don't handle undo
+{
+   cout << "Welcome to "PROJECT_NAME"!\n\n";
+}
+
+
+void TextOutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
+   QString output;
+   
+   //cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;
+   
+   switch(syscallNo) {
+      case S_PRINT_INT:
+         output = QString::number(valueOfa0);
+         break;
+      case S_PRINT_STRING:
+         output = QString(s->getString(valueOfa0));
+         break;
+      case S_PRINT_CHAR:
+         output = QString::number((char)(valueOfa0 & 0xFF));
+         break;
+      case S_CLEAR_OUTPUT:
+      case S_PRINT_FLOAT:  // Unimplemented
+      case S_PRINT_DOUBLE:
+      default:
+         return;
+   }
+   
+   cout << output.toStdString();
+}
+
+// unimplemented:
+void TextOutputConsole::undoSyscall(int) {}
+void TextOutputConsole::reset() {}
+
+
+
+
 OutputAction::OutputAction(int syscallNo) : m_syscallNo(syscallNo) { }
 OutputAction::~OutputAction() { }
 
@@ -130,4 +169,6 @@ ClearOutputAction::~ClearOutputAction() {
 void ClearOutputAction::undo(OutputConsole *output) {
    output->setStrings(m_strings);
 }
+
+
 

@@ -72,7 +72,6 @@ void EditorPane::setActiveEditor(TextEditor *newlyActive) {
       QTabBar *tabbar = tabBar();
       tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    }
-   cout << "THIS: " << this;
    m_activeEditor = newlyActive;
    setCurrentWidget(m_activeEditor);
   

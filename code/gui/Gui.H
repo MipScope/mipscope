@@ -139,11 +139,11 @@ class Gui : public QMainWindow {
               *m_viewDirectoryListingAction;
       
       // Central EditorPane and Dockable Widgets
+      ErrorConsole *m_errors;
       EditorPane *m_editorPane;
       LineNoPane *m_lineNoPane;
       QStatusBar *m_statusBar;
       OutputConsole *m_output;
-      ErrorConsole *m_errors;
       RegisterView *m_registerView;
       StackView *m_stackView;
       DirectoryListing *m_directorylisting;

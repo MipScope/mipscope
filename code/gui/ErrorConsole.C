@@ -28,12 +28,13 @@ ErrorConsole::ErrorConsole(Gui *gui, EditorPane *editorPane)
 }
 
 void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool forceUpdate) {
-   if (s == NULL) {
+   if (s == NULL || editor == NULL) {
       reset();
       return;
    }
    
-   STATUS_BAR->showMessage(QString("Error: Program %1 contains %2 errors.").arg(m_editorPane->m_activeEditor->fileName(), QString::number(s->size())), STATUS_DELAY + 2000);
+   if (STATUS_BAR != NULL)
+      STATUS_BAR->showMessage(QString("Error: Program %1 contains %2 errors.").arg(m_editorPane->m_activeEditor->fileName(), QString::number(s->size())), STATUS_DELAY + 2000);
    m_activeEditor = editor;
    
    //m_strings.clear();

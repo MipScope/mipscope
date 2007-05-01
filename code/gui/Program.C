@@ -103,8 +103,9 @@ void Program::getLastXInstructions(int no, QVector<ParseNode*> &instrs) const
 // Slots outside of Debugger/Gui Relationship
 // ------------------------------------------
 void Program::currentChanged(TextEditor *cur) {
-   if ((m_current = (cur == m_parent)))
-      m_gui->getErrorConsole()->updateSyntaxErrors(m_syntaxErrors, m_parent, false);
+   ErrorConsole *err;
+   if ((m_current = (cur == m_parent)) && (err = m_gui->getErrorConsole()) != NULL)
+      err->updateSyntaxErrors(m_syntaxErrors, m_parent, false);
 }
 
 // TODO:  add contentChanged thing

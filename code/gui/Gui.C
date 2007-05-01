@@ -18,13 +18,12 @@
 
 Gui::Gui(QStringList args) : QMainWindow(), 
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
-   m_fileSaveAllAction(NULL), m_editorPane(new EditorPane(this)), 
+   m_fileSaveAllAction(NULL), m_errors(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
    m_runningEditor(NULL), m_restarted(false)
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
-   // TODO: THIS (SOMEWHERE DEEP IN THE BOWLS) SEG FAULTS WHEN GIVEN MORE THAN 1 FILE
    // load files
    args.removeFirst(); // first element is argv[0]
    foreach (QString fileName, args) {

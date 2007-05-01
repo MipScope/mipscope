@@ -44,10 +44,9 @@ int main(int argc, char** argv) {
          cerr << "Usage: " << args.at(0).toStdString() << " textFile" << endl;
          return 1;
       }
-            
+      
       TextGui ui(args);
       ui.executeProgram(&app);
-            
    }
    else {
       // use the full GUI

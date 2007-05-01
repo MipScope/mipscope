@@ -47,6 +47,14 @@ bool Statement::isDirective() {
    return (!isInstruction());
 }
 
+Directive   *Statement::getDirective(Statement *s) {
+   return dynamic_cast<Directive*>(s);
+}
+
+Instruction *Statement::getInstruction(Statement *s) {
+   return dynamic_cast<Instruction*>(s);
+}
+
 // ----------------------
 // Instruction Superclass
 // ----------------------

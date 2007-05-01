@@ -884,7 +884,16 @@ unsigned int Directive::getPreferredAlignment() const {
    return 0; // turn off automatic alignment
 }
 
+// specific subclasses override accordingly
 bool Directive::isAlign() const {
+   return false;
+}
+
+bool Directive::isData() const {
+   return false;
+}
+
+bool Directive::isText() const {
    return false;
 }
 

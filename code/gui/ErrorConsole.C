@@ -44,6 +44,9 @@ void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool 
       int lineNo = i->getLineNo();
       QString err;
       
+      if (lineNo < 0 && i->getTextBlock() != NULL)
+         i->setLineNo((lineNo = editor->lineNumber(*i->getTextBlock())));
+      
       if (lineNo >= 0)
          err = QString("<a href=\"%1\">%2</a>) %3<br>").arg(QString::number(lineNo), QString::number(lineNo), *i);
       else err = *i + QString("<br>");

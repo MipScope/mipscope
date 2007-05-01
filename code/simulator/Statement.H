@@ -26,7 +26,10 @@ class Statement {
       
       virtual bool isInstruction();
       virtual bool isDirective();
-
+      
+      static Directive   *getDirective(Statement *s);
+      static Instruction *getInstruction(Statement *s);
+      
    protected:
       unsigned int m_size; // in bytes  (4 for all instructions)
 };
@@ -71,7 +74,12 @@ class Directive : public Statement {
       static void InitializeDirectiveMap();
       
       virtual unsigned int getPreferredAlignment() const;
+      
+      // utility methods..
       virtual bool isAlign() const;
+      virtual bool isData() const;
+      virtual bool isText() const;
+      
       // Factory for creating more of this specific type of Directive
       //virtual Directive *create(unsigned int size = 0) const = 0;
       

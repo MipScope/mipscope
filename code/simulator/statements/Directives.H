@@ -77,6 +77,10 @@ class DataDirective : public Directive {
       virtual unsigned int getPreferredAlignment() const {
          return 2;
       }
+
+      virtual bool isData() const {
+         return true;
+      }
       
       // @overridden from Statement
       virtual const char *getName() const { return ".data"; }
@@ -100,6 +104,10 @@ class TextDirective : public Directive {
          return 2;
       }
 
+      virtual bool isText() const {
+         return true;
+      }
+      
       // @overridden from Statement
       virtual const char *getName() const { return ".text"; }
       virtual const char *getSyntax() const { return " &lt;address&gt;"; }

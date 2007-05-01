@@ -1,3 +1,8 @@
+	.data
+.asciiz "a string\n"
+
+	.text
+	
 main:
    jal test
    

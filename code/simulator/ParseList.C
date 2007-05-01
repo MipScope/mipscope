@@ -71,7 +71,7 @@ ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
 
 // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
 bool ParseList::isValid() const {
-   if (m_semanticErrors.size() > 0) {
+   /*if (m_semanticErrors.size() > 0) {
       cerr << m_semanticErrors.size() << " semantic errors remain!\n";
       foreach(ParseNodeList *l, m_semanticErrors.values()) {
          foreach(ParseNode *e, *l) {
@@ -97,18 +97,56 @@ bool ParseList::isValid() const {
       }
       ++i;
    }
+
+   return true;*/
    
-   return true;
+   return (getSyntaxErrors()->size() == 0);
 }
 
 SyntaxErrors *ParseList::getSyntaxErrors() const {
    SyntaxErrors *errors = new SyntaxErrors();
    
-   foreach(QString s, m_semanticErrors.keys()) {
-      foreach(ParseNode *e, *m_semanticErrors[s]) {
-         ParseError p(QString("Undefined reference to label '%1'").arg(s), s, s.length(), e->getTextBlock());
-         
-         errors->push_back(p);
+   if (m_semanticErrors.size() > 0) {
+      foreach(QString s, m_semanticErrors.keys()) {
+         foreach(ParseNode *e, *m_semanticErrors[s]) {
+            ParseError p(QString("Undefined reference to label '%1'").arg(s), s, s.length(), e->getTextBlock());
+
+            errors->push_back(p);
+         }
+      }
+   }
+
+   if (getEntryPoint() == NULL)
+      errors->push_back(ParseError(QString("Could not locate program entry point; Must define label '"MAIN"' or '"__START"'"), ""));
+   
+   // Ensure only instructions are in .text and data is in .data
+   enum SEGMENT { S_TEXT, S_DATA };
+
+   SEGMENT segment = S_TEXT; // text is the default
+   
+   int lineNo = 0;
+   for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next(), ++lineNo) {
+      ParseNode *p = ParseNode::Node(b);
+      Statement *s = NULL;
+      
+      if (p != NULL && p->isValid() && (s = p->getStatement()) != NULL) {
+         if (s->isDirective()) {
+            Directive *dir = Statement::getDirective(s);
+
+            if (dir->isData())
+               segment = S_DATA;
+            else if (dir->isText())
+               segment = S_TEXT;
+            else if (segment == S_TEXT) { // we have data in a .text section
+               ParseError parseError(QString("Data can only appear in a '.data' segment"), b.text(), b.text().length(), p->getTextBlock(), lineNo);
+               
+               errors->push_back(parseError);
+            }
+         } else if (s->isInstruction() && segment == S_DATA) {
+            ParseError parseError(QString("Text can only appear in a '.text' segment"), b.text(), b.text().length(), p->getTextBlock(), lineNo);
+
+            errors->push_back(parseError);
+         }
       }
    }
    
@@ -124,7 +162,7 @@ ParseNode *ParseList::getEntryPoint() const {
       return entryPoint;
    if (m_labelMap.contains(MAIN) && (entryPoint = m_labelMap[MAIN]->getParseNode()) != NULL && entryPoint->isValid())
       return entryPoint;
-
+  
    return NULL;
 }
 

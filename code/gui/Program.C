@@ -56,6 +56,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(this, SIGNAL(syscall(State*,int,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int,int)));
    connect(this, SIGNAL(undoSyscall(int)), m_gui->getSyscallListener(), SLOT(undoSyscall(int)));
    connect(this, SIGNAL(undoAvailabilityChanged(bool)), m_gui, SLOT(programUndoAvailabilityChanged(bool)));
+   connect(this, SIGNAL(validityChanged(bool)), m_gui, SLOT(validityChanged(bool)));
 
    // Initialize relationship between parent TextEditor and Proxy
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
@@ -64,8 +65,6 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(this, SIGNAL(registerChanged(unsigned int, unsigned int, int, ParseNode*)), m_gui, SLOT(registerChanged(unsigned int, unsigned int, int, ParseNode*)));
    connect(this, SIGNAL(memoryChanged(unsigned int, unsigned int, ParseNode*)), m_gui, SLOT(memoryChanged(unsigned int, unsigned int, ParseNode*)));
 
-   // TODO:  content changed during Pause textEditor->notifies Proxy
-   
    // Initialize relationship between EditorPane and Proxy
    connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(currentChanged(TextEditor*)));
 }
@@ -104,11 +103,14 @@ void Program::getLastXInstructions(int no, QVector<ParseNode*> &instrs) const
 // ------------------------------------------
 void Program::currentChanged(TextEditor *cur) {
    ErrorConsole *err;
+
+   // TODO:  make sure this m_current sheise is correct when active program
+   // possibly disable changing of program??  Or possibly.. multiple programs 
+   // running at once?!
+   
    if ((m_current = (cur == m_parent)) && (err = m_gui->getErrorConsole()) != NULL)
       err->updateSyntaxErrors(m_syntaxErrors, m_parent, false);
 }
-
-// TODO:  add contentChanged thing
 
 
 // --------------------------
@@ -155,6 +157,11 @@ void Program::memoryChangeReceived(unsigned int address, unsigned int value, Par
 
 void Program::programStatusChangeReceived(int s) {
    if (m_current) {
+      if (s == STOPPED) {
+         disconnect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
+         setRunnable(true);
+      }
+      
       emit programStatusChanged(s);
       
       if (s != RUNNING) {
@@ -191,7 +198,6 @@ void Program::programTerminated(int reason) {
    }
 }
 
-
 // --------------------------
 // Slots from Gui -> Debugger
 // --------------------------
@@ -225,7 +231,8 @@ void Program::run() {
          updateSyntaxErrors(new SyntaxErrors(e));
          return;
       }
-
+      
+      m_parseList->setInteractiveProgram(this);
       if (!m_parseList->isValid()) {
          updateSyntaxErrors(m_parseList->getSyntaxErrors());
          return;
@@ -234,6 +241,9 @@ void Program::run() {
       m_parent->clearLastInstructions();
       updateSyntaxErrors(NULL);
       m_debugger->setParseList(m_parseList);
+
+      // content changed during Pause textEditor->notifies Proxy
+      connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    }
    
    m_debugger->programRun();
@@ -262,5 +272,153 @@ void Program::jumpTo(const QTextBlock &b) {
    
 //   if (m_current)
 //      m_debugger->jumpTo(b);
+}
+
+void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
+   if (getStatus() == PAUSED) {
+      QTextDocument *doc = m_parent->getTextDocument();
+      
+      QTextCursor c = m_parent->textCursor();
+      int originalPosition = c.position();
+      c.setPosition(position);
+      //c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+      int affected = position + (charsRemoved > charsAdded ? charsRemoved : charsAdded);
+      int oldPosition;
+      TIMESTAMP newlyInsertedTimestamp = MAX_TIMESTAMP;
+      
+      // TODO:  make this affected area a tighter/exact bound!!
+      //    Add so every ParseNode knows about its text() and do a 
+      // diff, basically to see the changes..
+      
+      
+      cerr << "\n>>> CONTENTS CHANGED: " << charsRemoved << " removed; " << charsAdded << " added" << endl;
+      
+      //cerr << "Pos: " << position << "; " << doc->findBlock(position).text().toStdString() << endl;//",   after pos: " << c.selectedText().toStdString() << endl;
+      
+      do {
+         const QTextBlock &block = doc->findBlock(position);
+         ParseNode *modified = ParseNode::Node(block);
+         if (modified != NULL) {
+            // TODO:  check if it actually changed?
+            // add an equality operator to Statement*
+            const QString &newText = block.text();
+            
+            if (modified->getText() != newText) {
+               modified->setText(newText);
+               m_modified.push_back(modified);
+            }
+         } else {
+            cerr << "SPECIAL CASE: '" << block.text().toStdString() << "'\n";
+            
+            // Inserting a completely new text block; must roll back to the 
+            // minimum timestamp of the previous and next blocks
+            ParseNode *prev = ParseList::getClosestInstructionBefore(ParseNode::Node(block.previous()));
+            
+            if (prev != NULL) {
+               TIMESTAMP timestamp = prev->getFirstExecuted();
+               cerr << "prev timestamp = " << timestamp << endl;
+               
+               if (timestamp < newlyInsertedTimestamp)
+                  newlyInsertedTimestamp = timestamp + 1;
+            }
+            
+            ParseNode *next = ParseList::getClosestInstruction(ParseNode::Node(block.next()));
+            
+            if (next != NULL) {
+               TIMESTAMP timestamp = next->getFirstExecuted();
+               cerr << "next timestamp = " << timestamp << endl;
+               
+               if (timestamp < newlyInsertedTimestamp)
+                  newlyInsertedTimestamp = timestamp;
+            }
+
+            if (newlyInsertedTimestamp == MAX_TIMESTAMP) { // should never happen
+               
+               cerr << ">>> DEBUG THIS <<< Program::contentsChange shouldn't ever get here!\n";
+               
+               stop();
+               return;
+            }
+         }
+         
+         //else cerr << "\n\nErr: modified = NULL for block: '" << block.text().toStdString() << "'\n";
+         
+         c.movePosition(QTextCursor::NextBlock);
+         oldPosition = position;
+         position = c.position();
+      } while(position <= affected && position != oldPosition);
+      
+      // Update program State
+      if (!m_modified.empty() || newlyInsertedTimestamp < MAX_TIMESTAMP)
+         rollBackToEarliest(newlyInsertedTimestamp);
+      
+      // Update validity of program
+      try {
+         m_parseList->updateSyntacticValidity();
+      } catch(SyntaxErrors &e) {
+         cerr << "\tProgram is invalid; " << e.size() << " syntax errors\n";
+         c.setPosition(originalPosition);
+         m_parent->setTextCursor(c);
+         setRunnable(false);
+         updateSyntaxErrors(new SyntaxErrors(e));
+         
+         return;
+      }
+      
+      SyntaxErrors *semanticErrors = m_parseList->getSyntaxErrors();
+      if (semanticErrors != NULL && !semanticErrors->empty()) {
+         cerr << "\tProgram is invalid; " << semanticErrors->size() << " semantic errors\n";
+         c.setPosition(originalPosition);
+         m_parent->setTextCursor(c);
+         setRunnable(false);
+         updateSyntaxErrors(semanticErrors);
+         return;
+      }
+      
+      c.setPosition(originalPosition);
+      m_parent->setTextCursor(c);
+      setRunnable(true);
+      updateSyntaxErrors(NULL);
+      cerr << "Program is valid! Runnable = true\n";
+      setRunnable(true);
+   }
+}
+
+// called whenever a ParseNode is deleted during a pause in program execution
+// ..  necessary because QTextBlocks automatically delete their associated 
+// content .. must assure that ParseNode is never referenced in the Gui
+void Program::notifyParseNodeDeleted(ParseNode *wasDeleted) {
+   if (wasDeleted != NULL)
+      m_modified.push_back(wasDeleted);
+}
+
+void Program::rollBackToEarliest(TIMESTAMP earliest) {
+   TIMESTAMP original = getState()->getCurrentTimestamp();
+//   TIMESTAMP earliest = original + 1;
+   
+   // TODO:  test this very thoroughly
+   
+   cerr << "rollBackToEarliest: " << m_modified.size() << " modified\n";
+   
+   foreach(ParseNode *modified, m_modified) {
+      TIMESTAMP curTimestamp = modified->getFirstExecuted();
+      
+      if (curTimestamp != CLEAN_TIMESTAMP && curTimestamp < earliest)
+         earliest = curTimestamp;
+      
+      //cerr << "Looking at mod timestamp: " << curTimestamp << endl;
+      m_parseList->remove(modified);
+   }
+   
+   m_modified.clear();
+
+   if (earliest <= original) {
+      cerr << "<<<ROLLING BACK to " << earliest << endl;
+      
+      setRunnable(false);
+      if (earliest > 1)
+         m_debugger->programStepBackwardToTimestamp(earliest - 1);
+      else stop(); // rolled back past program entry point
+   }
 }
 

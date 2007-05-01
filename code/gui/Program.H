@@ -47,15 +47,22 @@ class Program : public QObject {
       void getLastXInstructions(int no, QVector<ParseNode*> &instrs) const;
 //      void customEvent(QEvent *e);
       
+      // called whenever a ParseNode is deleted during a pause in program execution
+      // ..  necessary because QTextBlocks automatically delete their associated 
+      // content .. must assure that ParseNode is never referenced in the Gui
+      void notifyParseNodeDeleted(ParseNode *wasDeleted);
+      
    protected:
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);
+      
+      void rollBackToEarliest(TIMESTAMP optionalTimestamp);
       
    private slots:
       // Slots outside of Debugger/Gui Relationship
       // ------------------------------------------
       void currentChanged(TextEditor*);
-      // TODO:  add contentChanged thing
+      void contentsChange(int position, int charsRemoved, int charsAdded);
    
       // Slots from Debugger -> Gui
       // --------------------------
@@ -110,6 +117,8 @@ class Program : public QObject {
       SyntaxErrors *m_syntaxErrors;
       ParseList *m_parseList;
       Debugger *m_debugger;
+
+      ParseNodeList m_modified;
 };
 
 #endif // __PROGRAM_H__

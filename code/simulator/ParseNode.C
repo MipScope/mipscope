@@ -1,30 +1,61 @@
+/* ---------------------------------------------- *\
+   file: ParseNode.C
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 4/21/2007
+\* ---------------------------------------------- */
 #include "ParseNode.H"
+#include "ParseList.H"
 #include "Identifier.H"
 #include "Statement.H"
 #include "State.H"
 #include "../gui/Utilities.H"
 #include <QTextBlock>
 
-ParseNode::ParseNode(QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)
-   : QTextBlockUserData(), m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_statement(statement), m_textBlock(textBlock), m_isSemanticallyValid(true)
+
+PlaceHolder::PlaceHolder(ParseNode *parent, QTextBlock *textBlock) 
+   : QTextBlockUserData(), m_parent(parent), m_textBlock(textBlock)
+{
+   if (m_textBlock != NULL)
+      m_textBlock->setUserData(this);
+}
+
+PlaceHolder::~PlaceHolder() {
+   m_parent->notifyDeleted();
+}
+
+ParseNode::ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)
+   : m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_parseList(parent), 
+   m_statement(statement), m_textBlock(textBlock), 
+   m_placeHolder(new PlaceHolder(this, textBlock)), m_isSemanticallyValid(true), 
+   m_text(textBlock == NULL ? "" : textBlock->text())
 {
 //   cerr << "<<< " << m_statement << ", '" << m_textBlock->text().toStdString() << "'\n";
    
-   if (m_label != NULL) {
+   if (m_label != NULL)
       m_label->setLabelParseNode(this);
-
+   
       //cerr << m_label->getID().toStdString() << " set (in constructor) to " << this << endl;
-   }
+}
 
-   if (m_textBlock != NULL)
-      m_textBlock->setUserData(this);
+void ParseNode::notifyDeleted() {
+   m_placeHolder = NULL;  // keep track that we were deleted
+   
+   // for editing-on-the-fly, have to know when a ParseNode gets deleted.. messy
+   cerr << "Deleting PlaceHolder!";
+   m_parseList->notifyParseNodeDeleted(this);
 }
 
 ParseNode *ParseNode::Node(const QTextBlock &b) {
    if (!b.isValid() || b.userData() == NULL)
       return NULL;
    
-   return static_cast<ParseNode*>(b.userData());
+   PlaceHolder *placeHolder = static_cast<PlaceHolder*>(b.userData());
+
+   if (placeHolder == NULL || placeHolder->m_parent->m_placeHolder == NULL)
+      return NULL;
+
+   return placeHolder->m_parent;
 }
 
 // initializes this ParseNode at the specified address, returning how many 
@@ -68,6 +99,10 @@ AddressIdentifier *ParseNode::getLabel() const {
    return m_label;
 }
 
+void ParseNode::setFirstExecuted(TIMESTAMP timestamp) {
+   m_firstExecuted = timestamp;
+}
+
 TIMESTAMP ParseNode::getFirstExecuted(void) const {
    return m_firstExecuted;
 }
@@ -87,15 +122,16 @@ ParseNode* ParseNode::getNext(void) const {
 //   cerr << ", " << (*m_textBlock == QTextBlock()) << endl;
 //   cerr << ", " << (m_textBlock->next() == QTextBlock()) << endl;
 //   cerr << m_textBlock->isValid() << endl;
-   if (m_textBlock->next() == QTextBlock() || !m_textBlock->next().isValid())
+   if (m_placeHolder == NULL || m_textBlock->next() == QTextBlock() || !m_textBlock->next().isValid())
       return NULL;
-
-   // ONLY thing causing segfault is m_textBlock->next()  even thought it IS valid
-
+   
    return ParseNode::Node(m_textBlock->next());
 }
 
 ParseNode* ParseNode::getPrevious(void) const {
+   if (m_placeHolder == NULL)
+      return NULL;
+
    return ParseNode::Node(m_textBlock->previous());
 }
 
@@ -130,10 +166,18 @@ void ParseNode::execute(State* state, ParseList* parseList) {
 
 bool ParseNode::isValid() const {
 //   cerr << m_textBlock << ", " << m_isSemanticallyValid << ", " << m_textBlock->isValid() << endl;
-   return (m_textBlock != NULL && m_isSemanticallyValid && m_textBlock->isValid());
+   return (m_placeHolder != NULL && m_textBlock != NULL && m_isSemanticallyValid && m_textBlock->isValid());
 }
 
 void ParseNode::setSemanticValidity(bool isValid) {
    m_isSemanticallyValid = isValid;
+}
+
+void ParseNode::setText(const QString &text) {
+   m_text = text;
+}
+
+QString ParseNode::getText() const {
+   return m_text;
 }
 

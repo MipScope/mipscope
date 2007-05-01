@@ -140,7 +140,9 @@ void Debugger::programStepBackward() {
    m_state->undoLastInstruction();
 }
 
-void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) { stamp=0;} // TODO
+void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) {
+   m_state->undoUntilTimestamp(stamp);
+}
 
 
 void Debugger::setParseList(ParseList *list) {

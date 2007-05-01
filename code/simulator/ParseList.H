@@ -8,6 +8,7 @@
 #define PARSELIST_H_
 #include "typedefs.H"
 #include "Parser.H"
+#include <QObject>
 #include <QHash>
 #include <list>
 
@@ -16,6 +17,7 @@ class QTextBlock;
 class parseNode;
 class AddressIdentifier;
 class State;
+class Program; // in gui/
 
 // Two valid entry points for program
 #define __START   "__start"
@@ -30,12 +32,15 @@ class State;
 //
 //    Only valid ParseList if m_semanticErrors map.size() is zero.
 
-class ParseList {
+class ParseList : public QObject {
+
+   Q_OBJECT
 
    public:
       friend class Parser;
       
       ParseList(QTextDocument *document);
+      virtual ~ParseList();
       
       ParseNode *first() const;
       ParseNode *last() const;
@@ -46,6 +51,9 @@ class ParseList {
       // (static) Returns the closest executable ParseNode at or after the given ParseNode 
       static ParseNode *getClosestInstruction(ParseNode *p);
 
+      // (static) Returns the closest executable ParseNode at or before the given ParseNode 
+      static ParseNode *getClosestInstructionBefore(ParseNode *p);
+      
       // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
       bool isValid() const;
 
@@ -55,7 +63,7 @@ class ParseList {
       ParseNode *getEntryPoint() const;
       
       // ensures ParseList is valid and ready to run, and then initializes all 
-      // static memory given the State.  returns whether or not initialization was successful.
+      // static memory given the State.  returns whether or not initialization was successful
       bool initialize(State *state);
       
       // no need to tell ParseList where to insert new node; it just knows
@@ -63,9 +71,16 @@ class ParseList {
       // throws SemanticError upon failure
       bool insert(ParseNode *newNode);
       
+      void updateSyntacticValidity();
+
       // ensures all maps get updated
       void remove(ParseNode *node);
-      void remove(QTextBlock &block);
+      
+      void notifyParseNodeDeleted(ParseNode *wasDeleted);
+      
+      // for notifying program of changes to this ParseList
+      //    (for editing on-the-fly)
+      void setInteractiveProgram(Program *program);
       
    private:
       QTextDocument *m_source;
@@ -77,6 +92,10 @@ class ParseList {
       
       unsigned int m_nextTextAddress;
       unsigned int m_nextDataAddress;
+      
+      // interface/proxy between Gui and active program
+      // ( located in ../gui/ )
+      Program *m_program;
 };
 
 class SemanticError : public ParseError {

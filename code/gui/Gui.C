@@ -27,6 +27,9 @@ Gui::Gui(QStringList args) : QMainWindow(),
    // load files
    args.removeFirst(); // first element is argv[0]
    foreach (QString fileName, args) {
+      if (fileName == QString("-v"))
+         continue; // disregard verbose flag
+
       if (QFile::exists(fileName))
          m_editorPane->openFile(fileName);
       else
@@ -502,10 +505,9 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(true);
          m_debugBStepAction->setEnabled(true);
-         //m_editorPane->setModifiable(true);
          
-         // TODO:  allow for on-the-fly editing!
-         //m_runningEditor->setModifiable(true);
+         // Allow for on-the-fly editing!
+         m_runningEditor->setModifiable(true);
  
          break;
       case STOPPED:
@@ -634,8 +636,9 @@ bool Gui::handleProgramTerminated(int reason) {
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
-   // TODO!
-   isValid = false;
+   m_debugRunAction->setEnabled(isValid);
+   m_debugStepAction->setEnabled(isValid);
+   m_debugBStepAction->setEnabled(isValid);
 }
 
 // passes on to RegisterView

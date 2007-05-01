@@ -4,13 +4,12 @@
 	.text
 	
 main:
-   jal test
-   
+   nop
+   nop
+   nop
    li $v0, 1
-   li $a0, 3333
+   li $a0, 123456789
    syscall
-
+   nop
+   
    done
-
-test:
-   jr $ra

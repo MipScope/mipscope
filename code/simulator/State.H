@@ -24,6 +24,7 @@ class State : public QObject {
 
       // increments timestamp
       TIMESTAMP newTimestamp();
+      TIMESTAMP getCurrentTimestamp(void) const;
       
       // memory
       void setMemoryWord(unsigned int address, unsigned int value);
@@ -51,7 +52,6 @@ class State : public QObject {
       // undo
       void undoLastInstruction();
       void undoUntilTimestamp(TIMESTAMP timestamp);
-      TIMESTAMP getCurrentTimestamp(void) const;
       
       // convenience-methods
       void getLastXInstructions(int no, QVector<ParseNode*> &instrs) const;

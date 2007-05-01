@@ -357,8 +357,11 @@ void TextEditor::paintEvent(QPaintEvent *e) {
             break;
          }
          
+         if (!parseNode->isValid())
+            continue;
+         
          const QTextBlock *block = parseNode->getTextBlock();
-         if (block != NULL && parseNode != m_pc && cursorPos != block->position())
+         if (block != NULL && block->isValid() && parseNode != m_pc && cursorPos != block->position())
             highlightLine(p, parseNode, highlightColor, width, height);
       }
    }
@@ -378,7 +381,7 @@ void TextEditor::resizeEvent(QResizeEvent *e) {
 
 void TextEditor::highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height) {
    const QTextBlock *block;
-   if (parseNode == NULL || ((block = parseNode->getTextBlock()) == NULL))
+   if (parseNode == NULL || !parseNode->isValid() || ((block = parseNode->getTextBlock()) == NULL) || !block->isValid())
       return;
    
    int pos = block->position();

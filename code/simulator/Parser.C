@@ -52,12 +52,12 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
       parseNodes.push_back(n);
    }
    
-   if (errors.size() >= 1) {
+   if (!errors.empty()) {
       delete parseList;
       throw errors;  // (vector<ParseError>)
    }
    
-   // do this afterwards so labels defined later above are already in parseList's maps
+   // do this afterwards so labels defined later above are already in list's maps
    foreach(ParseNode *cur, parseNodes)
       parseList->insert(cur);
    
@@ -95,7 +95,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    if (text == "") {
       if (VERBOSE) cerr << _tab << "Recognized as blank or comment\n";
       _tab = orig;
-      return new ParseNode(b);
+      return new ParseNode(list, b);
    }
    
    // ----------------
@@ -123,7 +123,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
          if (text == "") {
             _tab = orig;
             
-            return new ParseNode(b, NULL, label);
+            return new ParseNode(list, b, NULL, label);
          }
       } else { // possibly colon w/out identifier
          // may also be a directive (.byte 0:100  or .ascii "colon:"
@@ -239,7 +239,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    // Setup ParseNode to return and associate w/ QTextBlock *b
    // incorporate AddressIdentifier *label parsed above into ParseNode
    _tab = orig;
-   return new ParseNode(b, instruction, label);
+   return new ParseNode(list, b, instruction, label);
 }
 
 // Parses given text for one argument of an instruction
@@ -781,7 +781,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
    _tab = orig;
 
    // Huzzah!  Hopefully we got here and it worked?!
-   return new ParseNode(b, directive, label);
+   return new ParseNode(list, b, directive, label);
 }
 
 ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier *label, int equalsIndex, ParseList *list) {
@@ -811,7 +811,7 @@ ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier
    list->m_preProcessorMap.insert(id, imm->getID());
    
    _tab = orig;
-   return new ParseNode(b, new ConstStatement(name, imm), label);
+   return new ParseNode(list, b, new ConstStatement(name, imm), label);
 }
 
 ParseError::ParseError(const QString &description, const QString &unrecognized, int length, QTextBlock *b, int lineNo)

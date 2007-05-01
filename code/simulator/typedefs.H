@@ -41,7 +41,8 @@ enum TerminationReason { T_COMPLETED, T_TERMINATED, T_INVALID_PROGRAM, T_ABNORMA
 // 2,143,289,340  --> 2 gigs
 #define MEMORY_SIZE           (STACK_BASE_ADDRESS - TEXT_BASE_ADDRESS)
 
-typedef unsigned int TIMESTAMP;
+typedef unsigned long   TIMESTAMP;
+#define MAX_TIMESTAMP   (ULONG_MAX)
 
 typedef vector<ParseError> SyntaxErrors;
 typedef SyntaxErrors::iterator SyntaxErrorIterator;

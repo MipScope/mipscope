@@ -12,14 +12,18 @@
 #include "Statement.H"
 #include "State.H"
 
+#include "../gui/Program.H"
+
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QTextCursor>
 
 ParseList::ParseList(QTextDocument *document) :
    m_source(document), m_nextTextAddress(TEXT_BASE_ADDRESS), 
-   m_nextDataAddress(DATA_BASE_ADDRESS)
+   m_nextDataAddress(DATA_BASE_ADDRESS), m_program(NULL)
 { }
+
+ParseList::~ParseList() { }
 
 ParseNode *ParseList::first() const {
    return ParseNode::Node(m_source->begin());
@@ -56,7 +60,7 @@ ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
    return NULL;
 }
 
-// (static) Returns the closest executable ParseNode at or after the given ParseNode 
+// (static) Returns the closest executable ParseNode at or After the given ParseNode 
 ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
    if (p == NULL)
       return NULL;
@@ -68,6 +72,20 @@ ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
    
    return p;
 }
+
+// (static) Returns the closest executable ParseNode at or Before the given ParseNode 
+ParseNode *ParseList::getClosestInstructionBefore(ParseNode *p) {
+   if (p == NULL)
+      return NULL;
+   
+   while(!p->isExecutable()) {
+      if ((p = p->getPrevious()) == NULL)
+         return NULL;  // start of source, I believe
+   }
+   
+   return p;
+}
+
 
 // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
 bool ParseList::isValid() const {
@@ -332,15 +350,144 @@ bool ParseList::insert(ParseNode *newNode) {
    return semanticallyCorrect;
 }
 
+// ------------------------------------
+// Functionality for Editing-On-The-Fly
+// ------------------------------------
+
+void ParseList::updateSyntacticValidity() {
+   SyntaxErrors errors;
+   int lineNo = 0;
+   
+   for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next(), ++lineNo)
+   {
+      ParseNode *oldNode = ParseNode::Node(b);
+      
+      // Check for new blocks and update their validity by trying to insert them
+      if (oldNode == NULL) {
+         cerr << "(UPDATE) attempting to parse block: '" << b.text().toStdString() << "'\n";
+
+         QTextBlock *actual = new QTextBlock(b);
+         ParseNode *newNode = NULL;
+         
+         extern std::string _tab;
+         _tab = "   ";
+         
+         try {
+            newNode = Parser::parseLine(actual, this);
+         } catch(ParseError &e) {
+            cerr << "Error line  " << lineNo << ": " << e.toStdString() << endl;
+            e.setTextBlock(actual);
+            e.setLineNo(lineNo);
+            errors.push_back(e);
+            
+            continue;
+         }
+         
+         insert(newNode);
+      }
+   }
+
+   if (!errors.empty())
+      throw errors;
+}
+
+// Removes all references to a given ParseNode from this ParseList
 void ParseList::remove(ParseNode *node) {
    if (node == NULL)
       return;
    
-   // TODO
+   cerr << "removing parseNode: '" << node << "'\n";
+   
+   // Remove any references to this ParseNode's label
+   //    Also set semantic errors on ParseNodes which may have 
+   //    been referencing that label
+   AddressIdentifier *label = node->getLabel();
+   if (label != NULL && m_labelMap.contains(label->getID())) {
+      const QString &labelID = label->getID();
+      m_labelMap.remove(labelID);
+       
+      bool semanticallyCorrect = true;
+      for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next())
+      {
+         if (node->getTextBlock()->position() == b.position())
+            continue; // TODO:  ??
+         
+         ParseNode *p = ParseNode::Node(b);
+         if (p == NULL)
+            continue;
+         Statement *s = p->getStatement();
+         
+         // ensure any labels referenced by this instruction are defined
+         if (s != NULL && s->isInstruction()) {
+            StatementArgList *args = (static_cast<Instruction*>(s))->getArguments();
+            
+            for(int i = 0; i < args->noArgs(); i++) {
+               StatementArg *cur = (*args)[i];
+
+               if (cur->hasAddressIdentifier()) {
+                  const QString &id = cur->getID()->getID();
+                  
+                  if (!m_labelMap.contains(id)) {
+                     // this node is referencing some label which currently doesn't exist
+                     // wait for the label to appear, and only then validate it
+                     p->setSemanticValidity(false);
+                     semanticallyCorrect = false;
+                     cur->getID()->getAddressIdentifier()->setLabelParseNode(NULL);
+
+                     
+                     // TODO:  take out this assert
+                     assert (cur->getID()->getAddressIdentifier()->getParseNode() == node); // that we're deleting.. not sure if this is a valid assertion..
+                     
+
+                     
+                     //cerr << "semantically Invalid: '" << p->getTextBlock()->text().toStdString() << "' s = " << s << endl;
+                     if (!m_semanticErrors.contains(id))
+                        m_semanticErrors.insert(id, new ParseNodeList());
+                     
+                     m_semanticErrors[id]->push_back(p);
+                     break;
+                  }
+               }
+            } // for each argument of the current instruction
+         }
+      }  // for all text blocks
+   } // if we have a label
+   
+   
+   
+   // TODO:  if node contains etwas in m_preProcessorMap...
+   
+   
+   // if this node was in a semantic error list, remove it
+   foreach(QString s, m_semanticErrors.keys()) {
+      ParseNodeList *errorList = m_semanticErrors[s];
+      foreach(ParseNode *e, *errorList) {
+         if (e == node) {
+            errorList->remove(e);
+            if (errorList->empty())
+               m_semanticErrors.remove(s);
+            break;
+         }
+      }
+   }
+
+   node->notifyDeleted();
 }
 
-void ParseList::remove(QTextBlock &block) {
-   remove(ParseNode::Node(block));
+// Important:  ParseNodes call this upon getting deleted -- must notify 
+//    everyone that it's been invalidated
+void ParseList::notifyParseNodeDeleted(ParseNode *wasDeleted) {
+   if (wasDeleted == NULL)
+      return;
+   
+   if (m_program != NULL)
+      m_program->notifyParseNodeDeleted(wasDeleted);
+}
+
+// for notifying program of changes to this ParseList
+//    (for editing on-the-fly)
+void ParseList::setInteractiveProgram(Program *program) {
+   m_program = program;
 }
 
 SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 

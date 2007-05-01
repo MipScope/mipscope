@@ -318,7 +318,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
                TIMESTAMP timestamp = prev->getFirstExecuted();
                cerr << "prev timestamp = " << timestamp << endl;
                
-               if (timestamp < newlyInsertedTimestamp)
+               if (timestamp != CLEAN_TIMESTAMP && timestamp < newlyInsertedTimestamp)
                   newlyInsertedTimestamp = timestamp + 1;
             }
             
@@ -328,17 +328,17 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
                TIMESTAMP timestamp = next->getFirstExecuted();
                cerr << "next timestamp = " << timestamp << endl;
                
-               if (timestamp < newlyInsertedTimestamp)
+               if (timestamp != CLEAN_TIMESTAMP && timestamp < newlyInsertedTimestamp)
                   newlyInsertedTimestamp = timestamp;
             }
 
-            if (newlyInsertedTimestamp == MAX_TIMESTAMP) { // should never happen
+            /*if (newlyInsertedTimestamp == MAX_TIMESTAMP) { // should never happen
                
-               cerr << ">>> DEBUG THIS <<< Program::contentsChange shouldn't ever get here!\n";
+//               cerr << ">>> DEBUG THIS <<< Program::contentsChange shouldn't ever get here!\n";
                
                stop();
                return;
-            }
+            }*/
          }
          
          //else cerr << "\n\nErr: modified = NULL for block: '" << block.text().toStdString() << "'\n";

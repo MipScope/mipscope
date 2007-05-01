@@ -42,7 +42,6 @@ void ParseNode::notifyDeleted() {
    m_placeHolder = NULL;  // keep track that we were deleted
    
    // for editing-on-the-fly, have to know when a ParseNode gets deleted.. messy
-   cerr << "Deleting PlaceHolder!";
    m_parseList->notifyParseNodeDeleted(this);
 }
 

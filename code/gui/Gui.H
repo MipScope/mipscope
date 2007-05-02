@@ -51,6 +51,8 @@ class Gui : public QMainWindow {
       ErrorConsole *getErrorConsole() const;
       TextEditor *getActiveProgram() const;
    
+      void watchPointModified(unsigned int reg, bool watchPoint);
+      bool *getWatchpoints() const;
       bool handleProgramTerminated(int reason);
 
       // Proxy-DEBUGGER Related

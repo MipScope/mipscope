@@ -490,6 +490,10 @@ void ParseList::setInteractiveProgram(Program *program) {
    m_program = program;
 }
 
+Program *ParseList::getProgram() const {
+   return m_program;
+}
+
 SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 
    : ParseError(description, unrecognized), m_parseNode(parseNode)
 {

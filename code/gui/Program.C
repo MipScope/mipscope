@@ -42,6 +42,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    // Initialize relationship between Proxy and Debugger
    connect(m_debugger, SIGNAL(programStatusChanged(int)), this, SLOT(programStatusChangeReceived(int)));
    connect(m_debugger, SIGNAL(programTerminated(int)), this, SLOT(programTerminated(int)));
+   connect(m_debugger, SIGNAL(notifyPause(const QString&)), this, SLOT(notifyPause(const QString&)));
    
    // Initialize relationship between Gui and Proxy
    connect(m_gui, SIGNAL(stop()), this, SLOT(stop()));
@@ -198,6 +199,13 @@ void Program::programTerminated(int reason) {
    }
 }
 
+// Display a message notifying user of reason for pause in program execution in the status bar
+void Program::notifyPause(const QString &reason) const {
+   if (STATUS_BAR != NULL)
+      STATUS_BAR->showMessage(reason, STATUS_DELAY + 1000);
+}
+
+
 // --------------------------
 // Slots from Gui -> Debugger
 // --------------------------
@@ -241,6 +249,8 @@ void Program::run() {
       m_parent->clearLastInstructions();
       updateSyntaxErrors(NULL);
       m_debugger->setParseList(m_parseList);
+      
+      m_debugger->setWatchpoints(getWatchpoints());
 
       // content changed during Pause textEditor->notifies Proxy
       connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
@@ -268,10 +278,25 @@ void Program::stepBackwardToTimestamp(TIMESTAMP stamp) {
 }
 
 void Program::jumpTo(const QTextBlock &b) {
-   // TODO!
+   
+   
+   
+   // TODO!  TODO
+   
+
+
    
 //   if (m_current)
 //      m_debugger->jumpTo(b);
+}
+
+// called whenever the status of a register watchpoint changes
+void Program::watchPointModified(unsigned int reg, bool watchPoint) {
+   m_debugger->watchPointModified(reg, watchPoint);
+}
+
+bool *Program::getWatchpoints() const {
+   return m_gui->getWatchpoints();
 }
 
 void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
@@ -420,5 +445,16 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
          m_debugger->programStepBackwardToTimestamp(earliest - 1);
       else stop(); // rolled back past program entry point
    }
+}
+
+int Program::lineNumber(ParseNode *parseNode) {
+   if (parseNode == NULL)
+      return 0;
+   
+   const QTextBlock *block = parseNode->getTextBlock();
+   if (block == NULL)
+      return 0;
+   
+   return m_parent->lineNumber(*block);
 }
 

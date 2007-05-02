@@ -1,14 +1,7 @@
 
-   *** Definitely need a way of cleanly 'activating' Output/Error Consoles w/out the horrendous flickering currently present
-
-   
-
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView
-   * QTextDocument::contentsChanged(int position, int charsRemoved, int charsAdded)  [signal]  -- activated before layout manager updates changes :)
    * Tie Register WatchPoints into Debugger
-   * Incorporate Template into TextEditor for quickly beginning new projects (template.s)
-
    * Clear button on OutputConsole?
    * Add 'last pc' to StackView?
 

@@ -4,9 +4,6 @@
    acct: tfischer, tim
    date: 4/18/2007
 \* ---------------------------------------------- */
-
-#include <iostream>
-
 #include "OutputConsole.H"
 #include "Utilities.H"
 #include "EditorPane.H"
@@ -33,17 +30,18 @@ void OutputConsole::push(const QString &newOutput) {
    //updateDisplay();
    if (m_first) {
       m_first = false;
-      m_gui->ensureVisibility(this);
+
+      if (!m_visible)
+         m_gui->ensureVisibility(this);
    }
-   
-   
 }
 
 void OutputConsole::pop() {
    m_strings.pop_back();
    
    updateDisplay();
-   m_gui->ensureVisibility(this);
+   if (!m_visible)
+      m_gui->ensureVisibility(this);
 }
 
 void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
@@ -107,9 +105,9 @@ void OutputConsole::setStrings(QVector<QString> *strings) {
 TextOutputConsole::TextOutputConsole(SyscallListener* listener) :
      SyscallHandler(listener, S_PRINT, false) // false=we don't handle undo
 {
-   cout << "Welcome to "PROJECT_NAME"!\n\n";
+   cout << "Welcome to "PROJECT_NAME"!\n"
+           "Written by Travis Fischer and Tim O'Donnell\n\n";
 }
-
 
 void TextOutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    QString output;
@@ -139,7 +137,6 @@ void TextOutputConsole::syscall(State *s, int status, int syscallNo, int valueOf
 // unimplemented:
 void TextOutputConsole::undoSyscall(int) {}
 void TextOutputConsole::reset() {}
-
 
 
 

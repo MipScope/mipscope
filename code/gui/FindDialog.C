@@ -13,7 +13,8 @@ FindDialog::FindDialog(EditorPane *parent, bool replace, bool hasSelection)
    : QDialog(parent), m_parent(parent), m_searching(false), m_modifiable(true)
 {
    QStyle *style = new QCleanlooksStyle();
-   setFont(QFont("tahoma", 12));
+   setFont(QFont("arial", 10));
+   const QFont font("arial", 9);
    
    // assure EditorPane is notified upon invocation of find/replace
 //   connect(this, SIGNAL(accepted()), m_parent, SLOT(findDialogInvoked()));
@@ -31,6 +32,7 @@ FindDialog::FindDialog(EditorPane *parent, bool replace, bool hasSelection)
    
    m_regularExpression = new QCheckBox(tr("Regular e&xpression"), this);
    m_regularExpression->setStyle(style);
+   m_regularExpression->setFont(font);
    
    layout->addWidget(label);
    layout->addWidget(m_lineEdit);
@@ -53,23 +55,30 @@ FindDialog::FindDialog(EditorPane *parent, bool replace, bool hasSelection)
    QCheckBox *b = new QCheckBox(tr("C&ase sensitive"), this);
    m_caseSensitive = b;
    b->setStyle(style);
+   b->setFont(font);
    l->addWidget(b, 0, 0);
    b = new QCheckBox(tr("&Whole words only"), this);
    m_wholeWordsOnly = b;
    b->setStyle(style);
+   b->setFont(font);
    l->addWidget(b, 1, 0);
+   l->setColumnMinimumWidth(0, b->sizeHint().width() + 10); // hack cause this layout manager apparently has trouble w/ multiple styles
    b = new QCheckBox(tr("From c&ursor"), this);
    m_fromCursor = b;
    b->setStyle(style);
+   b->setFont(font);
    l->addWidget(b, 2, 0);
    b = new QCheckBox(tr("Find &backwards"), this);
    m_findBackwards = b;
    b->setStyle(style);
+   b->setFont(font);
    l->addWidget(b, 0, 1);
    b = new QCheckBox(tr("&Search selection"), this);
    m_searchSelection = b;
    b->setStyle(style);
+   b->setFont(font);
    b->setEnabled(hasSelection);
+   l->setColumnMinimumWidth(1, b->sizeHint().width() + 10); // hack cause this layout manager apparently has trouble w/ multiple styles
    connect(m_parent, SIGNAL(copyAvailabile(bool)), b, SLOT(setEnabled(bool)));
    
    l->addWidget(b, 1, 1);

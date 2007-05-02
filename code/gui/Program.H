@@ -52,6 +52,12 @@ class Program : public QObject {
       // content .. must assure that ParseNode is never referenced in the Gui
       void notifyParseNodeDeleted(ParseNode *wasDeleted);
       
+      // called whenever the status of a register watchpoint changes
+      void watchPointModified(unsigned int reg, bool watchPoint);
+      bool *getWatchpoints() const;
+      
+      int lineNumber(ParseNode *parseNode);
+      
    protected:
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);
@@ -69,6 +75,9 @@ class Program : public QObject {
       void syscallReceived(int no, int valueOfa0);
       void undoSyscallReceived(int no);
       void undoAvailabilityChangeReceived(bool isAvailable);
+      
+      // Display a message notifying user of reason for pause in program execution in the status bar
+      void notifyPause(const QString &reason) const;
       
       // only when debugger is paused
       void pcChangeReceived(ParseNode *pc);

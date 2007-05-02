@@ -24,6 +24,7 @@ TextEditor::TextEditor(EditorPane *parent, QFont *font, QFile *file, TextEditor 
    
    if (file != NULL)
       openFile(file);
+   else openFile(NULL); // open a template file
    
    if (m_prev != NULL) {
       m_next = m_prev->m_next;
@@ -396,6 +397,16 @@ void TextEditor::highlightLine(QPainter &p, ParseNode *parseNode, const QColor &
 }
 
 bool TextEditor::openFile(QFile *file) {
+   bool templateFile = false;
+   
+   if (file == NULL) { // open a template file
+      if (!QFile::exists(TEMPLATE))
+         return false;
+      
+      file = new QFile(TEMPLATE);
+      templateFile = true;
+   }
+   
    if (file->open(QIODevice::ReadOnly | QFile::Text)) {
 //      setUpdatesEnabled(false);
       m_lineToPosMap.clear();
@@ -405,14 +416,17 @@ bool TextEditor::openFile(QFile *file) {
 //      setDocument(m);
       setPlainText(file->readAll());
       file->close();
-
-      m_file = file;
-      m_loaded = true;
+      
+      if (!templateFile) {
+         m_file = file;
+         m_loaded = true;
+      }
+      
       resetTabText();
       
       qApp->processEvents();
 
-      // hack to get this shit to display right.. fuck!
+      // hack to get this shit to display right..
       QTimer::singleShot(250, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(750, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(1300, m_parent, SLOT(contentChangedProxy()));
@@ -444,8 +458,7 @@ void TextEditor::resetTabText(bool modified) {
    int index = m_parent->indexOf(this);
    
    m_parent->setTabText(index, name);// + (m_modified ? "*" : ""));
-   const QIcon &icon = (isModifiable() ? (m_modified ? QIcon(IMAGES"/fileUnsaved.png") : 
-            QIcon(IMAGES"/fileSaved.png")) : QIcon(IMAGES"/fileLocked.png"));
+   const QIcon &icon = (isModifiable() ? (m_modified ? QIcon(IMAGES"/fileUnsaved.png") : QIcon(IMAGES"/fileSaved.png")) : QIcon(IMAGES"/fileLocked.png"));
 
    m_parent->setTabIcon(index, icon);
 }
@@ -867,5 +880,9 @@ void TextEditor::fontChanged(const QFont &f) {
    setCurrentFont(f);
 
    setTabStopWidth(4 * QFontMetrics(f).width(' '));
+}
+
+Program *TextEditor::getProgram() const {
+   return m_program;
 }
 

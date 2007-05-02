@@ -8,6 +8,7 @@
 class ParseNode;
 class ParseList;
 class StateAction;
+class Debugger;
 
 extern bool VERBOSE;
 
@@ -20,7 +21,7 @@ class State : public QObject {
       friend class RegisterChangedAction;
       friend class MemoryChangedAction;
       
-      State();
+      State(Debugger *debugger);
 
       // increments timestamp
       TIMESTAMP newTimestamp();
@@ -87,6 +88,8 @@ class State : public QObject {
       TIMESTAMP m_currentTimestamp;
       QVector<StateAction*> m_undoList;
       bool m_undoIsAvailable;
+      
+      Debugger *m_debugger;
 
       void setUndoAvailability(bool isAvailable, bool force = false);
 };

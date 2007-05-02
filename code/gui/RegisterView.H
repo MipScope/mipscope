@@ -39,12 +39,14 @@ class RegisterView : public QDockWidget {
    
    Q_OBJECT
    
-   public:
+   public:  // this is a horribly designed set of classes.. sorry
+      friend class RegisterPane;
       friend class RegisterOptionsPane;
       friend class IDLabel;
       
       RegisterView(Gui *parent, EditorPane *editorPane);
    
+      bool *getWatchpoints();
       void displayTypeChanged();
       void updateDisplay(int state);
       
@@ -79,13 +81,18 @@ class RegisterPane : public QWidget {
       
       RegisterPane(RegisterView *regView);
       
+      bool *getWatchpoints();
       void showExtended(const QPoint &pos, const QString &text, RegisterLabel *orig);
       void reset();
       void testMouseMove(QMouseEvent *e, const QPoint &pos);
       void testMousePress(QMouseEvent *e, const QPoint &pos);
    
       void displayTypeChanged();
-
+      
+      // IDLabels notify RegisterPane which notifies the active prog
+      // which notifies the active Debugger
+      void watchPointModified(unsigned int reg, bool watchPoint);
+      
    protected:
       RegisterView *m_parent;
       // View tab contains a 9x12 QGridLayout of RegViewLabels (generic)
@@ -93,6 +100,8 @@ class RegisterPane : public QWidget {
       QRect m_bounds;
       BackgroundWidget *m_widget;
       ExtendedView *m_extended;
+      
+      bool m_watchPoints[register_count];
       
       // @override
 //      virtual void leaveEvent(QEvent *);

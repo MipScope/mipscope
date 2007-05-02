@@ -1,5 +1,6 @@
 #include "Debugger.H"
 #include "../gui/Utilities.H"
+#include "../gui/Program.H"
 #include "StateException.H"
 #include "ParseList.H"
 #include "ParseNode.H"
@@ -8,10 +9,13 @@
 #include <QMutexLocker>
 
 Debugger::Debugger(ParseList* parseList) 
-   : m_state(new State()), m_parseList(parseList), m_status(STOPPED), 
+   : m_state(new State(this)), m_parseList(parseList), m_status(STOPPED), 
      m_terminationReason(T_ABNORMAL)
 {
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
+   
+   // cannot use signals/slots for watchpoints; has to be direct!
+//   connect(m_state, SIGNAL(registerChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(registerChanged(unsigned int, unsigned int, ParseNode*)));
 }
 
 int Debugger::getStatus(void) {
@@ -123,7 +127,6 @@ void Debugger::executionInit(void) {
    }
 }
 
-// public
 // we remain PAUSED the whole time
 void Debugger::programStepForward(void) {
    
@@ -152,7 +155,7 @@ void Debugger::setParseList(ParseList *list) {
 
 void Debugger::run(void) {
    
-   executionInit();   
+   executionInit();
    
    // let's run!
    if (VERBOSE) cerr << "Debugger::run: now executing the program.\n";
@@ -176,6 +179,8 @@ void Debugger::run(void) {
          if (VERBOSE) cerr << ">>> BREAKPOINT\n";
 
          setStatus(PAUSED);
+         Program *program = m_parseList->getProgram();
+         notifyPause(QString("Execution Paused:  Breakpoint encountered on line %1").arg(program == NULL ? "" : QString::number(program->lineNumber(m_state->getPC()))));
          waitOnStatus(PAUSED);
          if (getStatus() == STOPPED)
             break; // check if waitOnStatus was interrupted
@@ -225,5 +230,30 @@ int Debugger::waitOnStatus(int status) {
    
 //   cerr << "\texiting wait\n";
    return st;
+}
+
+void Debugger::registerChanged(unsigned int reg, unsigned int value, ParseNode *pc) {
+//   cerr << "reg changed " << registerAliases[reg] << " protected: " << m_registerWatchpoints[reg] << endl;
+   if (m_registerWatchpoints[reg]) {
+      int oldStatus = m_status;
+      setStatus(PAUSED); // modified a user-protected register
+      
+      notifyPause(QString("%1Protected register '%2' modified").arg(
+               (oldStatus == RUNNING ? 
+               QString("Execution Paused:  ") : 
+               QString("")), 
+               registerAliases[reg]));
+   }
+}
+
+// called whenever a register watchpoint is enabled/disabled
+void Debugger::watchPointModified(unsigned int reg, bool watchPoint) {
+//   cerr << "Debugger::watchPointModified: " << reg << " = " << watchPoint << endl;
+
+   m_registerWatchpoints[reg] = watchPoint;
+}
+
+void Debugger::setWatchpoints(const bool *buf) {
+   memcpy(m_registerWatchpoints, buf, sizeof(bool) * register_count);
 }
 

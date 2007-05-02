@@ -14,6 +14,7 @@
 #include "FindDialog.H"
 #include "DirectoryListing.H"
 #include "SyscallHandler.H"
+#include "Program.H"
 #include <QtGui>
 
 Gui::Gui(QStringList args) : QMainWindow(), 
@@ -656,5 +657,17 @@ void Gui::memoryChanged(unsigned int address, unsigned int value, ParseNode *pc)
 
 void Gui::programUndoAvailabilityChanged(bool isAvailable) {
    m_debugBStepAction->setEnabled(isAvailable);
+}
+
+void Gui::watchPointModified(unsigned int reg, bool watchPoint) {
+   TextEditor *editor = m_runningEditor;
+   if (editor == NULL)
+      editor = m_editorPane->m_activeEditor;
+   
+   editor->getProgram()->watchPointModified(reg, watchPoint);
+}
+
+bool *Gui::getWatchpoints() const {
+   return m_registerView->getWatchpoints();
 }
 

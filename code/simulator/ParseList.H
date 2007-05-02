@@ -82,6 +82,8 @@ class ParseList : public QObject {
       //    (for editing on-the-fly)
       void setInteractiveProgram(Program *program);
       
+      Program *getProgram() const;
+      
    private:
       QTextDocument *m_source;
       SemanticErrors m_semanticErrors;

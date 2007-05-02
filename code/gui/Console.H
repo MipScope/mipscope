@@ -32,12 +32,15 @@ class Console : public QDockWidget {
       // Keeps the console's font in sync w/ that of the EditorPane
       void fontChanged(const QFont &newFont);
       
+      virtual void visibilityChanged(bool isVisible);
+      
    protected:
       Gui *m_gui;
       EditorPane *m_editorPane;
       QTextEdit *m_display;
       
       QVector<QString> m_strings;
+      bool m_visible;
       
       // Updates the QTextEdit used as a display
       virtual void updateDisplay();

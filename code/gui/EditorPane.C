@@ -33,6 +33,7 @@ EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_pare
 
    if (fileName != NULL)
       openFile(QString(fileName));
+   else m_activeEditor->openFile(NULL); // open a default, template file
 }
 
 EditorPane::~EditorPane(void) { }
@@ -231,6 +232,7 @@ QMessageBox::StandardButton EditorPane::saveAllFiles(bool yesToAll, TextEditor *
 void EditorPane::newBlankTabAction() {
    TextEditor *blank = new TextEditor(this, m_font, NULL, m_activeEditor);
    setActiveEditor(blank);
+   blank->resetTabText();
 }
 
 void EditorPane::saveAction() {

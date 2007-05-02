@@ -61,7 +61,7 @@ void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool 
 //   m_display->setHtml(QString("<span style=\"font:10pt courier;\"><a href=\"test\">This is a test link.</a></span>"));
 //   updateDisplay();
    
-   if (forceUpdate)
+   if (forceUpdate && !m_visible)
       m_gui->ensureVisibility(this);
 }
 

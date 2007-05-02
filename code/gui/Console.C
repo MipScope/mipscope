@@ -14,7 +14,7 @@
 // Pseudo-Output terminal, capable of printing/undoing output
 // ----------------------------------------------------------
 Console::Console(Gui *gui, EditorPane *editorPane, const QString &name, bool createDisplay)
-   : QDockWidget(name, gui), m_gui(gui), m_editorPane(editorPane), m_display(NULL)
+   : QDockWidget(name, gui), m_gui(gui), m_editorPane(editorPane), m_display(NULL), m_visible(false)
 {
    QDockWidget::setObjectName(name);
    
@@ -41,6 +41,10 @@ void Console::flush() {
 
 void Console::fontChanged(const QFont &newFont) {
    m_display->setFont(newFont);
+}
+
+void Console::visibilityChanged(bool isVisible) {
+   m_visible = isVisible;
 }
 
 void Console::updateDisplay() {

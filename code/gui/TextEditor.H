@@ -39,6 +39,7 @@ typedef LineToPosMap::const_iterator LineToMapIterator;
 extern bool Accepted(QMessageBox::StandardButton result);
 
 #define UNTITLED     "Untitled"
+#define TEMPLATE     "gui/template.s"
 
 class TextEditor : public QTextEdit {
    
@@ -90,6 +91,7 @@ class TextEditor : public QTextEdit {
       //const QTextCharFormat &f);
       
       void clearLastInstructions();
+      Program *getProgram() const;
       
 // returns actual filename of open file
       QString fileName() const;

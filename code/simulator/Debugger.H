@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QString>
 
 #include "typedefs.H"
 
@@ -41,6 +42,10 @@ class Debugger : public QThread {
       void programStepBackward();
       void programStepBackwardToTimestamp(TIMESTAMP stamp);
       
+      // called whenever a register watchpoint is enabled/disabled
+      void watchPointModified(unsigned int reg, bool watchPoint);
+      void setWatchpoints(const bool *buf);
+      
       bool waitOnDebuggerThread(unsigned long timeout);
 
    signals:
@@ -49,8 +54,15 @@ class Debugger : public QThread {
       // uses enum TerminationReason from typedefs.H
       void programTerminated(int reason);
       
+      void notifyPause(const QString &reason);
+      
    private slots:
       void threadTerminated();
+      
+   public slots:
+      // for observing register watchpoints;
+      // this must be executed right away, as opposed to being in another thread
+      void registerChanged(unsigned int register, unsigned int value, ParseNode *pc);
       
    protected:
       bool checkProgramCompleted();
@@ -64,7 +76,10 @@ class Debugger : public QThread {
       QMutex m_statusMutex;
       int m_status, m_terminationReason;
       QWaitCondition m_statusChangedWaitCondition;            
-   
+      
+      // flags denoting which registers are protected by memory watchpoints
+      bool m_registerWatchpoints[register_count];
+      
    private:
       // returns the new status once m_status has changed from the
       // status passed in.

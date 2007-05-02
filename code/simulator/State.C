@@ -2,13 +2,15 @@
 #include "StateException.H"
 #include "ParseList.H"
 #include "ParseNode.H"
+#include "Debugger.H"
 #include "typedefs.H"
 #include <string.h>
 
 #define INTERNAL_MEMORY_SIZE (16384)
 
-State::State() : m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP), 
-                 m_undoList(4096), m_undoIsAvailable(false)
+State::State(Debugger *debugger) : 
+   m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP), m_undoList(4096), 
+   m_undoIsAvailable(false), m_debugger(debugger)
 {
    m_memory.reserve(INTERNAL_MEMORY_SIZE);
    reset();
@@ -111,6 +113,9 @@ void State::setRegister(int reg, unsigned int value) {
       m_undoList.push_back(new RegisterChangedAction(m_currentTimestamp, reg, m_registers[reg]));
    m_registers[reg] = value;
    registerChanged((unsigned)reg, value, m_pc);
+
+   // has to be direct
+   m_debugger->registerChanged((unsigned)reg, value, m_pc);
 }
 
 unsigned int State::getRegister(int reg) const {
@@ -276,6 +281,7 @@ RegisterChangedAction::RegisterChangedAction(TIMESTAMP timestamp, unsigned int r
 void RegisterChangedAction::undo(State *s) {
    s->m_registers[m_register] = m_value;
    s->registerChanged(m_register, m_value, s->m_pc);
+   s->m_debugger->registerChanged(m_register, m_value, s->m_pc);
    //cerr << "Reg " << registerAliases[m_register] << " -> " << m_value << endl;
 }
 

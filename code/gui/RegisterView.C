@@ -52,6 +52,14 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
    setWidget(m_tabWidget);
 }
 
+bool *RegisterView::getWatchpoints() {
+   return m_registerPane->getWatchpoints();
+}
+
+bool *RegisterPane::getWatchpoints() {
+   return m_watchPoints;
+}
+
 // TODO:  Temporary!!!
 /*class BackgroundWidget : public QTabWidget {
    public:
@@ -170,6 +178,9 @@ RegisterPane::RegisterPane(RegisterView *regView) : QWidget(),
    l->addWidget(m_widget, 0, 0);//, Qt::AlignCenter);
    setLayout(l);
 
+   // clear all watchpoints and hide the extended-tip view
+   memset(m_watchPoints, 0, sizeof(bool) * register_count);
+   
    m_extended = new ExtendedView(this, m_widget);
    m_extended->hide();
 }
@@ -193,6 +204,8 @@ void RegisterPane::reset() {
    for(int i = NO_REGISTERS; i--;)
       m_registerLabels[i]->reset();
    
+   // clear all watchpoints and hide the extended-tip view
+//   memset(m_watchPoints, 0, sizeof(bool) * register_count);
    m_extended->hide();
 }
 
@@ -266,6 +279,14 @@ void RegisterPane::testMousePress(QMouseEvent *e, const QPoint &pos) {
          break;
       }
    }
+}
+
+// IDLabels notify RegisterPane which notifies the active prog
+// which notifies the active Debugger
+void RegisterPane::watchPointModified(unsigned int reg, bool watchPoint) {
+   m_watchPoints[reg] = watchPoint;
+
+   m_parent->m_gui->watchPointModified(reg, watchPoint);
 }
 
 void RegisterLabel::testMouseMove(QMouseEvent *e, const QPoint &parentPos) {
@@ -397,7 +418,7 @@ IDLabel::IDLabel(RegisterPane *regPane, unsigned int id)
 }
 
 void IDLabel::reset() {
-   m_watchPoint   = false;
+//   m_watchPoint   = false;
    m_lastModified = NULL;
    setValue(0);
 }
@@ -461,6 +482,9 @@ QPixmap *watchPoint = NULL;
 void IDLabel::handleClick(QMouseEvent *e) {
    m_watchPoint = !m_watchPoint;
    
+   // notify the chain which notifies the debugger of a change in watchpoint status
+   m_parent->watchPointModified(m_register, m_watchPoint);
+
    e->accept();
    updateDisplay();
 

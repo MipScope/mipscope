@@ -134,7 +134,7 @@ void Instruction::InitializeInstructionMap() {
    insert(new Sb());
    insert(new Move());
    insert(new Mflo());
-   
+   insert(new Mfhi());
    
    // Special.H
    insert(new Nop());

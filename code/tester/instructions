@@ -1,0 +1,15 @@
+##############
+# Arithmetic & Logical
+##############
+INSTRUCTION	IMPLEMENTED?	TESTED?		NOTES
+abs		YES		YES
+add		YES		YES
+addu		YES		YES
+addi		YES		YES		We accept any immmediate - SPIM only takes -32k - 32k
+addiu		YES		YES		ditto
+and		YES		YES
+andi		YES		YES		We accept any immediate - SPIM only takes 0 - 64k
+clo		YES		NO		SPIM claims this doesn't exit - wtf?
+clz		YES		NO		ditto
+div 3-arg	YES		YES
+

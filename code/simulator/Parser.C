@@ -290,14 +290,13 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
       
       bool okay = false;
       registerNo = reg.toInt(&okay, 10);
-      if (!okay || registerNo < zero || registerNo >= register_count)
+      if (!okay || registerNo < zero || registerNo >= pc)
          PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
 
    } else { // determine between aliases
       bool found = false;
 
-      // Don't count last 3 aliases (PC, HI, LO) -- unavailable to user
-      for(int i = 0; i < register_count - 3; i++) {
+      for(int i = 0; i < pc ; i++) {
          QRegExp r(QString("\\$") + QString(registerAliases[i]));
 
          if (r.exactMatch(reg)) {
@@ -468,16 +467,26 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
       text = list->m_preProcessorMap[text];
   
    bool okay = false;
-   int value = text.toInt(&okay, 0);
+   qint64 value_long = text.toLongLong(&okay, 0); // includes C-like hex and binary conversion :)
+   int value;
    
-   // includes hex and binary conversion :)
-   if (okay) {// text was parsed as a valid int, according to the c-language!
+   if (value_long < -2147483648LL || value_long > 4294967295LL) return NULL; // out of 32-bit range
+      
+   // check that it parsed a number, and that this number fits in a 32 bit integer
+   if (okay) {
       if (VERBOSE) {
          cerr << _tab << "Found Immediate: " << value;
          if (pasted)
             if (VERBOSE) cerr << "  (from const '" << copy.toStdString() << "')";
          cerr << endl;
       }
+           
+      if (value_long < 0) { // negative
+         value = (int) value_long;
+      }
+      else { // positive         
+         value = (int) (unsigned int) value_long;
+      }     
 
       _tab = orig;
       return new ImmediateIdentifier(text, value);

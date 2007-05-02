@@ -101,7 +101,7 @@ QString State::getString(unsigned int address) const {
 }
 
 void State::setRegister(int reg, unsigned int value) {
-   if (reg <= zero || reg >= pc) {
+   if (reg <= zero || reg >= register_count) {
       cerr << "set: " << reg << " = " << value << endl;
       cerr << m_pc->getTextBlock()->text().toStdString() << endl;
       // TODO:  add iostream operator to ParseNode
@@ -119,7 +119,7 @@ void State::setRegister(int reg, unsigned int value) {
 }
 
 unsigned int State::getRegister(int reg) const {
-   if (reg < zero || reg >= pc) {
+   if (reg < zero || reg >= register_count) {
       cerr << "get: " << reg << endl;
       throw InvalidRegister(reg);
    }

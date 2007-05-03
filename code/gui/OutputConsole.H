@@ -41,8 +41,6 @@ class OutputConsole : public Console,
       void setStrings(QVector<QString> *strings);
       
    protected:
-      bool m_first; // since last reset
-
       QVector<OutputAction*> m_outputActions;
 };
 

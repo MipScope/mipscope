@@ -16,7 +16,7 @@
 
 Debugger::Debugger(ParseList* parseList) 
    : m_state(new State(this)), m_parseList(parseList), m_status(STOPPED), 
-     m_terminationReason(T_ABNORMAL)
+     m_terminationReason(T_ABNORMAL), m_forceStopped(false)
 {
    memset(m_registerWatchpoints, 0, sizeof(bool) * register_count);
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
@@ -40,13 +40,24 @@ void Debugger::threadTerminated(void) {
    if (VERBOSE) cerr << "Debugger::threadTerminated\n";
    
    emit programStatusChanged(STOPPED);
-   if (m_terminationReason != T_COMPLETED && m_terminationReason != T_TERMINATED)
+   if (m_terminationReason != T_COMPLETED && m_terminationReason != T_TERMINATED && !m_forceStopped)
       m_terminationReason = T_ABNORMAL;
+   
+   if (m_forceStopped)
+      m_terminationReason = T_FORCE_ROLLBACK;
+   
    emit programTerminated(m_terminationReason);
 }
 
 void Debugger::programStop(void) {
    setStatusConditionally(STOPPED);
+}
+
+void Debugger::programForceStop(void) {
+   m_forceStopped = true;
+   
+   m_terminationReason = T_FORCE_ROLLBACK;
+   programStop();
 }
 
 void Debugger::programPause(void) {
@@ -118,9 +129,9 @@ bool Debugger::waitOnDebuggerThread(unsigned long timeout) {
 
 //private
 void Debugger::executionInit(void) {
-   
    if (VERBOSE) cerr << "Debugger::run\n";
-
+   m_forceStopped = false;
+   
    if (!m_parseList->isValid()) {
       cerr << "Debugger: parseList isn't valid.\n";
       m_terminationReason = T_INVALID_PROGRAM;

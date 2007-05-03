@@ -173,13 +173,14 @@ void Program::programStatusChangeReceived(int s) {
 }
 
 void Program::programTerminated(int reason) {
+   updateSyntaxErrors(NULL);
+   if (m_gui->handleProgramTerminated(reason))
+      return;
+   
    if (STATUS_BAR == NULL)
       return;
    
-   if (m_gui->handleProgramTerminated(reason))
-      return;
-
-   const int delay = STATUS_DELAY + 2000;
+   const int delay = STATUS_DELAY + 6000;
    const QString &name = m_parent->fileName();
 
    switch(reason) {
@@ -192,6 +193,9 @@ void Program::programTerminated(int reason) {
       case T_INVALID_PROGRAM:
          STATUS_BAR->showMessage(QString("Program %1 contains errors.").arg(name), delay);
          break;
+      case T_FORCE_ROLLBACK:
+         STATUS_BAR->showMessage(QString("Execution halted:  Program %1 rolled back past entry point!").arg(name), delay);
+         break;
       case T_ABNORMAL:
       default:
          STATUS_BAR->showMessage(QString("Warning: Program %1 terminated abnormally.").arg(name), delay);
@@ -202,7 +206,7 @@ void Program::programTerminated(int reason) {
 // Display a message notifying user of reason for pause in program execution in the status bar
 void Program::notifyPause(const QString &reason) const {
    if (STATUS_BAR != NULL)
-      STATUS_BAR->showMessage(reason, STATUS_DELAY + 1000);
+      STATUS_BAR->showMessage(reason, STATUS_DELAY + 3500);
 }
 
 
@@ -212,6 +216,11 @@ void Program::notifyPause(const QString &reason) const {
 void Program::stop() {
    if (m_current)
       m_debugger->programStop();
+}
+
+// if the user rolls back before the program entry point
+void Program::forceStop() {
+   m_debugger->programForceStop();
 }
 
 void Program::pause() {
@@ -457,7 +466,7 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
       setRunnable(false);
       if (earliest > 1)
          m_debugger->programStepBackwardToTimestamp(earliest - 1);
-      else stop(); // rolled back past program entry point
+      else forceStop(); // rolled back past program entry point
    }
 }
 

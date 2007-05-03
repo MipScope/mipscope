@@ -76,7 +76,8 @@ class ParseError : public QString {
       QString getUnrecognized() const;
       QTextBlock *getTextBlock() const;
       void setTextBlock(QTextBlock *b);
-       
+      void setUnrecognized(const QString &text);
+      
       int getPosition() const;
       int getLength() const;
       int getLineNo() const;

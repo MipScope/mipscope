@@ -3,6 +3,9 @@
    auth: Travis Fischer, Tim O'Donnell
    acct: tfischer, tim
    date: 4/8/2007
+
+      The main source-code editor; displays PC 
+   and syntactic/semantic errors during debugging.
 \* ---------------------------------------------- */
 #include "TextEditor.H"
 #include "SyntaxHighlighter.H"
@@ -399,6 +402,7 @@ void TextEditor::highlightLine(QPainter &p, ParseNode *parseNode, const QColor &
 
 bool TextEditor::openFile(QFile *file) {
    bool templateFile = false;
+   m_errors.clear();
    
    if (file == NULL) { // open a template file
       if (!QFile::exists(TEMPLATE))
@@ -865,7 +869,7 @@ QTextDocument *TextEditor::getTextDocument() const {
    return document();
 }
 
-void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {
+/*void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {
       //const QTextCharFormat &f) {
    QTextCharFormat format(currentCharFormat());
    format.setBackground(color);
@@ -877,7 +881,7 @@ void TextEditor::highlightLine(const QTextCursor &c, const QColor &color) {
    
    m_highlighted.push_back(newSelection);
    setExtraSelections(m_highlighted);
-}
+}*/
 
 void TextEditor::fontChanged(const QFont &f) {
    setCurrentFont(f);
@@ -890,26 +894,28 @@ Program *TextEditor::getProgram() const {
 }
 
 void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
-   /*if (errors == NULL) {
-//      cerr << "Should remove all underlines\n";
-
-      
-      // TODO:  Use SetExtraSelections instead.
-      //    In Program::contentsChange, whenever a 
-      //    node gets validated, ensure its removed from m_parent's 
-      //    internal selection list.  Also, ensure invalid nodes
-      //    get properly added to that list!!!  :)
-      
-      // Try SingleUnderline as well.. see what it looks like in sunlab
-
+   if (errors == NULL) { // program is free of errors
+      if (!m_errors.isEmpty()) {
+         m_errors.clear();
+         setExtraSelections(QList<QTextEdit::ExtraSelection>());
+      }
       
       return;
    }
    
+   cerr << "setting Errors: " << errors->size() << endl;
+   
    QTextCursor c = textCursor();
    QTextCharFormat format(currentCharFormat());
-   format.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);//WaveUnderline);
+   format.setUnderlineStyle(QTextCharFormat::SingleUnderline);//SpellCheckUnderline);//WaveUnderline);
    format.setUnderlineColor(Qt::red);
+   
+   m_errors.clear();
+/*   // remove any invalid text blocks (probably were deleted)
+   foreach(const QTextBlock &b, m_errors.keys()) {
+      if (!b.isValid())
+         m_errors.remove(b);
+   }:*/
    
    foreach(ParseError e, *errors) {
       const QTextBlock *block = e.getTextBlock();
@@ -921,14 +927,30 @@ void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
             c.setPosition(block->position() + subPos);
             c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, e.getLength());
             
-            c.setCharFormat(format);
+            //c.setCharFormat(format);
          } else {
             c.setPosition(block->position());
-            c.setBlockCharFormat(format);
+            c.select(QTextCursor::LineUnderCursor);
+            
+            //c.setBlockCharFormat(format);
          }
+         
+         const struct QTextEdit::ExtraSelection newSelection = {
+            QTextCursor(c), 
+            QTextCharFormat(format), 
+         };
+         
+         const QTextBlock &newBlock = c.block();
+         if (m_errors.contains(newBlock))
+            m_errors.remove(newBlock);
+         
+         m_errors.insert(newBlock, newSelection);
       }
-   }*/
+   }
+   
+   setExtraSelections(m_errors.values());
 }
+
 /*
 c.select(QTextCursor::LineUnderCursor);
 //         c.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);

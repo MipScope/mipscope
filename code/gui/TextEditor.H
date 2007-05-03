@@ -3,6 +3,9 @@
    auth: Travis Fischer, Tim O'Donnell
    acct: tfischer, tim
    date: 4/8/2007
+
+      The main source-code editor; displays PC 
+   and syntactic/semantic errors during debugging.
 \* ---------------------------------------------- */
 #ifndef __TEXTEDITOR_H__
 #define __TEXTEDITOR_H__
@@ -11,6 +14,7 @@
 #include <QLabel>
 #include <QVector>
 #include <QList>
+#include <QMap>
 #include <map>
 #include "Utilities.H"
 using namespace std;
@@ -36,6 +40,9 @@ class QResizeEvent;
 
 typedef map<int, int> LineToPosMap;
 typedef LineToPosMap::const_iterator LineToMapIterator;
+
+typedef QMap<QTextBlock, QTextEdit::ExtraSelection> ExtraSelectionMap;
+typedef ExtraSelectionMap::iterator ExtraSelectionMapIterator;
 
 extern bool Accepted(QMessageBox::StandardButton result);
 
@@ -88,7 +95,7 @@ class TextEditor : public QTextEdit {
       // Returns NULL if the given line number is invalid
       QTextBlock *getBlockForLine(int lineNo, QTextBlock *last = NULL);
       
-      void highlightLine(const QTextCursor &c, const QColor &color);
+//      void highlightLine(const QTextCursor &c, const QColor &color);
       //const QTextCharFormat &f);
       
       void clearLastInstructions();
@@ -132,13 +139,16 @@ class TextEditor : public QTextEdit {
       bool m_loaded, m_modified, m_undoAvailable, m_redoAvailable;
 
       SyntaxHighlighter *m_syntaxHighligher;
-      QList<ExtraSelection> m_highlighted;
+//      QList<ExtraSelection> m_highlighted;
       LineToPosMap m_lineToPosMap;
       
       // Debugging and program-Related
       Program *m_program; // proxy to Debugger and ParseList
       ParseNode *m_pc;
       QVector<ParseNode*> m_lastInstructions;
+      
+      // for highlighting errors
+      ExtraSelectionMap m_errors;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);

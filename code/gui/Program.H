@@ -91,6 +91,7 @@ class Program : public QObject {
       // Slots from Gui -> Debugger
       // --------------------------
       void stop();
+      void forceStop();
       void pause();
       void run();
       void stepForward();

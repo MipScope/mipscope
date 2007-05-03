@@ -42,6 +42,7 @@ class Debugger : public QThread {
       void setParseList(ParseList *list);
       
       void programStop(void);
+      void programForceStop(void);
       void programPause(void);
       void programRun(void);
       void programStepForward(void);
@@ -92,6 +93,10 @@ class Debugger : public QThread {
       int waitOnStatus(int status);
       void runAnotherStep(void);
       void Debugger::executionInit(void);
+      
+      // set when user rolls program back past program entry point
+      //    (ex. by deleting the main: label...)
+      bool m_forceStopped;
 };
 
 /*

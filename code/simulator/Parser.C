@@ -191,6 +191,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
          try {
             args[i] = parseArg(arg, list);
          } catch(ParseError &e) {
+            e.setUnrecognized(text);
             e += QString("(in argument '%1' to instruction '%2')").arg(QString(i), instr);
             throw;
          }
@@ -232,8 +233,9 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
 StatementArg *Parser::parseArg(QString text, ParseList *list) {
    string orig = _tab;
    _tab += "   ";
+   
+   QString copy(text);
 
-   QString copy = text;
    if (!Parser::simplify(text))
       PARSE_ERRORL(QString("missing argument?  '%1'").arg(copy), copy, copy.length());
    
@@ -262,10 +264,13 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    QRegExp endOfReg("\\$[a-z0-9]+\\b");
    int endIndex = text.indexOf(endOfReg, regIndex);
    
+   if (endIndex + endOfReg.matchedLength() > regIndex + 3)
+      PARSE_ERRORL(QString("invalid register '%1'.").arg(text), copy, copy.length());
+
    if (regIndex + 2 >= len || (endIndex > 0 && endIndex + endOfReg.matchedLength() == regIndex + 2 && endIndex == regIndex))
       reg = Parser::substring(text, regIndex + 0, 2);
    else reg = Parser::substring(text, regIndex + 0, 3);
-
+   
    if (VERBOSE) cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
    if (VERBOSE) cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
    
@@ -843,6 +848,17 @@ ParseError::ParseError(const QString &description, const QString &unrecognized, 
 
 QString ParseError::getUnrecognized() const {
    return m_unrecognized;
+}
+
+void ParseError::setUnrecognized(const QString &text) {
+   cerr << "\n setUnrecognized: " << text.toStdString() << ", " << m_unrecognized.toStdString() << ", " << m_position << ", " << text.indexOf(m_unrecognized) << endl;
+   
+   if (m_position != text.indexOf(m_unrecognized) || m_position != text.lastIndexOf(m_unrecognized)) {
+      m_unrecognized = text;
+      m_length = text.length();
+
+      setTextBlock(m_textBlock);
+   }
 }
 
 int ParseError::getPosition() const {

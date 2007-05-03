@@ -15,7 +15,7 @@
 // ----------------------------------------------------------
 OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
    : Console(gui, editorPane, tr("Output Console")), 
-     SyscallHandler(gui->getSyscallListener(), S_PRINT), m_first(true)
+     SyscallHandler(gui->getSyscallListener(), S_PRINT)
 {
    m_display->setPlainText("Welcome to "PROJECT_NAME"!\nWritten by Travis Fischer and Tim O'Donnell\n\n");
 }
@@ -28,12 +28,8 @@ void OutputConsole::push(const QString &newOutput) {
    c.insertText(newOutput);
    
    //updateDisplay();
-   if (m_first) {
-      m_first = false;
-
-      if (!m_visible)
-         m_gui->ensureVisibility(this);
-   }
+   if (!m_visible)
+      m_gui->ensureVisibility(this);
 }
 
 void OutputConsole::pop() {
@@ -87,7 +83,6 @@ void OutputConsole::undoSyscall(int syscallNo) {
 
 void OutputConsole::reset() {
    flush();
-   m_first = true;
 
    foreach(OutputAction *a, m_outputActions) {
       if (a != NULL)

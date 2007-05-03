@@ -124,6 +124,7 @@ class Gui : public QMainWindow {
               *m_editSelectAllAction, 
               *m_editToggleCommentAction, 
               *m_editGotoLineAction, 
+              *m_editGotoDeclarationAction, 
               *m_editFindAction, 
               *m_editReplaceAction, 
               

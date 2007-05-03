@@ -59,6 +59,8 @@ class Program : public QObject {
       int lineNumber(ParseNode *parseNode);
       bool undoIsAvailable() const;
       
+      ParseNode *getDeclaration(const QString &identifier);
+      
    protected:
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);

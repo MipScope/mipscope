@@ -87,6 +87,8 @@ class TextEditor : public QTextEdit {
       int currentLineNumber() const;
       int noLines() const; // returns the total number of lines
       void gotoLine(int); // moves text cursor to given line, scrolling editor if necessary
+      bool gotoDeclaration(const QTextCursor &c);
+      QTextCursor findDeclaration(const QTextCursor &c);
       
       QTextDocument *getTextDocument() const;
       void changeTextCursor(const QTextCursor &cursor);
@@ -148,15 +150,22 @@ class TextEditor : public QTextEdit {
       QVector<ParseNode*> m_lastInstructions;
       
       // for highlighting errors
-      ExtraSelectionMap m_errors;
+//      ExtraSelectionMap m_errors;
+
+      // selections without ctrl+click selection
+      QList<ExtraSelection> m_selections;
+      bool m_hasControlSelection;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);
       //virtual void contextMenuEvent(QContextMenuEvent *e);
       // @overridden to provide custom highlighting
       virtual void paintEvent(QPaintEvent *e);
-      
+      // @overridden to update line numbers accordingly
       virtual void resizeEvent(QResizeEvent *e);
+      // @overridden to allow for CTRL+clicking to goto declaration
+      virtual void mousePressEvent(QMouseEvent *e);
+      virtual void mouseMoveEvent(QMouseEvent *e);
       
       void highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height);
 };

@@ -162,6 +162,7 @@ void Gui::setupEditActions() {
    m_editSelectAllAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editSelectAll.png"), tr("&Select All"), this), m_editorPane, SLOT(selectAll()), QKeySequence(tr("CTRL+A")), true);
    m_editToggleCommentAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editToggleComment.png"), tr("&Toggle Comment"), this), m_editorPane, SLOT(toggleComment()), QKeySequence(tr("CTRL+D")), true);
    m_editGotoLineAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editGotoLine.png"), tr("&Goto Line.."), this), m_editorPane, SLOT(gotoLine()), QKeySequence(tr("CTRL+G")), true);
+   m_editGotoDeclarationAction = addAction(tb, menu, new QAction(QIcon(ICONS"/editGotoDeclaration.png"), tr("Goto &Declaration"), this), m_editorPane, SLOT(gotoDeclaration()), QKeySequence(tr("F3")), true);
    
    // Setup automatic enabling/disabling of different menu-items
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editUndoAction, SLOT(setEnabled(bool)));

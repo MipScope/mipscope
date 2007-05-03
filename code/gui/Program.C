@@ -491,6 +491,9 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
    }
    
    m_modified.clear();
+   
+   if (getStatus() != PAUSED)
+      return;
 
    if (earliest <= original) {
       cerr << "<<<ROLLING BACK to " << earliest << endl;
@@ -515,5 +518,12 @@ int Program::lineNumber(ParseNode *parseNode) {
 
 bool Program::undoIsAvailable() const {
    return (getStatus() == PAUSED && getState()->getCurrentTimestamp() <= 1);
+}
+
+ParseNode *Program::getDeclaration(const QString &identifier) {
+   if (m_parseList != NULL)
+      return m_parseList->getDeclaration(identifier);
+
+   return NULL;
 }
 

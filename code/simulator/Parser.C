@@ -47,7 +47,7 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
          continue;
       }
       
-      assert (n != NULL);
+//      assert (n != NULL);
       // Setup n in dis hizhouse
       parseNodes.push_back(n);
    }
@@ -78,7 +78,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
       
    //if (VERBOSE) cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
    
-   if (text == "") {
+   if (text.isEmpty()) {
       if (VERBOSE) cerr << _tab << "Recognized as blank or comment\n";
       _tab = orig;
       return new ParseNode(list, b);
@@ -106,7 +106,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
             PARSE_ERRORL(QString("redeclaration of label '%1'").arg(id), labelStr, labelStr.length());
          list->m_labelMap.insert(id, label);
          
-         if (text == "") {
+         if (text.isEmpty()) {
             _tab = orig;
             
             return new ParseNode(list, b, NULL, label);
@@ -160,7 +160,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    index = text.indexOf(' ');
    QString instr = text.section(' ', 0, 0);
    bool noArgs;
-   if ((noArgs = (index < 0 || instr == "")))
+   if ((noArgs = (index < 0 || instr.isEmpty())))
       instr = text; // account for instructions w/out args such as 'syscall'
    // remove instr from text
    else text = text.remove(0, index + 1);
@@ -185,7 +185,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
       
       do {
          QString arg = text.section(',', i, i);
-         if (arg == "")
+         if (arg.isEmpty())
             break;
          
          try {
@@ -437,7 +437,7 @@ AddressIdentifier *Parser::parseLabel(QString text) {
 }
 
 bool Parser::simplify(QString &text) {
-   return ((text = text.simplified()) != "");
+   return !(text = text.simplified()).isEmpty();
 }
 
 // Parses the given text for an immediate number (in hex, binary, or decimal)
@@ -514,7 +514,9 @@ QString Parser::substring(QString s, int start, int length) {
 // Strips a given string of comments and extraneous whitespace
 void Parser::trimCommentsAndWhitespace(QString &text) {
    text = text.simplified(); // removed leading/trailing whitespace
-   
+   if (text.isEmpty())
+      return;
+
    // remove commented parts
    // we want the first hash(#) after the LAST quote(")
    int lastQuote = text.lastIndexOf('"'), firstQ = -1;
@@ -735,7 +737,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                      // Parse a list of arguments
                      for(;;) {
                         QString val = text.section(',', i, i).simplified();
-                        if (val == "")
+                        if (val.isEmpty())
                            break;
                         
                         if ((imm = parseImmediate(val, list)) == NULL) {

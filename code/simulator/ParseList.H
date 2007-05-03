@@ -93,6 +93,9 @@ class ParseList : public QObject {
       
       Program *getProgram() const;
       
+      // for jumping to the declaration of an Identifier
+      ParseNode *getDeclaration(const QString &identifier);
+
    private:
       QTextDocument *m_source;
       SemanticErrors m_semanticErrors;

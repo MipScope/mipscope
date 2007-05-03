@@ -13,6 +13,7 @@
     <file>editCut.png</file>
     <file>editFind.png</file>
     <file>editGotoLine.png</file>
+    <file>editGotoDeclaration.png</file>
     <file>editPaste.png</file>
     <file>editRedo.png</file>
     <file>editSelectAll.png</file>
@@ -23,6 +24,7 @@
     <file>fileOpen.png</file>
     <file>filePrint.png</file>
     <file>fileSave.png</file>
+    <file>fileSaveAs.png</file>
     <file>fileSaveAll.png</file>
     <file>memory.png</file>
     <file>viewDirectoryListing.png</file>

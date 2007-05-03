@@ -343,6 +343,14 @@ void EditorPane::gotoLine() {
       m_activeEditor->gotoLine(lineNo);
 }
 
+void EditorPane::gotoDeclaration() {
+   QTextCursor c = m_activeEditor->textCursor();
+   if (!c.hasSelection())
+      c.select(QTextCursor::WordUnderCursor);
+   
+   m_activeEditor->gotoDeclaration(c);
+}
+
 void EditorPane::selectAll() {
    m_activeEditor->selectAll();
 }

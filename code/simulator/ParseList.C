@@ -638,6 +638,35 @@ Program *ParseList::getProgram() const {
    return m_program;
 }
 
+// for jumping to the declaration of an Identifier
+ParseNode *ParseList::getDeclaration(const QString &identifier) {
+   if (m_labelMap.contains(identifier)) {
+      ParseNode *declaration = m_labelMap[identifier]->getParseNode();
+
+      return declaration;
+   }
+   
+   // if b contains a const -- not in m_labelMap
+   for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next())
+   {
+      ParseNode *p = ParseNode::Node(b);
+      if (p == NULL)
+         continue;
+      Statement *s = p->getStatement();
+
+      // ensure any labels referenced by this instruction are defined
+      if (s != NULL && s->isPreprocessor()) {
+         const QString &constID = (static_cast<ConstStatement*>(s))->getID()->getID();
+
+         if (identifier == constID)
+            return p;
+      }
+   }
+   
+   return NULL;
+}
+
+
 SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 
    : ParseError(description, unrecognized), m_parseNode(parseNode)
 {

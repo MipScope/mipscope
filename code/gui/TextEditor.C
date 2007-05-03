@@ -22,7 +22,7 @@
 TextEditor::TextEditor(EditorPane *parent, QFont *font, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
    m_loaded(false), m_modified(false), m_undoAvailable(false), 
-   m_redoAvailable(false), m_syntaxHighligher(NULL), m_program(new Program(parent->m_parent, parent, this)), m_pc(NULL)
+   m_redoAvailable(false), m_syntaxHighligher(NULL), m_program(new Program(parent->m_parent, parent, this)), m_pc(NULL), m_hasControlSelection(false)
 {
    setupEditor(font);
    
@@ -77,6 +77,7 @@ void TextEditor::setupEditor(QFont *font) {
    
    //modifiabilityChanged(m_parent->isModifiable());
    m_syntaxHighligher = new SyntaxHighlighter(this);
+   setMouseTracking(true);
 }
 
 // Slot, notified every time text is changed in the parent TextEdit
@@ -402,7 +403,8 @@ void TextEditor::highlightLine(QPainter &p, ParseNode *parseNode, const QColor &
 
 bool TextEditor::openFile(QFile *file) {
    bool templateFile = false;
-   m_errors.clear();
+   m_selections.clear();
+   m_hasControlSelection = false;
    
    if (file == NULL) { // open a template file
       if (!QFile::exists(TEMPLATE))
@@ -441,7 +443,7 @@ bool TextEditor::openFile(QFile *file) {
    } // else display error
    
 //   m_program->loadProgram();
-   QTimer::singleShot(300, m_program, SLOT(loadProgram()));
+   QTimer::singleShot(1500, m_program, SLOT(loadProgram()));
    return true;
 }
 
@@ -589,6 +591,131 @@ QMessageBox::StandardButton TextEditor::saveAs() {
    m_file = new QFile(filename);
    return save(true); // force save even if document is unmodified
 }
+
+void TextEditor::mousePressEvent(QMouseEvent *e) {
+   bool handled = false;
+   
+   // CTRL + click --> goto declaration of word under mouse
+   if (e->modifiers() & Qt::ControlModifier) {
+      QTextCursor c = cursorForPosition(e->pos());
+      
+      c.select(QTextCursor::WordUnderCursor);
+      handled = gotoDeclaration(c);
+   }
+
+   if (!handled)
+      QTextEdit::mousePressEvent(e);
+}
+
+void TextEditor::mouseMoveEvent(QMouseEvent *e) {
+   bool wasShowing = m_hasControlSelection;
+   bool shown = false;
+   
+   if (e->modifiers() & Qt::ControlModifier) {
+      QTextCursor c = cursorForPosition(e->pos());
+      
+      c.select(QTextCursor::WordUnderCursor);
+      const QTextCursor &cursor = findDeclaration(c);
+
+      if (!cursor.isNull()) {
+         m_hasControlSelection = true;
+         QList<ExtraSelection> selections = QList<ExtraSelection>(m_selections);
+         
+         QTextCharFormat format(c.charFormat());
+         format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+         format.setUnderlineColor(Qt::darkBlue);
+         const struct QTextEdit::ExtraSelection newSelection = {
+            QTextCursor(c), 
+            QTextCharFormat(format), 
+         };
+         
+         selections.push_back(newSelection);
+         if (!wasShowing)
+            qApp->setOverrideCursor(Qt::PointingHandCursor);
+         
+         shown = true; 
+         setExtraSelections(selections);
+      }
+   }
+   
+   if (!shown && wasShowing) {
+      m_hasControlSelection = false;
+      qApp->restoreOverrideCursor();
+      setExtraSelections(m_selections);
+   }
+   
+   QTextEdit::mouseMoveEvent(e);
+}
+
+QTextCursor TextEditor::findDeclaration(const QTextCursor &c) {
+   const QString &identifier = c.selectedText();
+   
+   ParseNode *declaration = m_program->getDeclaration(identifier);
+   QTextBlock *declarationBlock;
+   
+   if (declaration != NULL && (declarationBlock = declaration->getTextBlock()) != NULL) {
+      QTextCursor cursor = textCursor();
+
+      int pos = declarationBlock->position() + declarationBlock->text().indexOf(identifier);
+
+      if (pos >= 0) {
+         // move cursor to line containing declaration
+         cursor.setPosition(pos);
+
+         // highlight declaration text
+         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, identifier.length());
+         
+         return QTextCursor(cursor);
+      }
+   }
+   
+   return QTextCursor();
+   //QTextDocument *doc = document();
+   //return doc->find(identifier, 0, QTextDocument::FindCaseSensitively);
+}
+
+bool TextEditor::gotoDeclaration(const QTextCursor &c) {
+   QTextCursor cursor = findDeclaration(c);
+   
+   if (!cursor.isNull()) {
+      setTextCursor(cursor);
+      ensureCursorVisible();
+      
+      return true;
+   }
+   const QString &identifier = c.selectedText();
+
+   // display error indicator if we couldn't locate identifier declaration
+   if (STATUS_BAR != NULL)
+      STATUS_BAR->showMessage(QString("Could not find declaration of '%1'.").arg(identifier), STATUS_DELAY);
+   
+   return false;
+}
+
+/*
+   ParseNode *declaration = m_program->getDeclaration(identifier);
+   
+   if (declaration != NULL && (declarationBlock = declaration->getTextBlock()) != NULL) {
+      QTextCursor cursor = textCursor();
+      
+      int pos = declarationBlock->position() + declarationBlock->text().indexOf(identifier);
+      
+      if (pos >= 0) {
+         // move cursor to line containing declaration
+         cursor.setPosition(pos);
+
+         // highlight declaration text
+         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, identifier.length());
+         setTextCursor(cursor);
+         
+         ensureCursorVisible();
+         shown = true;
+      }
+   }
+   
+
+   return shown;
+}*/
 
 bool TextEditor::isModified() const {
    return document()->isModified();
@@ -897,28 +1024,27 @@ Program *TextEditor::getProgram() const {
 
 void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
    if (errors == NULL) { // program is free of errors
-//      if (!m_errors.isEmpty()) {
-//         m_errors.clear();
-         setExtraSelections(QList<QTextEdit::ExtraSelection>());
-//      }
-      
+      if (!m_selections.isEmpty()) {
+         m_selections.clear();
+         setExtraSelections(m_selections);
+      }
+
       return;
    }
    
 //   cerr << "setting Errors: " << errors->size() << endl;
    
+   m_selections.clear();
    QTextCursor c = textCursor();
    QTextCharFormat format(currentCharFormat());
    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);//SpellCheckUnderline);//WaveUnderline);
    format.setUnderlineColor(Qt::red);
    
-//   m_errors.clear();
 /*   // remove any invalid text blocks (probably were deleted)
    foreach(const QTextBlock &b, m_errors.keys()) {
       if (!b.isValid())
          m_errors.remove(b);
    }:*/
-   QList<QTextEdit::ExtraSelection> errorList;
    
    foreach(ParseError e, *errors) {
       const QTextBlock *block = e.getTextBlock();
@@ -944,7 +1070,7 @@ void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
             QTextCharFormat(format), 
          };
          
-         errorList.push_back(newSelection);
+         m_selections.push_back(newSelection);
          
          /*const QTextBlock &newBlock = c.block();
          if (m_errors.contains(newBlock))
@@ -954,7 +1080,7 @@ void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
       }
    }
    
-   setExtraSelections(errorList);//m_errors.values());
+   setExtraSelections(m_selections);//m_errors.values());
 }
 
 /*

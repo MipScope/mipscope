@@ -1,7 +1,10 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView
-   * Tie Register WatchPoints into Debugger
+   * Fix several of the on-the-fly editing issues;
+      * Ex: .data label edit of that line should invalidate ALL parsenodes containing references to that label -- just remove them; add them to removeAtEnd
+
+   * Better view of errors
    * Clear button on OutputConsole?
    * Add 'last pc' to StackView?
 

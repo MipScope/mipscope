@@ -222,6 +222,7 @@ void Program::pause() {
 void Program::updateSyntaxErrors(SyntaxErrors *newS) {
    m_syntaxErrors = newS;
    
+   m_parent->updateSyntaxErrors(newS);
    m_gui->getErrorConsole()->updateSyntaxErrors(newS, m_parent);
 //   m_parent->
 }
@@ -230,7 +231,9 @@ void Program::run() {
    if (!m_current)
       return;
    
-   if (getStatus() == STOPPED) {
+   int status = getStatus();
+   
+   if (status == STOPPED) {
       // reparse program; ensure it was successful
       
       try {
@@ -254,6 +257,9 @@ void Program::run() {
 
       // content changed during Pause textEditor->notifies Proxy
       connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
+   } else if (status == RUNNING) {
+      pause();
+      return;
    }
    
    m_debugger->programRun();
@@ -323,16 +329,18 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       do {
          const QTextBlock &block = doc->findBlock(position);
          ParseNode *modified = ParseNode::Node(block);
+         QString newText = block.text();
+         Parser::trimCommentsAndWhitespace(newText);
+         
          if (modified != NULL) {
             // TODO:  check if it actually changed?
             // add an equality operator to Statement*
-            const QString &newText = block.text();
             
             if (modified->getText() != newText) {
                modified->setText(newText);
                m_modified.push_back(modified);
             }
-         } else {
+         } else if (newText != "") {
             cerr << "SPECIAL CASE: '" << block.text().toStdString() << "'\n";
             
             // Inserting a completely new text block; must roll back to the 
@@ -353,14 +361,13 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
                TIMESTAMP timestamp = next->getFirstExecuted();
                cerr << "next timestamp = " << timestamp << endl;
                
+               cerr << "next: " << ParseNode::Node(block.next()) << ", segment = " << ParseList::getSegment(ParseNode::Node(block.next())) << endl;
+               
                if (timestamp != CLEAN_TIMESTAMP && timestamp < newlyInsertedTimestamp)
                   newlyInsertedTimestamp = timestamp;
             }
 
             /*if (newlyInsertedTimestamp == MAX_TIMESTAMP) { // should never happen
-               
-//               cerr << ">>> DEBUG THIS <<< Program::contentsChange shouldn't ever get here!\n";
-               
                stop();
                return;
             }*/
@@ -379,7 +386,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       
       // Update validity of program
       try {
-         m_parseList->updateSyntacticValidity();
+         m_parseList->updateSyntacticValidity(getState());
       } catch(SyntaxErrors &e) {
          cerr << "\tProgram is invalid; " << e.size() << " syntax errors\n";
          c.setPosition(originalPosition);
@@ -426,13 +433,20 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
    cerr << "rollBackToEarliest: " << m_modified.size() << " modified\n";
    
    foreach(ParseNode *modified, m_modified) {
-      TIMESTAMP curTimestamp = modified->getFirstExecuted();
+/*      TIMESTAMP curTimestamp = modified->getFirstExecuted();
       
       if (curTimestamp != CLEAN_TIMESTAMP && curTimestamp < earliest)
-         earliest = curTimestamp;
+         earliest = curTimestamp;*/
       
       //cerr << "Looking at mod timestamp: " << curTimestamp << endl;
-      m_parseList->remove(modified);
+      
+      // remove this invalid parseNode and any secondary nodes affected 
+      // by it (for instance, in the case of preprocessor directive nodes)
+      //    also retrieves the minimum timestamp of all nodes removed in 
+      //    this call
+      TIMESTAMP curTimestamp = m_parseList->remove(modified);
+      if (curTimestamp != CLEAN_TIMESTAMP && curTimestamp < earliest)
+         earliest = curTimestamp;
    }
    
    m_modified.clear();

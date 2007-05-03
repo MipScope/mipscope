@@ -541,15 +541,11 @@ void Gui::debugStepAction() {
 
 void Gui::debugBStepAction() {
    stepBackward();
-   // TODO
 }
 
 void Gui::debugRestartAction() {
    m_restarted = true;
    stop();
-   // TODO
-   //m_mode = RUNNING;
-   //updateDebugActions();
 }
 
 // Allow user to load file into a separate process running in xspim (cs31-version)

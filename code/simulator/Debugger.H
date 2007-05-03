@@ -1,3 +1,9 @@
+/* ---------------------------------------------- *\
+   file: Parser.H
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 4/18/2007
+\* ---------------------------------------------- */
 #ifndef DEBUGGER_H_
 #define DEBUGGER_H_
 

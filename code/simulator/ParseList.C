@@ -65,6 +65,10 @@ ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
    if (p == NULL)
       return NULL;
    
+   // run-protection for data segments
+   if (ParseList::getSegment(p) == S_DATA)
+      return NULL;
+   
    while(!p->isExecutable()) {
       if ((p = p->getNext()) == NULL)
          return NULL;  // end of program (tested and works :)
@@ -76,6 +80,10 @@ ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
 // (static) Returns the closest executable ParseNode at or Before the given ParseNode 
 ParseNode *ParseList::getClosestInstructionBefore(ParseNode *p) {
    if (p == NULL)
+      return NULL;
+   
+   // run-protection for data segments
+   if (ParseList::getSegment(p) == S_DATA)
       return NULL;
    
    while(!p->isExecutable()) {
@@ -138,8 +146,6 @@ SyntaxErrors *ParseList::getSyntaxErrors() const {
       errors->push_back(ParseError(QString("Could not locate program entry point; Must define label '"MAIN"' or '"__START"'"), ""));
    
    // Ensure only instructions are in .text and data is in .data
-   enum SEGMENT { S_TEXT, S_DATA };
-
    SEGMENT segment = S_TEXT; // text is the default
    
    int lineNo = 0;
@@ -169,6 +175,90 @@ SyntaxErrors *ParseList::getSyntaxErrors() const {
    }
    
    return errors;
+}
+
+SEGMENT ParseList::getSegment(ParseNode *node) {
+   if (node == NULL)
+      return S_TEXT;
+   
+   //ParseNode *original = node;
+   QTextBlock block = *node->getTextBlock();
+   
+   while(node != NULL) {
+      Statement *s = node->getStatement();
+      
+      if (s != NULL) {
+         if (s->isInstruction())
+            return S_TEXT;
+         
+         if (s->isDirective()) {
+            Directive *dir = Statement::getDirective(s);
+            
+            if (dir->isText())
+               return S_TEXT;
+            if (dir->isData())
+               return S_DATA;
+         }
+      }
+      
+      // else try the previous node
+      block = block.previous();
+      node  = node->getPrevious();
+      
+      if (node == NULL) {
+         do {
+            if (!block.isValid()) // backed up to beginning of document
+               return S_TEXT;//ParseList::getForwardSegment(original);
+            
+            block = block.previous();
+            node = ParseNode::Node(block);
+         } while(node == NULL);
+      }
+   }
+   
+   return S_TEXT; // default
+}
+
+SEGMENT ParseList::getForwardSegment(ParseNode *node) {
+   if (node == NULL)
+      return S_TEXT;
+
+   QTextBlock block = *node->getTextBlock();
+   
+   while(node != NULL) {
+      Statement *s = node->getStatement();
+      
+      if (s != NULL) {
+         if (s->isInstruction())
+            return S_TEXT;
+         
+         if (s->isDirective()) {
+            Directive *dir = Statement::getDirective(s);
+            
+            if (dir->isText())
+               return S_TEXT;
+            if (dir->isData())
+               return S_DATA;
+         }
+      }
+      
+      // else try the next node
+      block = block.next();
+      node  = node->getNext();
+      
+      if (node == NULL) {
+         do {
+            if (!block.isValid()) // at end of doc
+               return S_TEXT; // default
+            
+            block = block.next();
+            node = ParseNode::Node(block);
+         } while(node == NULL);
+      }
+   }
+   
+   return S_TEXT; // default
+
 }
 
 // Returns the ParseNode* containing the program's entry point (__start label or main)
@@ -214,9 +304,14 @@ bool ParseList::initialize(State *state) {
    return true;
 }
 
-bool ParseList::insert(ParseNode *newNode) {
+// set initializeValid to true to initialize validated parsenodes
+//  (for incremental compilation)
+bool ParseList::insert(ParseNode *newNode, State *currentState) {
    if (newNode == NULL)
       return false;
+   
+/*   if (currentState)
+      cerr << "Inserting: '" << newNode << "'\n";*/
    
    // Validate any ParseNodes which were waiting on this ParseNode's label 
    // to become semantically valid
@@ -224,16 +319,22 @@ bool ParseList::insert(ParseNode *newNode) {
    if (label != NULL && m_semanticErrors.contains(label->getID())) {
       ParseNodeList *waitingNodes = m_semanticErrors[label->getID()];
       
+      // Update the semantic validity of all nodes which referenced newNode's label
       foreach(ParseNode *cur, *waitingNodes) {
          cur->setSemanticValidity(true);
          
+         // Find the reference to newNode's label in cur's arguments
          Statement *s = cur->getStatement();
+         if (s != NULL && currentState != NULL)
+            s->initialize(newNode, currentState);
+         
          if (s != NULL && s->isInstruction()) {
             StatementArgList *args = (static_cast<Instruction*>(s))->getArguments();
-
+            
+            // For each argument, check if it's a reference to newNode's label
             for(int i = 0; i < args->noArgs(); i++) {
                StatementArg *cur = (*args)[i];
-
+               
                if (cur->hasAddressIdentifier()) {
                   Identifier *addrID = cur->getID();
                   const QString &id = addrID->getID();
@@ -298,7 +399,7 @@ bool ParseList::insert(ParseNode *newNode) {
 
    if (s == NULL && newNode->getLabel() != NULL) {
 
-      // TODO:  Hack;  when to ues text, and when to use data?!
+      // TODO:  Hack;  when to use text, and when to use data?!
       if (m_nextTextAddress & 3)
          m_nextTextAddress += 4 - (m_nextTextAddress & 3);
 
@@ -345,7 +446,13 @@ bool ParseList::insert(ParseNode *newNode) {
       }
    }
    
+/*   if (currentState)
+      cerr << "\tAddr of node: " << address << "\n";*/
+   
    newNode->setAddress(address);
+   
+   if (s != NULL && currentState != NULL)
+      s->initialize(newNode, currentState);
    
    return semanticallyCorrect;
 }
@@ -354,7 +461,7 @@ bool ParseList::insert(ParseNode *newNode) {
 // Functionality for Editing-On-The-Fly
 // ------------------------------------
 
-void ParseList::updateSyntacticValidity() {
+void ParseList::updateSyntacticValidity(State *currentState) {
    SyntaxErrors errors;
    int lineNo = 0;
    
@@ -383,20 +490,27 @@ void ParseList::updateSyntacticValidity() {
             continue;
          }
          
-         insert(newNode);
+         insert(newNode, currentState);
       }
    }
-
+   
    if (!errors.empty())
       throw errors;
 }
 
 // Removes all references to a given ParseNode from this ParseList
-void ParseList::remove(ParseNode *node) {
+TIMESTAMP ParseList::remove(ParseNode *node) {
+   TIMESTAMP minTimestamp = MAX_TIMESTAMP;
+
    if (node == NULL)
-      return;
+      return minTimestamp;
+   
+   TIMESTAMP firstExecuted = node->getFirstExecuted();
+   if (firstExecuted != CLEAN_TIMESTAMP) // only count timestamp if it's been run at least once (if it's "dirty")
+      minTimestamp = firstExecuted;
    
    cerr << "removing parseNode: '" << node << "'\n";
+   QList<ParseNode*> removeAtEnd;
    
    // Remove any references to this ParseNode's label
    //    Also set semantic errors on ParseNodes which may have 
@@ -406,7 +520,7 @@ void ParseList::remove(ParseNode *node) {
       const QString &labelID = label->getID();
       m_labelMap.remove(labelID);
        
-      bool semanticallyCorrect = true;
+//      bool semanticallyCorrect = true;
       for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next())
       {
          if (node->getTextBlock()->position() == b.position())
@@ -428,24 +542,21 @@ void ParseList::remove(ParseNode *node) {
                   const QString &id = cur->getID()->getID();
                   
                   if (!m_labelMap.contains(id)) {
-                     // this node is referencing some label which currently doesn't exist
-                     // wait for the label to appear, and only then validate it
-                     p->setSemanticValidity(false);
+                     // this node is referencing the label of the node that's 
+                     // currently being deleted. it's now invalid, so remove it
+                     
+                    removeAtEnd.push_back(p);
+
+                     /*p->setSemanticValidity(false);
                      semanticallyCorrect = false;
                      cur->getID()->getAddressIdentifier()->setLabelParseNode(NULL);
-
-                     
-                     // TODO:  take out this assert
-                     assert (cur->getID()->getAddressIdentifier()->getParseNode() == node); // that we're deleting.. not sure if this is a valid assertion..
-                     
-
                      
                      //cerr << "semantically Invalid: '" << p->getTextBlock()->text().toStdString() << "' s = " << s << endl;
                      if (!m_semanticErrors.contains(id))
                         m_semanticErrors.insert(id, new ParseNodeList());
                      
                      m_semanticErrors[id]->push_back(p);
-                     break;
+                     break;*/
                   }
                }
             } // for each argument of the current instruction
@@ -454,9 +565,31 @@ void ParseList::remove(ParseNode *node) {
    } // if we have a label
    
    
+   // -----------------------------------
+   // Attempt to Update Preprocessor Maps
+   // -----------------------------------
    
-   // TODO:  if node contains etwas in m_preProcessorMap...
-   
+   Statement *s = node->getStatement();
+   if (s != NULL && s->isPreprocessor()) { // consts and #defines
+      ConstStatement *st = Statement::getConst(s);
+      
+      // NOTE:  TODO:  Note: going to have to include statements/Dir..H.. can't
+      
+      const QString &id = st->getID()->getID();
+//      ImmediateIdentifier *imm = st->getImmediate();
+      m_preProcessorMap.remove(id);
+      
+      // For each text block, check if it references this const, and throw any matches out!
+      for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next())
+      {
+         if (node->getTextBlock()->position() == b.position())
+            continue;
+         
+         ParseNode *p = ParseNode::Node(b);
+         if (p != NULL && p->getText().indexOf(QRegExp(QString("\\b%1\\b").arg(id))) >= 0)
+            removeAtEnd.push_back(p);
+      }
+   }
    
    // if this node was in a semantic error list, remove it
    foreach(QString s, m_semanticErrors.keys()) {
@@ -470,17 +603,24 @@ void ParseList::remove(ParseNode *node) {
          }
       }
    }
-
+   
    node->notifyDeleted();
+   
+   // remove nodes which this one invalidated
+   foreach(ParseNode *p, removeAtEnd) {
+      TIMESTAMP newPotentialMin = remove(p);
+      
+      if (newPotentialMin < minTimestamp)
+         minTimestamp = newPotentialMin;
+   }
+   
+   return minTimestamp;
 }
 
 // Important:  ParseNodes call this upon getting deleted -- must notify 
 //    everyone that it's been invalidated
 void ParseList::notifyParseNodeDeleted(ParseNode *wasDeleted) {
-   if (wasDeleted == NULL)
-      return;
-   
-   if (m_program != NULL)
+   if (wasDeleted != NULL && m_program != NULL)
       m_program->notifyParseNodeDeleted(wasDeleted);
 }
 

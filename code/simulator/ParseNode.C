@@ -27,9 +27,13 @@ PlaceHolder::~PlaceHolder() {
 ParseNode::ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)
    : m_firstExecuted(CLEAN_TIMESTAMP), m_label(label), m_parseList(parent), 
    m_statement(statement), m_textBlock(textBlock), 
-   m_placeHolder(new PlaceHolder(this, textBlock)), m_isSemanticallyValid(true), 
-   m_text(textBlock == NULL ? "" : textBlock->text())
+   m_placeHolder(new PlaceHolder(this, textBlock)), m_isSemanticallyValid(true)
 {
+   if (textBlock != NULL) {
+      m_text = textBlock->text();
+      Parser::trimCommentsAndWhitespace(m_text);
+   } else m_text = "";
+   
 //   cerr << "<<< " << m_statement << ", '" << m_textBlock->text().toStdString() << "'\n";
    
    if (m_label != NULL)
@@ -50,10 +54,10 @@ ParseNode *ParseNode::Node(const QTextBlock &b) {
       return NULL;
    
    PlaceHolder *placeHolder = static_cast<PlaceHolder*>(b.userData());
-
+   
    if (placeHolder == NULL || placeHolder->m_parent->m_placeHolder == NULL)
-      return NULL;
-
+      return NULL; // ensure it hasn't been deleted
+   
    return placeHolder->m_parent;
 }
 

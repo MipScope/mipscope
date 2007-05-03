@@ -12,6 +12,7 @@
 #include <QVector>
 #include <QList>
 #include <map>
+#include "Utilities.H"
 using namespace std;
 
 class Program;
@@ -93,6 +94,8 @@ class TextEditor : public QTextEdit {
       void clearLastInstructions();
       Program *getProgram() const;
       
+      void updateSyntaxErrors(SyntaxErrors *errors);
+      
 // returns actual filename of open file
       QString fileName() const;
       QFile *file() const { return m_file; }
@@ -155,7 +158,7 @@ class SyntaxTip : public QLabel {
    public:
       SyntaxTip(TextEditor *parent);
        
-      void show(const QString &tipText, const QString &statusText, const QPoint &pos, const QTextCursor&);
+      void show(const QString &tipText, QString &statusText, const QPoint &pos, const QTextCursor&);
       
       // @overridden
       void mousePressEvent(QMouseEvent*);

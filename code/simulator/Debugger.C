@@ -1,3 +1,9 @@
+/* ---------------------------------------------- *\
+   file: Parser.C
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 4/18/2007
+\* ---------------------------------------------- */
 #include "Debugger.H"
 #include "../gui/Utilities.H"
 #include "../gui/Program.H"
@@ -12,9 +18,7 @@ Debugger::Debugger(ParseList* parseList)
    : m_state(new State(this)), m_parseList(parseList), m_status(STOPPED), 
      m_terminationReason(T_ABNORMAL)
 {
-   
    memset(m_registerWatchpoints, 0, sizeof(bool) * register_count);
-   
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
    
    // cannot use signals/slots for watchpoints; has to be direct!

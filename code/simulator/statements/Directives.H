@@ -130,6 +130,10 @@ class KTextDirective : public Directive {
          return 2;
       }
 
+      virtual bool isText() const {
+         return true;
+      }
+      
       // @overridden from Statement
       virtual const char *getName() const { return ".ktext"; }
       virtual const char *getSyntax() const { return " &lt;address&gt;"; }
@@ -379,25 +383,24 @@ class WordDirective : public Directive {
 // ----------------------------------
 // Directive CONSTANT = imm
 // ----------------------------------
-class ConstStatement : public Statement {
-   public:
-      ConstStatement(AddressIdentifier *name, ImmediateIdentifier *value) 
-         : Statement(0), m_id(name), m_value(value) { }
-      
-      virtual bool isInstruction() { return false; }
-      virtual bool isDirective() { return false; }
-      
-      // @overridden from Statement
-      virtual const char *getName() const { return ""; }
-      virtual const char *getSyntax() const { return ""; }
-      virtual const char *getDescription() const {
-         return "";
-      }
+ConstStatement::ConstStatement(AddressIdentifier *name, ImmediateIdentifier *value) : Statement(0), m_id(name), m_value(value)
+{ }
 
-   protected:
-      AddressIdentifier *m_id;
-      ImmediateIdentifier *m_value;
-};
+bool ConstStatement::isInstruction() { return false; }
+bool ConstStatement::isDirective() { return false; }
+
+AddressIdentifier *ConstStatement::getID() const {
+   return m_id;
+}
+
+ImmediateIdentifier *ConstStatement::getImmediate() const {
+   return m_value;
+}
+
+// @overridden from Statement
+const char *ConstStatement::getName() const { return ""; }
+const char *ConstStatement::getSyntax() const { return ""; }
+const char *ConstStatement::getDescription() const { return ""; }
 
 #endif // __DIRECTIVES_H__
 

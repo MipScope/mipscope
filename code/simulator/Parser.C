@@ -66,31 +66,17 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
 
 // Returns NULL if b does not contain a syntactically-valid line
 ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
-   QString text = b->text().simplified(); // removed leading/trailing whitespace
+   QString text = b->text();
+   
+   // Remove any comments and extraneous leading/trailing whitespace
+   Parser::trimCommentsAndWhitespace(text);
+   int index;
    
    if (VERBOSE) cerr << "Parsing line: " << text.toStdString() << endl;
    string orig = _tab;
    _tab += "   ";
-   
-   // remove commented parts
-   // we want the first hash(#) after the LAST quote(")
-   int lastQuote = text.lastIndexOf('"'), firstQ = -1;
-   if (lastQuote == -1) lastQuote = 0; // not found
-   else firstQ = text.lastIndexOf('"');
-   
-   int commentIndex = text.indexOf('#', lastQuote), index;
-   int comment2Index = text.indexOf('#');
-   if (comment2Index < firstQ || firstQ == -1)
-      commentIndex = comment2Index;
-   
-   bool comment;//, breakPoint = ((b->userState() & B_BREAKPOINT) != 0);
-   
-   if ((comment = (commentIndex >= 0))) {
-      text.truncate(commentIndex);
-      text = text.simplified();
       
-      if (VERBOSE) cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
-   }
+   //if (VERBOSE) cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
    
    if (text == "") {
       if (VERBOSE) cerr << _tab << "Recognized as blank or comment\n";
@@ -474,6 +460,10 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
       
    // check that it parsed a number, and that this number fits in a 32 bit integer
    if (okay) {
+      if (value_long < 0) // negative
+         value = (int) value_long;
+      else value = (int) (unsigned int) value_long;
+      
       if (VERBOSE) {
          cerr << _tab << "Found Immediate: " << value;
          if (pasted)
@@ -481,13 +471,6 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
          cerr << endl;
       }
            
-      if (value_long < 0) { // negative
-         value = (int) value_long;
-      }
-      else { // positive         
-         value = (int) (unsigned int) value_long;
-      }     
-
       _tab = orig;
       return new ImmediateIdentifier(text, value);
    } else if (VERBOSE) cerr << _tab << "Invalid immediate: '" << text.toStdString() << "'\n";
@@ -521,6 +504,35 @@ QString Parser::substring(QString s, int start, int length) {
    //cerr << _tab << "Return: " << s.toStdString() << endl;
    return s;
 }
+
+// Strips a given string of comments and extraneous whitespace
+void Parser::trimCommentsAndWhitespace(QString &text) {
+   text = text.simplified(); // removed leading/trailing whitespace
+   
+   // remove commented parts
+   // we want the first hash(#) after the LAST quote(")
+   int lastQuote = text.lastIndexOf('"'), firstQ = -1;
+   if (lastQuote == -1) lastQuote = 0; // not found
+   else firstQ = text.lastIndexOf('"');
+   
+   int commentIndex = text.indexOf('#', lastQuote);
+   int comment2Index = text.indexOf('#');
+   if (comment2Index < firstQ || firstQ == -1)
+      commentIndex = comment2Index;
+   
+   bool comment;//, breakPoint = ((b->userState() & B_BREAKPOINT) != 0);
+   
+   if ((comment = (commentIndex >= 0))) {
+      text.truncate(commentIndex);
+      text = text.simplified();
+   }
+}
+
+
+// -----------------
+// Directive Parsing
+// -----------------
+
 
 enum DirectiveTypes {
    GLOBAL, 
@@ -799,7 +811,6 @@ ParseNode *Parser::parseConstant(QTextBlock *b, QString &text, AddressIdentifier
    
    if (VERBOSE) cerr << _tab << "Parsing constant: '" << text.toStdString() << "'\n";
    
-   // TODO!
    QString labelStr = substring(text, 0, equalsIndex).simplified();
    
    AddressIdentifier *name = parseLabel(labelStr);
@@ -866,8 +877,8 @@ void ParseError::setTextBlock(QTextBlock *b) {
       const QString &text = b->text();
       m_position = text.indexOf(m_unrecognized);
       
-      if (m_position >= 0)
-         m_position += b->position();
+      //if (m_position >= 0)
+      //   m_position += b->position();
    }
 }
 

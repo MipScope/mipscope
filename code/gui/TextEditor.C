@@ -11,6 +11,7 @@
 #include "Gui.H"
 #include "../simulator/ParseNode.H"
 #include "../simulator/Statement.H"
+#include "../simulator/Parser.H"
 #include "Program.H"
 #include <QtGui>
 #include <QtCore>
@@ -114,7 +115,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
          if (statement != NULL) {
             const QString text = QString("<p style='white-space:pre'><b>%1</b> %2").arg(selectedText, QString(statement->getSyntax()));
 
-            const QString statusText = statement->getDescription();
+            QString statusText = statement->getDescription();
             //"Adds two signed integers, storing the result in $dest.";
 
             //cerr << text.toStdString() << endl;
@@ -552,7 +553,7 @@ QMessageBox::StandardButton TextEditor::save(bool forceSave) {
       //cerr << "Could not write to file: '" << filename << "'" << endl;
       if (STATUS_BAR != NULL)
          STATUS_BAR->showMessage( QString("Could not write to %1").arg(fileName()),
-            STATUS_DELAY );
+            STATUS_DELAY * 2 );
       
       return QMessageBox::Abort;
    }
@@ -567,7 +568,7 @@ QMessageBox::StandardButton TextEditor::save(bool forceSave) {
    resetTabText(false);
    
    if (STATUS_BAR != NULL)
-      STATUS_BAR->showMessage( QString( "File %1 saved" ).arg(filename), STATUS_DELAY );
+      STATUS_BAR->showMessage( QString( "File %1 saved" ).arg(filename), STATUS_DELAY + 1000 );
 
    return QMessageBox::Yes;
 }
@@ -704,7 +705,7 @@ void SyntaxTip::editorScrolled(int val) {
    }
 }
 
-void SyntaxTip::show(const QString &text, const QString &statusText, const QPoint &pos, const QTextCursor &c) {
+void SyntaxTip::show(const QString &text, QString &statusText, const QPoint &pos, const QTextCursor &c) {
    m_block = new QTextBlock(c.block());
 
 //   m_cursor = new QTextCursor(c);
@@ -712,7 +713,9 @@ void SyntaxTip::show(const QString &text, const QString &statusText, const QPoin
 //   m_startPos = m_cursor->position();
    
    setText(text);
-   STATUS_BAR->showMessage(statusText);
+
+   // status bar cannot handle rich-text, so convert left/right brackets beforehand
+   STATUS_BAR->showMessage(statusText.replace("&lt;", "<").replace("&gt;", ">"));
    
    const QSize &hint = sizeHint();
    setGeometry(pos.x(), pos.y(), hint.width(), hint.height());
@@ -885,4 +888,56 @@ void TextEditor::fontChanged(const QFont &f) {
 Program *TextEditor::getProgram() const {
    return m_program;
 }
+
+void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
+   /*if (errors == NULL) {
+//      cerr << "Should remove all underlines\n";
+
+      
+      // TODO:  Use SetExtraSelections instead.
+      //    In Program::contentsChange, whenever a 
+      //    node gets validated, ensure its removed from m_parent's 
+      //    internal selection list.  Also, ensure invalid nodes
+      //    get properly added to that list!!!  :)
+      
+      // Try SingleUnderline as well.. see what it looks like in sunlab
+
+      
+      return;
+   }
+   
+   QTextCursor c = textCursor();
+   QTextCharFormat format(currentCharFormat());
+   format.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);//WaveUnderline);
+   format.setUnderlineColor(Qt::red);
+   
+   foreach(ParseError e, *errors) {
+      const QTextBlock *block = e.getTextBlock();
+      
+      if (block != NULL && block->isValid()) {
+         int subPos = e.getPosition();
+         
+         if (subPos >= 0) {
+            c.setPosition(block->position() + subPos);
+            c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, e.getLength());
+            
+            c.setCharFormat(format);
+         } else {
+            c.setPosition(block->position());
+            c.setBlockCharFormat(format);
+         }
+      }
+   }*/
+}
+/*
+c.select(QTextCursor::LineUnderCursor);
+//         c.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+         
+         QTextCharFormat format(m_display->currentCharFormat());
+         format.setToolTip(QString("Hex: %1: %2<br>"
+                                   "Dec: %3: %4").arg(addr, valString, 
+                           QString::number(address, 10), 
+                           QString::number(value, 10)));
+         format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+*/
 

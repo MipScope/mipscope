@@ -56,6 +56,7 @@ class Parser {
       // Parses for valid label names (or identifiers for global data, consts, etc)
       static AddressIdentifier *parseLabel(QString text);
       static bool simplify(QString &text);
+      static void trimCommentsAndWhitespace(QString &text);
 
       // Parses the directive found in the text given
       // (assuming its (possibly optional) label has already been parsed)

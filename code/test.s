@@ -1,5 +1,7 @@
 	.data
-.asciiz "a string\n"
+	
+	CONST = 50
+label: .asciiz "Debugging\n" # then show 'Reversible Debuggin"
 
 	.text
 	
@@ -7,8 +9,9 @@ main:
    nop
    nop
    nop
-   li $v0, 1
-   li $a0, 123456789
+   li $v0, 4
+   li $a0, CONST
+   la $a0, label
    syscall
    nop
    

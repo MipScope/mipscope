@@ -28,6 +28,11 @@ unsigned int Statement::getPreferredAlignment() const {
 
 void Statement::initialize(ParseNode *p, State *s) { p = NULL; s = NULL; }
 
+void Statement::InitializeStatementMaps() {
+   Instruction::InitializeInstructionMap();
+   Directive::InitializeDirectiveMap();
+}
+
 bool Statement::isInstruction() {
    Instruction *instr = NULL;
 
@@ -38,13 +43,18 @@ bool Statement::isInstruction() {
    return (instr != NULL);
 }
 
-void Statement::InitializeStatementMaps() {
-   Instruction::InitializeInstructionMap();
-   Directive::InitializeDirectiveMap();
-}
-
 bool Statement::isDirective() {
    return (!isInstruction());
+}
+
+bool Statement::isPreprocessor() { // consts and #defines
+   ConstStatement *constSt = NULL;
+
+   try {
+      constSt = dynamic_cast<ConstStatement*>(this);
+   } catch(bad_cast&) { }
+
+   return (constSt != NULL);
 }
 
 Directive   *Statement::getDirective(Statement *s) {
@@ -53,6 +63,10 @@ Directive   *Statement::getDirective(Statement *s) {
 
 Instruction *Statement::getInstruction(Statement *s) {
    return dynamic_cast<Instruction*>(s);
+}
+
+ConstStatement *Statement::getConst(Statement *s) {
+   return dynamic_cast<ConstStatement*>(s);
 }
 
 // ----------------------

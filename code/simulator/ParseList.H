@@ -19,6 +19,9 @@ class AddressIdentifier;
 class State;
 class Program; // in gui/
 
+enum SEGMENT { S_TEXT, S_DATA };
+
+
 // Two valid entry points for program
 #define __START   "__start"
 #define MAIN      "main"
@@ -54,6 +57,9 @@ class ParseList : public QObject {
       // (static) Returns the closest executable ParseNode at or before the given ParseNode 
       static ParseNode *getClosestInstructionBefore(ParseNode *p);
       
+      static SEGMENT ParseList::getSegment(ParseNode *node);
+      static SEGMENT ParseList::getForwardSegment(ParseNode *node);
+
       // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
       bool isValid() const;
 
@@ -68,13 +74,14 @@ class ParseList : public QObject {
       
       // no need to tell ParseList where to insert new node; it just knows
       // cause it's da shit!
-      // throws SemanticError upon failure
-      bool insert(ParseNode *newNode);
+      bool insert(ParseNode *newNode, State *state = NULL);
       
-      void updateSyntacticValidity();
+      void updateSyntacticValidity(State *currentState);
 
-      // ensures all maps get updated
-      void remove(ParseNode *node);
+      // ensures all maps get updated; returns earliest valid timestamp
+      // of any secondary nodes which had to be removed as a result of the 
+      // node passed in being removed
+      TIMESTAMP remove(ParseNode *node);
       
       void notifyParseNodeDeleted(ParseNode *wasDeleted);
       

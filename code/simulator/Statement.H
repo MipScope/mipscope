@@ -5,6 +5,9 @@
 class StatementArgList;
 class State;
 class ParseList;
+class ConstStatement;
+class AddressIdentifier;
+class ImmediateIdentifier;
 
 class Statement {
    public:
@@ -26,9 +29,11 @@ class Statement {
       
       virtual bool isInstruction();
       virtual bool isDirective();
+      virtual bool isPreprocessor(); // consts and #defines
       
       static Directive   *getDirective(Statement *s);
       static Instruction *getInstruction(Statement *s);
+      static ConstStatement *getConst(Statement *s);
       
    protected:
       unsigned int m_size; // in bytes  (4 for all instructions)
@@ -112,6 +117,27 @@ class Done : public Instruction {
       virtual const char *getSyntax() const;
       virtual const char *getDescription() const;
 };
+
+class ConstStatement : public Statement {
+   public:
+      ConstStatement(AddressIdentifier *name, ImmediateIdentifier *value);
+      
+      virtual bool isInstruction();
+      virtual bool isDirective();
+      
+      virtual AddressIdentifier *getID() const;
+      virtual ImmediateIdentifier *getImmediate() const;
+      
+      // @overridden from Statement
+      virtual const char *getName() const;
+      virtual const char *getSyntax() const;
+      virtual const char *getDescription() const;
+
+   protected:
+      AddressIdentifier *m_id;
+      ImmediateIdentifier *m_value;
+};
+
 
 
 #endif /*STATEMENT_H_*/

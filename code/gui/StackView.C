@@ -16,7 +16,7 @@
 #include <QTextEdit>
 
 // TODO:
-//    Possibly display who last modified a specific address
+//    MemoryView
 // 
 
 // View of the Stack for the currently running program

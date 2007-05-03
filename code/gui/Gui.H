@@ -54,7 +54,9 @@ class Gui : public QMainWindow {
       void watchPointModified(unsigned int reg, bool watchPoint);
       bool *getWatchpoints() const;
       bool handleProgramTerminated(int reason);
-
+      
+      void activeEditorChanged(TextEditor *current);
+      
       // Proxy-DEBUGGER Related
       // ----------------------
    signals:

@@ -604,7 +604,7 @@ TIMESTAMP ParseList::remove(ParseNode *node) {
       }
    }
    
-   node->notifyDeleted();
+   node->notifyDeleted(true);
    
    // remove nodes which this one invalidated
    foreach(ParseNode *p, removeAtEnd) {

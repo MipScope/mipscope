@@ -4,8 +4,20 @@ rm -rfd objects/;
 
 /course/cs036_projects/mipscope/bin/qmake -project && \
 sed -i "s/simulator\/main.C//g" code.pro && \
-sed -i "s/gui\/main.C//g" code.pro && \
+sed -i 's/INCLUDEPATH \+=.*/INCLUDEPATH += $(DEPENDPATH)/g' code.pro && \
 echo "
+   TARGET = mipscope
+   
+   OBJECTS_DIR = objects/release
+   MOC_DIR = objects/release
+" >> code.pro && \
+/course/cs036_projects/mipscope/bin/qmake && \
+make all && \
+echo "" && echo "Project generation successful!"
+
+
+"
+sed -i "s/gui\/main.C//g" code.pro && \
 CONFIG += debug_and_release
 
 CONFIG(debug, debug|release) {
@@ -19,8 +31,4 @@ CONFIG(debug, debug|release) {
    OBJECTS_DIR = objects/release
    MOC_DIR = objects/release
    SOURCES += gui/main.C
-}
-" >> code.pro && \
-/course/cs036_projects/mipscope/bin/qmake && \
-make all && \
-echo "" && echo "Project generation successful!"
+}"

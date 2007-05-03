@@ -49,6 +49,9 @@ int main(int argc, char** argv) {
       ui.executeProgram(&app);
    }
    else {
+      Q_INIT_RESOURCE(images);
+      Q_INIT_RESOURCE(icons);
+      
       // use the full GUI
       Gui ui(args);
       return app.exec();

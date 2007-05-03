@@ -108,9 +108,18 @@ void Program::currentChanged(TextEditor *cur) {
    // TODO:  make sure this m_current sheise is correct when active program
    // possibly disable changing of program??  Or possibly.. multiple programs 
    // running at once?!
+   bool wasCurrent = m_current;
    
-   if ((m_current = (cur == m_parent)) && (err = m_gui->getErrorConsole()) != NULL)
-      err->updateSyntaxErrors(m_syntaxErrors, m_parent, false);
+   if ((m_current = (cur == m_parent))) { // am current
+      if ((err = m_gui->getErrorConsole()) != NULL)
+         err->updateSyntaxErrors(m_syntaxErrors, m_parent, false);
+   } else if (wasCurrent && getStatus() == RUNNING) {
+      // automatically pause program if user switches tabs
+      pause();
+      
+      if (STATUS_BAR != NULL)
+         STATUS_BAR->showMessage(QString("Program '%1' paused").arg(m_parent->fileName()));
+   }
 }
 
 
@@ -159,7 +168,7 @@ void Program::memoryChangeReceived(unsigned int address, unsigned int value, Par
 void Program::programStatusChangeReceived(int s) {
    if (m_current) {
       if (s == STOPPED) {
-         disconnect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
+         //disconnect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
          setRunnable(true);
       }
       
@@ -232,8 +241,40 @@ void Program::updateSyntaxErrors(SyntaxErrors *newS) {
    m_syntaxErrors = newS;
    
    m_parent->updateSyntaxErrors(newS);
-   m_gui->getErrorConsole()->updateSyntaxErrors(newS, m_parent);
-//   m_parent->
+   
+   ErrorConsole *err;
+   if ((err = m_gui->getErrorConsole()) != NULL)
+      err->updateSyntaxErrors(m_syntaxErrors, m_parent);
+}
+
+// Parse the program and initialize the Debugger
+void Program::loadProgram(bool forcibly) {
+   int status = getStatus();
+   
+   // content changed during Pause textEditor->notifies Proxy
+   connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
+   
+   if (status == STOPPED) {
+      // reparse program; ensure it was successful
+      if (forcibly || m_parseList == NULL || !m_parseList->isValid()) {
+         try {
+            m_parseList = Parser::parseDocument(m_parent->document());
+         } catch(SyntaxErrors &e) {
+            updateSyntaxErrors(new SyntaxErrors(e));
+            return;
+         }
+
+         m_parseList->setInteractiveProgram(this);
+         if (!m_parseList->isValid()) {
+            updateSyntaxErrors(m_parseList->getSyntaxErrors());
+            return;
+         }
+      }
+
+      m_parent->clearLastInstructions();
+      updateSyntaxErrors(NULL);
+      m_debugger->setParseList(m_parseList);
+   }
 }
 
 void Program::run() {
@@ -241,31 +282,14 @@ void Program::run() {
       return;
    
    int status = getStatus();
-   
    if (status == STOPPED) {
       // reparse program; ensure it was successful
-      
-      try {
-         m_parseList = Parser::parseDocument(m_parent->document());
-      } catch(SyntaxErrors &e) {
-         updateSyntaxErrors(new SyntaxErrors(e));
-         return;
-      }
-      
-      m_parseList->setInteractiveProgram(this);
-      if (!m_parseList->isValid()) {
-         updateSyntaxErrors(m_parseList->getSyntaxErrors());
-         return;
-      }
-      
-      m_parent->clearLastInstructions();
-      updateSyntaxErrors(NULL);
-      m_debugger->setParseList(m_parseList);
-      
+      loadProgram();
+
       m_debugger->setWatchpoints(getWatchpoints());
 
       // content changed during Pause textEditor->notifies Proxy
-      connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
+//      connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    } else if (status == RUNNING) {
       pause();
       return;
@@ -315,7 +339,7 @@ bool *Program::getWatchpoints() const {
 }
 
 void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
-   if (getStatus() == PAUSED) {
+   if (getStatus() != RUNNING) {
       QTextDocument *doc = m_parent->getTextDocument();
       
       QTextCursor c = m_parent->textCursor();
@@ -479,5 +503,9 @@ int Program::lineNumber(ParseNode *parseNode) {
       return 0;
    
    return m_parent->lineNumber(*block);
+}
+
+bool Program::undoIsAvailable() const {
+   return (getStatus() == PAUSED && getState()->getCurrentTimestamp() <= 1);
 }
 

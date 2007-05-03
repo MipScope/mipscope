@@ -42,11 +42,12 @@ ParseNode::ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statem
       //cerr << m_label->getID().toStdString() << " set (in constructor) to " << this << endl;
 }
 
-void ParseNode::notifyDeleted() {
+void ParseNode::notifyDeleted(bool alreadyKnown) {
    m_placeHolder = NULL;  // keep track that we were deleted
    
    // for editing-on-the-fly, have to know when a ParseNode gets deleted.. messy
-   m_parseList->notifyParseNodeDeleted(this);
+   if (!alreadyKnown)
+      m_parseList->notifyParseNodeDeleted(this);
 }
 
 ParseNode *ParseNode::Node(const QTextBlock &b) {

@@ -1,0 +1,19 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+
+    <file>breakPoint.png</file>
+    <file>breakPointCurrentPC.png</file>
+    <file>bug.png</file>
+    <file>currentPC.png</file>
+    <file>fileLocked.png</file>
+    <file>fileSaved.png</file>
+    <file>fileUnsaved.png</file>
+    <file>logo.png</file>
+    <file>registerBackground.jpg</file>
+    <file>shellscript.png</file>
+    <file>shellscript2.png</file>
+    <file>stackBackground.jpg</file>
+    <file>watchPoint.png</file>
+
+</qresource>
+</RCC>

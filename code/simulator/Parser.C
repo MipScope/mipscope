@@ -472,7 +472,8 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
       if (VERBOSE) {
          cerr << _tab << "Found Immediate: " << value;
          if (pasted)
-            if (VERBOSE) cerr << "  (from const '" << copy.toStdString() << "')";
+            cerr << "  (from const '" << copy.toStdString() << "')";
+
          cerr << endl;
       }
            
@@ -618,6 +619,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                cerr << _tab << "Found directive '" << directives[type];
                if (offset >= 0)
                   cerr << "' with offset/value of '" << offset;
+
                cerr << "'\n";
             }
             
@@ -851,8 +853,7 @@ QString ParseError::getUnrecognized() const {
 }
 
 void ParseError::setUnrecognized(const QString &text) {
-   cerr << "\n setUnrecognized: " << text.toStdString() << ", " << m_unrecognized.toStdString() << ", " << m_position << ", " << text.indexOf(m_unrecognized) << endl;
-   
+//   cerr << "\n setUnrecognized: " << text.toStdString() << ", " << m_unrecognized.toStdString() << ", " << m_position << ", " << text.indexOf(m_unrecognized) << endl;
    if (m_position != text.indexOf(m_unrecognized) || m_position != text.lastIndexOf(m_unrecognized)) {
       m_unrecognized = text;
       m_length = text.length();

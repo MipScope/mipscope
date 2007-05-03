@@ -98,7 +98,11 @@ void EditorPane::activeEditorChanged(int index) {
       undoAvailabile(m_activeEditor->undoIsAvailable());
       redoAvailabile(m_activeEditor->redoIsAvailable());
    }
+   
+   // notify main Gui first
+   m_parent->activeEditorChanged(m_activeEditor);
 
+   // notify other listeners
    activeEditorChanged(m_activeEditor);
    QTimer::singleShot(250, this, SLOT(resetModified()));
    isModified(m_activeEditor->isModified());

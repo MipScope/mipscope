@@ -3,16 +3,16 @@
 	CONST = 50
 label: .asciiz "Debugging\n" # then show 'Reversible Debuggin"
 
-	.text
+	.ext
 	
 main:
    nop
    nop
-   nop
+   no
    li $v0, 4
    li $a0, CONST
-   la $a0, label
+   l $a0, lael
    syscall
-   nop
+   no
    
    done

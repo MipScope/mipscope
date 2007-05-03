@@ -440,6 +440,7 @@ bool TextEditor::openFile(QFile *file) {
 //      setUpdatesEnabled(true);
    } // else display error
    
+   m_program->loadProgram();
    return true;
 }
 
@@ -895,27 +896,28 @@ Program *TextEditor::getProgram() const {
 
 void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
    if (errors == NULL) { // program is free of errors
-      if (!m_errors.isEmpty()) {
-         m_errors.clear();
+//      if (!m_errors.isEmpty()) {
+//         m_errors.clear();
          setExtraSelections(QList<QTextEdit::ExtraSelection>());
-      }
+//      }
       
       return;
    }
    
-   cerr << "setting Errors: " << errors->size() << endl;
+//   cerr << "setting Errors: " << errors->size() << endl;
    
    QTextCursor c = textCursor();
    QTextCharFormat format(currentCharFormat());
    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);//SpellCheckUnderline);//WaveUnderline);
    format.setUnderlineColor(Qt::red);
    
-   m_errors.clear();
+//   m_errors.clear();
 /*   // remove any invalid text blocks (probably were deleted)
    foreach(const QTextBlock &b, m_errors.keys()) {
       if (!b.isValid())
          m_errors.remove(b);
    }:*/
+   QList<QTextEdit::ExtraSelection> errorList;
    
    foreach(ParseError e, *errors) {
       const QTextBlock *block = e.getTextBlock();
@@ -935,20 +937,23 @@ void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
             //c.setBlockCharFormat(format);
          }
          
+//         format.setToolTip(QString("<b>Error</b>:  %1").arg(e));
          const struct QTextEdit::ExtraSelection newSelection = {
             QTextCursor(c), 
             QTextCharFormat(format), 
          };
          
-         const QTextBlock &newBlock = c.block();
+         errorList.push_back(newSelection);
+         
+         /*const QTextBlock &newBlock = c.block();
          if (m_errors.contains(newBlock))
             m_errors.remove(newBlock);
          
-         m_errors.insert(newBlock, newSelection);
+         m_errors.insert(newBlock, newSelection);*/
       }
    }
    
-   setExtraSelections(m_errors.values());
+   setExtraSelections(errorList);//m_errors.values());
 }
 
 /*

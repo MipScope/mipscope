@@ -19,7 +19,8 @@
 
 Gui::Gui(QStringList args) : QMainWindow(), 
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
-   m_fileSaveAllAction(NULL), m_errors(NULL), m_editorPane(new EditorPane(this)), 
+   m_fileSaveAllAction(NULL), m_debugRunAction(NULL), m_debugStepAction(NULL), 
+   m_errors(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
    m_runningEditor(NULL), m_restarted(false)
 {
@@ -487,6 +488,9 @@ void Gui::debugRunAction() {
 }
 
 void Gui::updateDebugActions() {
+   if (m_debugStepAction == NULL)
+      return;
+   
    switch(m_mode) {
       case RUNNING:
          m_debugRunAction->setText(tr("&Pause"));
@@ -495,7 +499,8 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
-         m_runningEditor->setModifiable(false);
+         if (m_runningEditor != NULL)
+            m_runningEditor->setModifiable(false);
 //         m_editorPane->setModifiable(false);
          
          break;
@@ -508,7 +513,8 @@ void Gui::updateDebugActions() {
          m_debugBStepAction->setEnabled(true);
          
          // Allow for on-the-fly editing!
-         m_runningEditor->setModifiable(true);
+         if (m_runningEditor != NULL)
+            m_runningEditor->setModifiable(true);
  
          break;
       case STOPPED:
@@ -519,7 +525,8 @@ void Gui::updateDebugActions() {
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
          //m_editorPane->setModifiable(true);
-         m_runningEditor->setModifiable(true);
+         if (m_runningEditor != NULL)
+            m_runningEditor->setModifiable(true);
          
       default:
          break;
@@ -633,9 +640,11 @@ bool Gui::handleProgramTerminated(int reason) {
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
-   m_debugRunAction->setEnabled(isValid);
-   m_debugStepAction->setEnabled(isValid);
-   m_debugBStepAction->setEnabled(isValid);
+   if (m_debugStepAction != NULL) {
+      m_debugRunAction->setEnabled(isValid);
+      m_debugStepAction->setEnabled(isValid);
+      m_debugBStepAction->setEnabled(isValid);
+   }
 }
 
 // passes on to RegisterView
@@ -665,5 +674,22 @@ void Gui::watchPointModified(unsigned int reg, bool watchPoint) {
 
 bool *Gui::getWatchpoints() const {
    return m_registerView->getWatchpoints();
+}
+
+void Gui::activeEditorChanged(TextEditor *current) {
+   if (current == NULL)
+      return;
+   
+   Program *program = current->getProgram();
+   if (program == NULL)
+      return;
+
+   m_mode = program->getStatus();
+   if (m_mode != STOPPED)
+      m_runningEditor = current;
+
+   updateDebugActions();
+   if (m_mode == PAUSED && m_debugBStepAction != NULL)
+      m_debugBStepAction->setEnabled(program->undoIsAvailable());
 }
 

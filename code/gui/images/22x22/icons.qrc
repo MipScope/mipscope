@@ -1,0 +1,35 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+
+    <file>closeTab.png</file>
+    <file>debugBStep.png</file>
+    <file>debugPause.png</file>
+    <file>debugRestart.png</file>
+    <file>debugRun.png</file>
+    <file>debugRunXSpim.png</file>
+    <file>debugStep.png</file>
+    <file>debugStop.png</file>
+    <file>editCopy.png</file>
+    <file>editCut.png</file>
+    <file>editFind.png</file>
+    <file>editGotoLine.png</file>
+    <file>editPaste.png</file>
+    <file>editRedo.png</file>
+    <file>editSelectAll.png</file>
+    <file>editToggleComment.png</file>
+    <file>editUndo.png</file>
+    <file>fileLocked.png</file>
+    <file>fileNew.png</file>
+    <file>fileOpen.png</file>
+    <file>filePrint.png</file>
+    <file>fileSave.png</file>
+    <file>fileSaveAll.png</file>
+    <file>memory.png</file>
+    <file>viewDirectoryListing.png</file>
+    <file>viewErrors.png</file>
+    <file>viewOutput.png</file>
+    <file>viewRegisters.png</file>
+    <file>viewStack.png</file>
+
+</qresource>
+</RCC>

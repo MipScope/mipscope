@@ -14,8 +14,8 @@ using namespace std;
 #define PROJECT_NAME       "MipScope"
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")
-#define STATUS_DELAY       (3000)
-#define IMAGES             "gui/images"
+#define STATUS_DELAY       (3500)
+#define IMAGES             ":/"//"gui/images"
 //#define LARGE_ICONS
 #define SMALL_ICONS
 
@@ -27,7 +27,8 @@ using namespace std;
    #define ICON_DIR           "22x22"
 #endif
 
-#define ICONS              IMAGES "/" ICON_DIR
+//#define ICONS              IMAGES "/" ICON_DIR
+#define ICONS                IMAGES
 
 extern QStatusBar *STATUS_BAR;
 

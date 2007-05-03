@@ -1,7 +1,7 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView
-   * Text several of the on-the-fly editing issues;
+   * Test several of the on-the-fly editing issues;
    
    * Add Goto Definition for labels and consts
    

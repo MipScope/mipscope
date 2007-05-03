@@ -57,6 +57,7 @@ class Program : public QObject {
       bool *getWatchpoints() const;
       
       int lineNumber(ParseNode *parseNode);
+      bool undoIsAvailable() const;
       
    protected:
       void setRunnable(bool);
@@ -69,7 +70,8 @@ class Program : public QObject {
       // ------------------------------------------
       void currentChanged(TextEditor*);
       void contentsChange(int position, int charsRemoved, int charsAdded);
-   
+      void loadProgram(bool forcibly = true);
+      
       // Slots from Debugger -> Gui
       // --------------------------
       void syscallReceived(int no, int valueOfa0);

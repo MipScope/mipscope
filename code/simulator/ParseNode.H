@@ -33,7 +33,7 @@ class ParseNode {
       
       static ParseNode *Node(const QTextBlock &b); // utility method
       
-      void notifyDeleted();
+      void notifyDeleted(bool alreadyKnown = false);
       
       Statement* getStatement(void) const;
       AddressIdentifier *getLabel() const;

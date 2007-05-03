@@ -26,55 +26,55 @@ __start:
 ##################################################################
 	# clo
 
-	li $s0, 0
-	clo $a0, $s0
+	lui $a0, 0
+	clo $a0, $a0
 	syscall
 	jal printnewline
 	
-	li $s0, -1
-	clo $a0, $s0
-	syscall
-	jal printnewline	
-	
-	li $s0, 1
-	clo $a0, $s0
-	syscall
-	jal printnewline	
-	
-	li $s0, 127328
-	clo $a0, $s0
-	syscall
-	jal printnewline	
-	
-	li $s0, 512312
-	clo $a0, $s0
-	syscall
-	jal printnewline
-	
-	li $s0, -98736
-	clo $a0, $s0
-	syscall	
-	jal printnewline
-	
-	li $s0, 0xFFFFFFFF
-	clo $a0, $s0
-	syscall	
-	jal printnewline
-	
-	li $s0, 0xFFFFFFFF
-	clo $a0, $s0
-	syscall	
-	jal printnewline
-	
-	li $s0, -0xFFFFFFF
-	clo $a0, $s0
-	syscall	
-	jal printnewline
-	
-	li $s0, 2147483647
-	clo $a0, $s0
-	syscall	
-	jal printnewline
+#	li $s0, -1
+#	clo $a0, $s0
+#	syscall
+#	jal printnewline	
+#	
+#	li $s0, 1
+#	clo $a0, $s0
+#	syscall
+#	jal printnewline	
+#	
+#	li $s0, 127328
+#	clo $a0, $s0
+#	syscall
+#	jal printnewline	
+#	
+#	li $s0, 512312
+#	clo $a0, $s0
+#	syscall
+#	jal printnewline
+#	
+#	li $s0, -98736
+#	clo $a0, $s0
+#	syscall	
+#	jal printnewline
+#	
+#	li $s0, 0xFFFFFFFF
+#	clo $a0, $s0
+#	syscall	
+#	jal printnewline
+#	
+#	li $s0, 0xFFFFFFFF
+#	clo $a0, $s0
+#	syscall	
+#	jal printnewline
+#	
+#	li $s0, -0xFFFFFFF
+#	clo $a0, $s0
+#	syscall	
+#	jal printnewline
+#	
+#	li $s0, 2147483647
+#	clo $a0, $s0
+#	syscall	
+#	jal printnewline
 	
 #########################################################
 ## Print out end message:

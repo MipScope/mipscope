@@ -9,7 +9,15 @@ addi		YES		YES		We accept any immmediate - SPIM only takes -32k - 32k
 addiu		YES		YES		ditto
 and		YES		YES
 andi		YES		YES		We accept any immediate - SPIM only takes 0 - 64k
-clo		YES		NO		SPIM claims this doesn't exit - wtf?
+clo		YES		NO		SPIM claims this doesn't exist - wtf?
 clz		YES		NO		ditto
 div 3-arg	YES		YES
-
+divu 3-arg	YES		YES
+div 2-arg	YES		YES
+divu 2-arg	YES		YES
+mult		YES		YES
+multu		YES		YES
+mul		YES		YES
+mulo		YES		YES
+mulou		YES		YES
+madd		YES		SOMEWHAT	SPIM seems to implement this wrong.

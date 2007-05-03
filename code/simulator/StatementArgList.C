@@ -42,11 +42,11 @@ StatementArg *StatementArgList::operator[](int ind) const {
 // matchesSyntax(PLAIN_REGISTER, ADDRESS) returns true iff there are exactly two arguments and the first is a plain register, and the second is an address.
 // You can also do:
 // matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE) which works as you'd expect.
-bool StatementArgList::matchesSyntax(int arg0, int arg1, int arg2, int arg3) const {
+bool StatementArgList::matchesSyntax(int arg0, int arg1, int arg2) const {
    
   // cerr << arg0 << "\n" << arg1 << "\n" << arg2 << "\n" << arg3;
    
-   return ( isArgType(0, arg0) && isArgType(1, arg1) && isArgType(2, arg2) && isArgType(3, arg3));
+   return ( isArgType(0, arg0) && isArgType(1, arg1) && isArgType(2, arg2));
 }
 
 // indexed from 0.

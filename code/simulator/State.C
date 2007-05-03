@@ -243,7 +243,11 @@ void State::doSyscall(void) {
    
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
       m_undoList.push_back(new SyscallAction(m_currentTimestamp, syscallNo));
-   syscall(syscallNo, getRegister(a0));
+   
+   if (syscallNo == 10) // syscall 10 is end program
+      m_debugger->programStop();   
+   else   
+      syscall(syscallNo, getRegister(a0));
 }
 
 void State::assertEquals(int val1, int val2) {

@@ -222,7 +222,7 @@ class Mflo : public Instruction {
       }
       
       virtual void execute(State *s, ParseList* parseList) const {
-         s->setRegister(lo, (*m_args)[0]->getValue(s));
+         s->setRegister((*m_args)[0]->getRegister(), s->getRegister(lo));
       }
       
       // @overridden from Statement
@@ -250,7 +250,7 @@ class Mfhi : public Instruction {
       }
       
       virtual void execute(State *s, ParseList* parseList) const {
-         s->setRegister(hi, (*m_args)[0]->getValue(s));
+         s->setRegister((*m_args)[0]->getRegister(), s->getRegister(hi));
       }
       
       // @overridden from Statement
@@ -258,6 +258,63 @@ class Mfhi : public Instruction {
       virtual const char *getSyntax() const { return "$dest"; }
       virtual const char *getDescription() const {
          return "Sets the register $dest to the value in the special register HI";
+      }
+};
+
+// ----------------------------------
+// Instruction mflo $dest, $src
+// ----------------------------------
+class Mtlo : public Instruction {
+   public:
+      Mtlo(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mtlo(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setRegister(lo, (*m_args)[0]->getValue(s));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mtlo"; }
+      virtual const char *getSyntax() const { return "$src"; }
+      virtual const char *getDescription() const {
+         return "Sets the special LO register to the value in the register (or immediate value) $src";
+      }
+};
+
+
+// ----------------------------------
+// Instruction mflo $dest, $src
+// ----------------------------------
+class Mthi : public Instruction {
+   public:
+      Mthi(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Mthi(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setRegister(hi, (*m_args)[0]->getValue(s));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "mthi"; }
+      virtual const char *getSyntax() const { return "$src"; }
+      virtual const char *getDescription() const {
+         return "Sets the special HI register to the value in the register (or immediate value) $src";
       }
 };
 

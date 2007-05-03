@@ -12,6 +12,7 @@
 #include "statements/Special.H"
 #include "statements/Assert.H"
 #include "statements/ControlFlow.H"
+#include "statements/Comparison.H"
 
 Statement::Statement(unsigned int requiredSizeInBytes) 
    : m_size(requiredSizeInBytes)
@@ -138,6 +139,8 @@ void Instruction::InitializeInstructionMap() {
    insert(new Rem());
    insert(new Remu());*/
    insert(new Sub());
+   insert(new Rem());
+   insert(new Remu());
 
    // DataTransfer.H
    insert(new Li());
@@ -149,6 +152,8 @@ void Instruction::InitializeInstructionMap() {
    insert(new Move());
    insert(new Mflo());
    insert(new Mfhi());
+   insert(new Mtlo());
+   insert(new Mthi());
    
    // Special.H
    insert(new Nop());
@@ -182,6 +187,21 @@ void Instruction::InitializeInstructionMap() {
    insert(new Jal());
    insert(new Jalr());
    insert(new Jr());
+   
+   // Comparison.H
+   insert(new Slt());
+   insert(new Sltu());
+   insert(new Slti());
+   insert(new Sltiu());
+   insert(new Seq());
+   insert(new Sge());
+   insert(new Sgeu());
+   insert(new Sgt());
+   insert(new Sgtu());
+   insert(new Sle());
+   insert(new Sleu());
+   insert(new Sne());
+   
    
    int i = 0; // temporary, to test parsing
    while(Instructions[i] != NULL) {// TODO:  remove eventually!

@@ -50,6 +50,11 @@ class DivideByZero : public StateException {
       DivideByZero() : StateException("Divide by Zero Exception") { }
 };
 
+class ArithmeticOverflow : public StateException {
+   public:
+      ArithmeticOverflow() : StateException("Overflow Exception") { }
+};
+
 
 
 #endif // STATEEXCEPTION_H_

@@ -33,7 +33,7 @@ class StatementArgList {
       // matchesSyntax(PLAIN_REGISTER, ADDRESS) returns true iff there are exactly two arguments and the first is a plain register, and the second is an address.
       // You can also do:
       // matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE) which works as you'd expect.
-      bool matchesSyntax(int arg1, int arg2 = NONE, int arg3 = NONE, int arg4 = NONE) const;
+      bool matchesSyntax(int arg1, int arg2 = NONE, int arg3 = NONE) const;
       bool isArgType(int argNumber, int what) const;
       
       

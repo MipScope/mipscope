@@ -621,9 +621,11 @@ void Gui::debugRunXSpimAction() {
 void Gui::programStatusChanged(int s) {
    m_mode = s;
    updateDebugActions();
-
-   if (s != RUNNING)
+   
+   if (s != RUNNING) {
       m_registerView->updateDisplay();
+      m_output->update();
+   }
 }
 
 // returns true if the Gui wants control over handling program termination

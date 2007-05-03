@@ -564,6 +564,71 @@ class Madd : public Instruction {
       }
 };
 
+
+
+// ----------------------------------
+// Instruction or $dest, $src1, src2
+// ----------------------------------
+class Or : public Instruction {
+   public:
+      Or(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Or(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         unsigned int val1 = m_args->getValue(s, 1);
+         unsigned int val2 = m_args->getValue(s, 2);
+         
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 | val2));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "or"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Puts the logical OR of $src1 and &lt;src2&gt, storing the result in $dest.";
+      }
+};
+
+// ----------------------------------
+// Instruction ori $dest, $src1, imm
+// ----------------------------------
+class Ori : public Or {
+   public:
+      Ori(StatementArgList *args = NULL) : Or(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Ori(args);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "ori"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;immediate&gt;"; }
+      virtual const char *getDescription() const {
+         return "Puts the logical OR of $src1 and &lt;immediate&gt, storing the result in $dest.";
+      }
+};
+
+
+
+
+
+
+
+
+
 // ----------------------------------
 // Instruction rem $dest, $src1, src2
 // ----------------------------------

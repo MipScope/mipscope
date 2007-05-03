@@ -48,6 +48,22 @@ void Console::visibilityChanged(bool isVisible) {
 }
 
 void Console::updateDisplay() {
+   // hack to keep the Console at the same position after resetting html
+   //QScrollBar *scroll = m_display->verticalScrollBar();
+   //int value = scroll->value();
+   
+   
    m_display->setPlainText(QStringList(m_strings.toList()).join(QString("")));
+   //scroll = m_display->verticalScrollBar();
+   //int newValue = scroll->value();;
+   //if (newValue < value)
+   //   m_display->verticalScrollBar()->setValue(value);
+   
+
+   
+   // TODO!!!!!!!!!!!!!!!  TODO
+   
+   
+   
 }
 

@@ -25,6 +25,10 @@ ParseList::ParseList(QTextDocument *document) :
 
 ParseList::~ParseList() { }
 
+void ParseList::setDocument(QTextDocument *document) {
+   m_source = document;
+}
+
 ParseNode *ParseList::first() const {
    return ParseNode::Node(m_source->begin());
    //	return static_cast<ParseNode*> (m_textEditor->getBlockForLine(0)->userData());	

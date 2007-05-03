@@ -1,8 +1,9 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView
+   * Fix CTRL+D  !!!  Very serious
    * Test several of the on-the-fly editing issues;
-   
+     
    * Add Goto Definition for labels and consts
    
    * Better view of errors

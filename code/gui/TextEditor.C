@@ -440,7 +440,8 @@ bool TextEditor::openFile(QFile *file) {
 //      setUpdatesEnabled(true);
    } // else display error
    
-   m_program->loadProgram();
+//   m_program->loadProgram();
+   QTimer::singleShot(300, m_program, SLOT(loadProgram()));
    return true;
 }
 

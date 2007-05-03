@@ -23,21 +23,24 @@ OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
 void OutputConsole::push(const QString &newOutput) {
    // TODO:  OPTIMIZE this!!  Bottleneck!  (infinite-loop printout example)
    m_strings.append(newOutput);
-   QTextCursor c = m_display->textCursor();
+/*   QTextCursor c = m_display->textCursor();
    c.movePosition(QTextCursor::End);
-   c.insertText(newOutput);
+   c.insertText(newOutput);*/
    
    //updateDisplay();
+}
+
+void OutputConsole::update() {
+   updateDisplay();
+   
    if (!m_visible)
       m_gui->ensureVisibility(this);
 }
 
 void OutputConsole::pop() {
    m_strings.pop_back();
-   
-   updateDisplay();
-   if (!m_visible)
-      m_gui->ensureVisibility(this);
+
+   update();
 }
 
 void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {

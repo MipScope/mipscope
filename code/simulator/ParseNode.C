@@ -21,7 +21,8 @@ PlaceHolder::PlaceHolder(ParseNode *parent, QTextBlock *textBlock)
 }
 
 PlaceHolder::~PlaceHolder() {
-   m_parent->notifyDeleted();
+   if (m_parent != NULL)
+      m_parent->notifyDeleted();
 }
 
 ParseNode::ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statement, AddressIdentifier *label)

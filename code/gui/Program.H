@@ -70,7 +70,7 @@ class Program : public QObject {
       // ------------------------------------------
       void currentChanged(TextEditor*);
       void contentsChange(int position, int charsRemoved, int charsAdded);
-      void loadProgram(bool forcibly = true);
+      void loadProgram();
       
       // Slots from Debugger -> Gui
       // --------------------------

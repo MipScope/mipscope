@@ -32,7 +32,7 @@ ROWS        = 8      # the number of Rows in the Grid (8 default)
 COLUMNS     = 10     # the number of Columns in the Grid (10 default)
 GRID_SIZE   = 80     # ROWS * COLUMNS (80 default)
 
-GENERATIONS = 5      # Number of Generations to simulate
+GENERATIONS = 2      # Number of Generations to simulate
 
 # ----------------------------
 # Global Variable Declarations
@@ -73,25 +73,25 @@ __start:
             #jal add_cells_for_testing
             
             
-            #li $a0, 1
-            #li $a1, 0
-            #jal addLiveCell
+            li $a0, 1
+            li $a1, 0
+            jal addLiveCell
              
-            #li $a0, 0
-            #li $a1, 2
-            #jal addLiveCell
+            li $a0, 0
+            li $a1, 2
+            jal addLiveCell
            
-            #li $a0, 1
-            #li $a1, 2
-            #jal addLiveCell
+            li $a0, 1
+            li $a1, 2
+            jal addLiveCell
 
-            #li $a0, 2
-            #li $a1, 2
-            #jal addLiveCell
+            li $a0, 2
+            li $a1, 2
+            jal addLiveCell
 
-            #li $a0, 2
-            #li $a1, 1
-            #jal addLiveCell
+            li $a0, 2
+            li $a1, 1
+            jal addLiveCell
             
 
 # Register Usage

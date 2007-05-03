@@ -133,14 +133,12 @@ void Instruction::InitializeInstructionMap() {
    insert(new Neg());
    insert(new Negu());
    insert(new Nor());
-   insert(new Not());
+   insert(new Not());*/
    insert(new Or());
    insert(new Ori());
    insert(new Rem());
-   insert(new Remu());*/
-   insert(new Sub());
-   insert(new Rem());
    insert(new Remu());
+   insert(new Sub());
 
    // DataTransfer.H
    insert(new Li());

@@ -28,7 +28,9 @@ class OutputConsole : public Console,
       friend class ClearOutputAction;
       
       OutputConsole(Gui *parent, EditorPane *editorPane);
-     
+      
+      void update();
+      
       // @overridden from Console
       void push(const QString &newOutput);
       void pop();

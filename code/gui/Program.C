@@ -248,15 +248,16 @@ void Program::updateSyntaxErrors(SyntaxErrors *newS) {
 }
 
 // Parse the program and initialize the Debugger
-void Program::loadProgram(bool forcibly) {
+void Program::loadProgram() {
    int status = getStatus();
    
    // content changed during Pause textEditor->notifies Proxy
    connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    
+   cerr << "Loading\n\n";
    if (status == STOPPED) {
       // reparse program; ensure it was successful
-      if (forcibly || m_parseList == NULL || !m_parseList->isValid()) {
+      if (m_parseList == NULL || !m_parseList->isValid()) {
          try {
             m_parseList = Parser::parseDocument(m_parent->document());
          } catch(SyntaxErrors &e) {
@@ -286,6 +287,7 @@ void Program::run() {
       // reparse program; ensure it was successful
       loadProgram();
 
+      m_debugger->setParseList(m_parseList);
       m_debugger->setWatchpoints(getWatchpoints());
 
       // content changed during Pause textEditor->notifies Proxy
@@ -339,6 +341,12 @@ bool *Program::getWatchpoints() const {
 }
 
 void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
+   if (m_parseList == NULL) {
+      loadProgram();
+      if (m_parseList == NULL)
+         return;
+   }
+   
    if (getStatus() != RUNNING) {
       QTextDocument *doc = m_parent->getTextDocument();
       

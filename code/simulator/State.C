@@ -218,6 +218,13 @@ void State::setUndoAvailability(bool isAvailable, bool force) {
    undoAvailabilityChanged(isAvailable);
 }
 
+bool State::undoIsAvailable() const {
+//   cerr << "State::undoIsAvailable: ";
+//   cerr << m_undoIsAvailable << endl;
+   
+   return m_undoIsAvailable;
+}
+
 TIMESTAMP State::getCurrentTimestamp(void) const {
    return m_currentTimestamp;
 }

@@ -65,6 +65,8 @@ class Gui : public QMainWindow {
       void run();
       void stepForward();
       void stepBackward();
+      void stepForward(int noInstructions);
+      void stepBackward(int noInstructions);
       //void stepBackwardToTimestamp(TIMESTAMP stamp);
       //void jumpTo(const QTextBlock&);
       
@@ -100,6 +102,8 @@ class Gui : public QMainWindow {
       // which switches automatically to 'pause' upon invocation.
       void debugStepAction();
       void debugBStepAction();
+      void debugStepXAction();
+      void debugBStepXAction();
       void debugRestartAction();
       void debugRunXSpimAction();
       
@@ -133,6 +137,8 @@ class Gui : public QMainWindow {
               *m_debugStopAction, 
               *m_debugStepAction, 
               *m_debugBStepAction, // Step backwards
+              *m_debugStepXAction, // Step forwards x number of instructions
+              *m_debugBStepXAction, // Step backwards x number of instructions
               *m_debugRestartAction, 
               *m_debugRunXSpimAction, 
               
@@ -158,6 +164,8 @@ class Gui : public QMainWindow {
       
       //@overridden
       void closeEvent(QCloseEvent *event);
+      
+      int getNoInstructionsToStep(const QString &title, const QString &text, int min, int max, bool *ok);
       
       // IMPORTANT:
       //    Editing, Debugging, or Paused

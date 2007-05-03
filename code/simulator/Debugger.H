@@ -37,6 +37,7 @@ class Debugger : public QThread {
    public:
       Debugger(ParseList* parseList = NULL);
       
+      int getStatusWithoutLocking() const;
       int getStatus();
       State *getState();
       void setParseList(ParseList *list);
@@ -45,8 +46,10 @@ class Debugger : public QThread {
       void programForceStop(void);
       void programPause(void);
       void programRun(void);
-      void programStepForward(void);
+      void programStepForward();
       void programStepBackward();
+      void programStepForward(int noInstructions);
+      void programStepBackward(int noInstructions);
       void programStepBackwardToTimestamp(TIMESTAMP stamp);
       
       // called whenever a register watchpoint is enabled/disabled

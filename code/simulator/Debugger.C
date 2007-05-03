@@ -25,6 +25,10 @@ Debugger::Debugger(ParseList* parseList)
 //   connect(m_state, SIGNAL(registerChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(registerChanged(unsigned int, unsigned int, ParseNode*)));
 }
 
+int Debugger::getStatusWithoutLocking() const {
+   return m_status; // necessary in the Gui a few places to guard against deadlocks
+}
+
 int Debugger::getStatus(void) {
    // locks the mutex, automatically unlocked when destructed
    QMutexLocker locker(&m_statusMutex);
@@ -165,6 +169,52 @@ void Debugger::programStepBackwardToTimestamp(TIMESTAMP stamp) {
    m_state->undoUntilTimestamp(stamp);
 }
 
+void Debugger::programStepForward(int noInstructions) {
+   if (noInstructions <= 0)
+      return;
+   
+   if (m_status == STOPPED)
+      executionInit();
+   
+   //cerr << "Forward " << noInstructions << " instrs; pc = '" << m_state->getPC() << "'\n";
+
+//   setStatus(RUNNING); // do Not put this here; causes weird glib errors..
+   // don't want the Gui to update during a long run of instructions
+   //    (causes it to hang and be very unresponsive)
+   // and the gui won't update if it thinks the program is 'running'
+   m_status = RUNNING;
+   
+   // remain paused the entire time
+   while(noInstructions-- && m_status == RUNNING) {
+      if (m_state->getPC() == NULL) {
+         setStatus(STOPPED);
+         m_terminationReason = T_COMPLETED;
+         return;
+      }
+
+      //cerr << "Mid " << noInstructions << " instrs; pc = '" << m_state->getPC() << "'\n";
+      runAnotherStep();
+   }
+
+   //cerr << "End " << noInstructions << " instrs; pc = '" << m_state->getPC() << "'\n";
+   
+   if (m_status == RUNNING)
+      setStatus(PAUSED);
+}
+
+void Debugger::programStepBackward(int noInstructions) {
+   if (noInstructions <= 0)
+      return;
+   
+   // don't want the Gui to update during a long run of instructions
+   //    (causes it to hang and be very unresponsive)
+   // and the gui won't update if it thinks the program is 'running'
+   m_status = RUNNING;
+   while(noInstructions-- && m_state->undoIsAvailable())
+      m_state->undoLastInstruction();
+
+   setStatus(PAUSED);
+}
 
 void Debugger::setParseList(ParseList *list) {
    QMutexLocker locker(&m_statusMutex);

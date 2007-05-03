@@ -207,6 +207,9 @@ void Gui::setupDebugActions() {
    m_debugBStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugBStep.png"), tr("&Back"), this), this, SLOT(debugBStepAction()), QKeySequence(), false);
    m_debugStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStep.png"), tr("&Step"), this), this, SLOT(debugStepAction()), QKeySequence(), false);
  
+   m_debugBStepXAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugBStepX.png"), tr("Back.."), this), this, SLOT(debugBStepXAction()), QKeySequence(), false);
+   m_debugStepXAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugStepX.png"), tr("Step.."), this), this, SLOT(debugStepXAction()), QKeySequence(), false);
+   
    menu->addSeparator();
    tb->addSeparator();
 
@@ -500,23 +503,40 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
+         m_debugStepXAction->setEnabled(false);
+         m_debugBStepXAction->setEnabled(false);
          if (m_runningEditor != NULL)
             m_runningEditor->setModifiable(false);
 //         m_editorPane->setModifiable(false);
          
          break;
       case PAUSED:
+         setUpdatesEnabled(false);
+         
          m_debugRunAction->setText(tr("&Run"));
          m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
          m_debugStopAction->setEnabled(true);
          m_debugRestartAction->setEnabled(true);
          m_debugStepAction->setEnabled(true);
          m_debugBStepAction->setEnabled(true);
-         
+
+         m_debugStepXAction->setEnabled(true);
+         m_debugBStepXAction->setEnabled(true);
+
          // Allow for on-the-fly editing!
-         if (m_runningEditor != NULL)
+         if (m_runningEditor != NULL) {
             m_runningEditor->setModifiable(true);
- 
+            
+            Program *program = m_runningEditor->getProgram();
+            if (program != NULL) {
+               bool undoIsAvailable = program->undoIsAvailable();
+               
+               m_debugBStepAction->setEnabled(undoIsAvailable);
+               m_debugBStepXAction->setEnabled(undoIsAvailable);
+            }
+         }
+
+         setUpdatesEnabled(true);
          break;
       case STOPPED:
          m_debugRunAction->setText(tr("&Run"));
@@ -525,6 +545,8 @@ void Gui::updateDebugActions() {
          m_debugRestartAction->setEnabled(false);
          m_debugStepAction->setEnabled(false);
          m_debugBStepAction->setEnabled(false);
+         m_debugStepXAction->setEnabled(false);
+         m_debugBStepXAction->setEnabled(false);
          //m_editorPane->setModifiable(true);
          if (m_runningEditor != NULL)
             m_runningEditor->setModifiable(true);
@@ -550,6 +572,36 @@ void Gui::debugStepAction() {
 void Gui::debugBStepAction() {
    stepBackward();
 }
+
+void Gui::debugStepXAction() {
+   bool okay = false;
+   int max = 2147483647; // max signed int as defined by Qt
+   
+   int noInstructions = getNoInstructionsToStep(QString("Step Forward"), 
+         QString("Number of instructions to skip:"), 1, max, &okay);
+   
+   if (okay)
+      stepForward(noInstructions);
+}
+
+int Gui::getNoInstructionsToStep(const QString &title, const QString &text, int min, int max, bool *okay) {
+   return QInputDialog::getInteger(this, title, text, 1, min, max, 1, okay);
+}
+
+void Gui::debugBStepXAction() {
+   bool okay = false;
+   if (m_runningEditor == NULL)
+      return;
+
+   int max = m_runningEditor->getProgram()->getCurrentTimestamp() - 1;
+   
+   int noInstructions = getNoInstructionsToStep(QString("Step Backward"), 
+         QString("Number of instructions to roll back:"), 1, max, &okay);
+   
+   if (okay)
+      stepBackward(noInstructions);
+}
+
 
 void Gui::debugRestartAction() {
    m_restarted = true;
@@ -643,10 +695,12 @@ bool Gui::handleProgramTerminated(int reason) {
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
-   if (m_debugStepAction != NULL) {
+   if (m_debugStepXAction != NULL) {
       m_debugRunAction->setEnabled(isValid);
       m_debugStepAction->setEnabled(isValid);
       m_debugBStepAction->setEnabled(isValid);
+      m_debugStepXAction->setEnabled(isValid);
+      m_debugBStepXAction->setEnabled(isValid);
    }
 }
 
@@ -665,6 +719,7 @@ void Gui::memoryChanged(unsigned int address, unsigned int value, ParseNode *pc)
 
 void Gui::programUndoAvailabilityChanged(bool isAvailable) {
    m_debugBStepAction->setEnabled(isAvailable);
+   m_debugBStepXAction->setEnabled(isAvailable);
 }
 
 void Gui::watchPointModified(unsigned int reg, bool watchPoint) {
@@ -692,7 +747,5 @@ void Gui::activeEditorChanged(TextEditor *current) {
       m_runningEditor = current;
 
    updateDebugActions();
-   if (m_mode == PAUSED && m_debugBStepAction != NULL)
-      m_debugBStepAction->setEnabled(program->undoIsAvailable());
 }
 

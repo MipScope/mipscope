@@ -60,6 +60,7 @@ class Program : public QObject {
       bool undoIsAvailable() const;
       
       ParseNode *getDeclaration(const QString &identifier);
+      TIMESTAMP getCurrentTimestamp() const;
       
    protected:
       void setRunnable(bool);
@@ -100,6 +101,8 @@ class Program : public QObject {
       void run();
       void stepForward();
       void stepBackward();
+      void stepForward(int noInstructions);
+      void stepBackward(int noInstructions);
       void stepBackwardToTimestamp(TIMESTAMP stamp);
       void jumpTo(const QTextBlock&);
       

@@ -50,6 +50,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(m_gui, SIGNAL(run()), this, SLOT(run()));
    connect(m_gui, SIGNAL(stepForward()), this, SLOT(stepForward()));
    connect(m_gui, SIGNAL(stepBackward()), this, SLOT(stepBackward()));
+   connect(m_gui, SIGNAL(stepForward(int)), this, SLOT(stepForward(int)));
+   connect(m_gui, SIGNAL(stepBackward(int)), this, SLOT(stepBackward(int)));
 //   connect(m_parent, SIGNAL(stepBackwardToTimestamp(TIMESTAMP)), this, SLOT(stepBackwardToTimestamp(TIMESTAMP)));
    
    // Proxy -> Gui
@@ -254,7 +256,7 @@ void Program::loadProgram() {
    // content changed during Pause textEditor->notifies Proxy
    connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    
-   cerr << "Loading\n\n";
+//   cerr << "Loading\n\n";
    if (status == STOPPED) {
       // reparse program; ensure it was successful
       if (m_parseList == NULL || !m_parseList->isValid()) {
@@ -312,6 +314,19 @@ void Program::stepBackward() {
    if (m_current)
       m_debugger->programStepBackward();
 }
+
+void Program::stepForward(int noInstructions) {
+   if (m_current) {
+      m_debugger->programStepForward(noInstructions);
+      //pcChanged(getState()->getPC());
+   }
+}
+
+void Program::stepBackward(int noInstructions) {
+   if (m_current)
+      m_debugger->programStepBackward(noInstructions);
+}
+
 
 void Program::stepBackwardToTimestamp(TIMESTAMP stamp) {
    if (m_current)
@@ -517,7 +532,7 @@ int Program::lineNumber(ParseNode *parseNode) {
 }
 
 bool Program::undoIsAvailable() const {
-   return (getStatus() == PAUSED && getState()->getCurrentTimestamp() > 1);
+   return (m_debugger->getStatusWithoutLocking() == PAUSED && getState()->undoIsAvailable());
 }
 
 ParseNode *Program::getDeclaration(const QString &identifier) {
@@ -525,5 +540,9 @@ ParseNode *Program::getDeclaration(const QString &identifier) {
       return m_parseList->getDeclaration(identifier);
 
    return NULL;
+}
+
+TIMESTAMP Program::getCurrentTimestamp() const {
+   return getState()->getCurrentTimestamp();
 }
 

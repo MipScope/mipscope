@@ -65,6 +65,8 @@ class State : public QObject {
       // completely resets the state to its original state
       void reset();
       
+      bool undoIsAvailable() const;
+      
    signals:
       void syscall(int, int);
       void undoSyscall(int);

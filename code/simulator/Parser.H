@@ -72,6 +72,7 @@ class Parser {
 class ParseError : public QString {
    public:
       ParseError(const QString &description, const QString &unrecognized, int length = -1, QTextBlock *b = NULL, int lineNo = -1);
+      virtual ~ParseError();
       
       QString getUnrecognized() const;
       QTextBlock *getTextBlock() const;

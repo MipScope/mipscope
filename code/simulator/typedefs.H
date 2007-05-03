@@ -22,7 +22,7 @@ class ParseError;
 #define PAUSED    (1)
 #define RUNNING   (2)*/
 enum Status { STOPPED, PAUSED, RUNNING };
-enum TerminationReason { T_COMPLETED, T_TERMINATED, T_INVALID_PROGRAM, T_ABNORMAL, T_FORCE_ROLLBACK };
+enum TerminationReason { T_COMPLETED, T_TERMINATED, T_INVALID_PROGRAM, T_ABNORMAL, T_FORCE_ROLLBACK, T_UNCAUGHT_EXCEPTION };
 
 //#include <QMetaType>
 //Q_DECLARE_METATYPE(Status);

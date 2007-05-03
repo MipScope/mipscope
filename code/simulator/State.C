@@ -71,11 +71,11 @@ void State::ensureValidAlignment(unsigned int address, unsigned int align) const
    if (address + align > STACK_BASE_ADDRESS || address < DATA_BASE_ADDRESS) {
       cerr << address << ", " << align << ", " << STACK_BASE_ADDRESS << ", " << DATA_BASE_ADDRESS << endl;
       
-      throw InvalidAddress(address);
+      throw InvalidAddress(address, m_pc->getTextBlock());
    }
    
    if (address & align)
-      throw BusError(address);
+      throw BusError(address, m_pc->getTextBlock());
 }
 
 void State::memcpy(unsigned int destAddress, const void *src, unsigned int size) {
@@ -106,7 +106,7 @@ void State::setRegister(int reg, unsigned int value) {
       cerr << m_pc->getTextBlock()->text().toStdString() << endl;
       // TODO:  add iostream operator to ParseNode
 
-      throw InvalidRegister(reg);
+      throw InvalidRegister(reg, m_pc->getTextBlock());
    }
    
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
@@ -121,7 +121,7 @@ void State::setRegister(int reg, unsigned int value) {
 unsigned int State::getRegister(int reg) const {
    if (reg < zero || reg >= register_count) {
       cerr << "get: " << reg << endl;
-      throw InvalidRegister(reg);
+      throw InvalidRegister(reg, m_pc->getTextBlock());
    }
    
    return m_registers[reg];
@@ -258,7 +258,7 @@ void State::doSyscall(void) {
 }
 
 void State::assertEquals(int val1, int val2) {
-   if (val1 != val2) throw AssertionFailure(val1, val2);
+   if (val1 != val2) throw AssertionFailure(val1, val2, m_pc->getTextBlock());
 }
 
 StateAction::StateAction(TIMESTAMP timestamp)//, ParseNode *isPC) 

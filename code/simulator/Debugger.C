@@ -44,7 +44,7 @@ void Debugger::threadTerminated(void) {
    if (VERBOSE) cerr << "Debugger::threadTerminated\n";
    
    emit programStatusChanged(STOPPED);
-   if (m_terminationReason != T_COMPLETED && m_terminationReason != T_TERMINATED && !m_forceStopped)
+   if (m_terminationReason != T_COMPLETED && m_terminationReason != T_TERMINATED && !m_forceStopped && m_terminationReason != T_UNCAUGHT_EXCEPTION)
       m_terminationReason = T_ABNORMAL;
    
    if (m_forceStopped)
@@ -89,8 +89,10 @@ void Debugger::runAnotherStep(void) {
 
       m_state->getPC()->execute(m_state, m_parseList);
    } catch (StateException e) {
+      m_exception = e; // propogate exception up to gui
+      m_terminationReason = T_UNCAUGHT_EXCEPTION;
       setStatus(STOPPED);
-      std::cerr << e.getMessage().toStdString() << endl << endl;
+      std::cerr << "EXCEPTION:  " << e.toStdString() << endl << endl;
    }
    
    // We run this below as well, so we stop the program immediately
@@ -324,4 +326,14 @@ void Debugger::watchPointModified(unsigned int reg, bool watchPoint) {
 void Debugger::setWatchpoints(const bool *buf) {
    memcpy(m_registerWatchpoints, buf, sizeof(bool) * register_count);
 }
+
+const StateException &Debugger::getException() const {
+   return m_exception;
+}
+StateException::~StateException() { }
+
+StateException::StateException() : ParseError(QString(), QString()) { }
+StateException::StateException(const QString &message, QTextBlock *b, int lineNo)
+   : ParseError(QString("Execution halted:  %1!").arg(message), QString(), -1, b, lineNo)
+{ }
 

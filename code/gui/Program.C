@@ -191,7 +191,7 @@ void Program::programTerminated(int reason) {
    if (STATUS_BAR == NULL)
       return;
    
-   const int delay = STATUS_DELAY + 6000;
+   const int delay = STATUS_DELAY + 8000;
    const QString &name = m_parent->fileName();
 
    switch(reason) {
@@ -206,6 +206,20 @@ void Program::programTerminated(int reason) {
          break;
       case T_FORCE_ROLLBACK:
          STATUS_BAR->showMessage(QString("Execution halted:  Program %1 rolled back past entry point!").arg(name), delay);
+         break;
+      case T_UNCAUGHT_EXCEPTION:
+         {
+            const ParseError &err = m_debugger->getException();
+            STATUS_BAR->showMessage(err, delay + 12000);
+            ErrorConsole *console = m_gui->getErrorConsole();
+            
+            if (console != NULL) {
+               SyntaxErrors *errors = new SyntaxErrors();
+               errors->push_back(err);
+               
+               console->updateSyntaxErrors(errors, m_parent, true);
+            }
+         }
          break;
       case T_ABNORMAL:
       default:

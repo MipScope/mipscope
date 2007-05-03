@@ -21,6 +21,15 @@ class State;
 
 extern bool VERBOSE;
 
+#include "Parser.H"
+class StateException : public ParseError
+{
+	public:
+		StateException();
+		StateException(const QString &message, QTextBlock *b = NULL, int lineNo = -1);
+      virtual ~StateException();
+};
+
 /* The Debugger class is the interface to the debugger. It's a normal QObject,
  * and uses signals and slots to communicate with the GUI. 
  * 
@@ -57,7 +66,9 @@ class Debugger : public QThread {
       void setWatchpoints(const bool *buf);
       
       bool waitOnDebuggerThread(unsigned long timeout);
-
+      
+      const StateException &getException() const;
+      
    signals:
       // uses enum Status from typedefs.H
       void programStatusChanged(int s);
@@ -89,6 +100,7 @@ class Debugger : public QThread {
       
       // flags denoting which registers are protected by memory watchpoints
       bool m_registerWatchpoints[register_count];
+      StateException m_exception;
       
    private:
       // returns the new status once m_status has changed from the

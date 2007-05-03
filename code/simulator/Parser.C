@@ -936,3 +936,5 @@ bool Directive::isText() const {
    return false;
 }
 
+ParseError::~ParseError() { }
+

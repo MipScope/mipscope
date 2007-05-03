@@ -294,7 +294,7 @@ class Div : public Instruction {
          }
          
          if (denominator == 0)
-            throw DivideByZero();
+            throw DivideByZero(s->getPC()->getTextBlock());
             
          if (m_args->noArgs() == 2) {
             s->setRegister(lo , numerator / denominator);
@@ -347,7 +347,7 @@ class Divu : public Instruction {
          }
          
          if (denominator == 0)
-            throw DivideByZero();
+            throw DivideByZero(s->getPC()->getTextBlock());
             
          if (m_args->noArgs() == 2) {
             s->setRegister(lo , ( (unsigned) numerator) / ( (unsigned) denominator));
@@ -484,7 +484,7 @@ class Mulo : public Mul {
          int val2 = m_args->getValue(s, 2);
          
          if ( (qint64) val1 * (qint64) val2 != val1 * val2)
-            throw ArithmeticOverflow();   
+            throw ArithmeticOverflow(s->getPC()->getTextBlock()); 
 
          s->setRegister((*m_args)[0]->getRegister(), val1 * val2);
       }
@@ -515,7 +515,7 @@ class Mulou : public Mul {
          quint64 result_64 = (quint64) (unsigned int) val1 * (quint64) (unsigned int) val2;
                   
          if ( result_64 != (unsigned int) result_64)
-            throw ArithmeticOverflow();   
+            throw ArithmeticOverflow(s->getPC()->getTextBlock());
 
          s->setRegister((*m_args)[0]->getRegister(), (int) result_64);
       }

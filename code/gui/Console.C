@@ -52,8 +52,18 @@ void Console::updateDisplay() {
    //QScrollBar *scroll = m_display->verticalScrollBar();
    //int value = scroll->value();
    
+   m_display->setUpdatesEnabled(false);
+   m_display->setPlainText("");
+   QTextCursor c = m_display->textCursor();
+   c.movePosition(QTextCursor::End);
    
-   m_display->setPlainText(QStringList(m_strings.toList()).join(QString("")));
+   foreach(const QString &string, m_strings)
+      c.insertText(string);
+
+   m_display->setTextCursor(c);
+   m_display->ensureCursorVisible();
+   //m_display->setPlainText(QStringList(m_strings.toList()).join(QString("")));
+   m_display->setUpdatesEnabled(true);
    //scroll = m_display->verticalScrollBar();
    //int newValue = scroll->value();;
    //if (newValue < value)

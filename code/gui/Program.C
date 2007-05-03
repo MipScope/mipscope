@@ -517,7 +517,7 @@ int Program::lineNumber(ParseNode *parseNode) {
 }
 
 bool Program::undoIsAvailable() const {
-   return (getStatus() == PAUSED && getState()->getCurrentTimestamp() <= 1);
+   return (getStatus() == PAUSED && getState()->getCurrentTimestamp() > 1);
 }
 
 ParseNode *Program::getDeclaration(const QString &identifier) {

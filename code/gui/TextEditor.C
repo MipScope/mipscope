@@ -213,7 +213,7 @@ void TextEditor::toggleComment() {
          end += 2;
       
       bool inComment = true;
-      c.setPosition(start);;
+      c.setPosition(start);
       c.movePosition(QTextCursor::StartOfLine);
       
       do {
@@ -231,7 +231,7 @@ void TextEditor::toggleComment() {
          pos = c.position();
       } while(pos <= end && prevPos < pos);
       
-//      cerr << "done checking: " << inComment << endl;
+//      cerr << "COMMENT;done checking: " << inComment << ", end=" << end << ", start=" << start << endl;
 
       c.beginEditBlock();
       pos = start;
@@ -246,6 +246,7 @@ void TextEditor::toggleComment() {
             
             c.movePosition(QTextCursor::NextBlock);
             c.movePosition(QTextCursor::StartOfLine);
+            pos = c.position();
          } while(pos <= --end);
 
       } else { // not all lines are in comment

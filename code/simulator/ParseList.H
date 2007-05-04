@@ -95,7 +95,9 @@ class ParseList : public QObject {
       
       // for jumping to the declaration of an Identifier
       ParseNode *getDeclaration(const QString &identifier);
-
+      
+      LabelMap *getLabelMap();
+      
    private:
       QTextDocument *m_source;
       SemanticErrors m_semanticErrors;

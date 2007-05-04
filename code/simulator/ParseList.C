@@ -666,6 +666,10 @@ ParseNode *ParseList::getDeclaration(const QString &identifier) {
    return NULL;
 }
 
+LabelMap *ParseList::getLabelMap() {
+   return &m_labelMap;
+}
+
 
 SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 
    : ParseError(description, unrecognized), m_parseNode(parseNode)

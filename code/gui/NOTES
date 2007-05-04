@@ -2,10 +2,10 @@
 Gui TODO: (stuff i'll forget, otherwise)
    * Add MemoryView
    * Test several of the on-the-fly editing issues;
-   * Better view of errors
 
    * Clear button on OutputConsole?
    * Add 'last pc' to StackView?
+   * Better view of errors
 
 Highlighting a line of Text:
    QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )

@@ -491,6 +491,58 @@ void IDLabel::handleClick(QMouseEvent *e) {
    // TODO: actually set watchpoint in debugger
 }
 
+unsigned int IDLabel::getValue() const {
+   return m_value;
+}
+
+QString RegisterView::getRegisterText(int registerNo) const {
+   return m_registerPane->getRegisterText(registerNo);
+}
+
+QString RegisterPane::getRegisterText(int registerNo) {
+   unsigned int value = m_registerLabels[registerNo]->getValue();
+   
+   QString alias = ::getRegisterText(registerNo, D_ALIAS);
+   QString regName = ((registerNo >= 32) ? 
+      QString("<b>%1</b>").arg(alias) : 
+      QString("<b>r%1</b> (%2)").arg(QString::number(registerNo), alias));
+   
+   QString mText = QString(
+      "<span style=\"font-size: 12;\">%1</span>"
+      "<pre>").arg(regName);
+
+   if (value == 0)
+      mText += QString("Value = 0");
+   else {
+      QString one = getNoInBase(value, D_HEX), 
+//              two = getNoInBase(value, D_BINARY), 
+              three = getNoInBase(value, D_SIGNED_DECIMAL), 
+              four = getNoInBase(value, D_UNSIGNED_DECIMAL);
+      
+      mText += QString(
+         "Hex:      %1<br>"
+//         "Binary:   %2<br>"
+         "Decimal:  %2")
+         .arg(one, /*two, */three);
+      if (three != four)
+         mText += QString("<br>UDecimal: %1").arg(four);
+   }
+   
+   // Display the line which is responsible for setting 
+   // the value currently in this register.
+   ParseNode *lastModified = m_registerLabels[registerNo]->m_lastModified;
+   
+   TextEditor *active = NULL;
+   if (lastModified != NULL && lastModified->isValid() && lastModified->getTextBlock() != NULL && (active = m_parent->m_gui->getActiveProgram()) != NULL) {
+      mText += QString("<br>"
+                       "(Set by line <i>%1</i>)").arg(active->lineNumber(*lastModified->getTextBlock()));
+   }
+   
+   mText += QString("</pre>");
+
+   return mText;
+}
+
 void IDLabel::showExtended(const QPoint &p) {//, bool alreadyAdjusted, RegisterLabel *v) {
 /*   QPoint p2 = p;
    if (!alreadyAdjusted)

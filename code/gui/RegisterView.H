@@ -13,8 +13,6 @@
 
 #define REGISTER_HOVER_DELAY     (0)
 #define NO_REGISTERS    (32 + 3)
-#define EXTENDED_FADE_INTERVAL   (33)
-#define EXTENDED_FADE_DURATION   (EXTENDED_FADE_INTERVAL * 10)
 
 extern const char *const registerAliases[];
 extern QPixmap *watchPoint;
@@ -49,6 +47,8 @@ class RegisterView : public QDockWidget {
       bool *getWatchpoints();
       void displayTypeChanged();
       void updateDisplay(int state);
+      
+      QString getRegisterText(int registerNo) const;
       
    public slots:
       // Clears all registers
@@ -87,6 +87,7 @@ class RegisterPane : public QWidget {
       void testMouseMove(QMouseEvent *e, const QPoint &pos);
       void testMousePress(QMouseEvent *e, const QPoint &pos);
    
+      QString getRegisterText(int registerNo);
       void displayTypeChanged();
       
       // IDLabels notify RegisterPane which notifies the active prog
@@ -147,6 +148,7 @@ class IDLabel : public RegisterLabel {
    
    public:
       friend class ValueLabel;
+      friend class RegisterPane;
       
       IDLabel(RegisterPane *regVew, unsigned int id);
       
@@ -154,6 +156,7 @@ class IDLabel : public RegisterLabel {
       void handleClick(QMouseEvent *e);
       void showExtended(const QPoint &p);//, bool alreadyAdjusted = false, RegisterLabel *v = NULL);
       void setValue(unsigned int value, ParseNode *pc = NULL);
+      unsigned int getValue() const;
       
       QPixmap merge(const QPixmap *pix, const QString &txt);
       ValueLabel *getValueLabel();

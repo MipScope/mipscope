@@ -37,9 +37,10 @@ ParseNode::ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statem
    
 //   cerr << "<<< " << m_statement << ", '" << m_textBlock->text().toStdString() << "'\n";
    
-   if (m_label != NULL)
+   if (m_label != NULL) {
       m_label->setLabelParseNode(this);
-   
+      parent->getLabelMap()->insert(label->getID(), label);
+   }
       //cerr << m_label->getID().toStdString() << " set (in constructor) to " << this << endl;
 }
 

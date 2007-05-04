@@ -104,7 +104,8 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
          const QString &id = label->getID();
          if (list->m_labelMap.contains(id))
             PARSE_ERRORL(QString("redeclaration of label '%1'").arg(id), labelStr, labelStr.length());
-         list->m_labelMap.insert(id, label);
+//         list->m_labelMap.insert(id, label);
+         // Label is now inserted only when a valid ParseNode is instantiated (in ParseNode::ParseNode)
          
          if (text.isEmpty()) {
             _tab = orig;

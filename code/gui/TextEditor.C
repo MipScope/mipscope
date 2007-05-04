@@ -12,6 +12,7 @@
 #include "EditorPane.H"
 #include "Utilities.H"
 #include "Gui.H"
+#include "RegisterView.H"
 #include "../simulator/ParseNode.H"
 #include "../simulator/Statement.H"
 #include "../simulator/Parser.H"
@@ -22,7 +23,9 @@
 TextEditor::TextEditor(EditorPane *parent, QFont *font, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
    m_loaded(false), m_modified(false), m_undoAvailable(false), 
-   m_redoAvailable(false), m_syntaxHighligher(NULL), m_program(new Program(parent->m_parent, parent, this)), m_pc(NULL), m_hasControlSelection(false)
+   m_redoAvailable(false), m_syntaxHighligher(NULL), 
+   m_program(new Program(parent->m_parent, parent, this)), m_pc(NULL), 
+   m_hasControlSelection(false), m_registerTip(NULL)
 {
    setupEditor(font);
    
@@ -50,7 +53,8 @@ void TextEditor::setupEditor(QFont *font) {
    setLineWrapMode(QTextEdit::NoWrap);
   
    m_syntaxTip = new SyntaxTip(this);
-   
+   m_registerTip = new RegisterTip(this);
+
 //   m_commentLine = new QShortcut(QKeySequence(tr("CTRL+D")), this, SLOT(toggleComment()), SLOT(toggleComment()), Qt::WidgetShortcut);
    
    
@@ -645,6 +649,35 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
       setExtraSelections(m_selections);
    }
    
+   bool showingRegister = false;
+   
+   // see if the user's hovering over a register
+   if (m_program->getStatus() == PAUSED) {
+      const QPoint &pos = e->pos();
+      
+      QTextCursor c = cursorForPosition(pos);
+      
+      c.select(QTextCursor::WordUnderCursor);
+      QRect r = cursorRect(c);
+      r.setX(r.x() - 20); // ensure mouse is actually close to word under cursor
+      r.setY(r.y() - 20);
+      r.setWidth(r.width() + 20);
+      r.setHeight(r.height() + 20);
+      if (r.contains(pos)) {
+         QString text = c.selectedText();
+         int registerNo = attemptRegisterParse(text);
+
+         //      cerr << "found registerNo: " << registerNo << endl;
+         if (registerNo >= 0 && registerNo < register_count) {
+            showingRegister = true;
+            m_registerTip->show(m_parent->m_parent->getRegisterView()->getRegisterText(registerNo), pos);
+         }
+      }
+   }
+   
+   if (!showingRegister && m_registerTip->isVisible())
+      m_registerTip->hide();
+   
    QTextEdit::mouseMoveEvent(e);
 }
 
@@ -1084,15 +1117,196 @@ void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
    setExtraSelections(m_selections);//m_errors.values());
 }
 
-/*
-c.select(QTextCursor::LineUnderCursor);
-//         c.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-         
-         QTextCharFormat format(m_display->currentCharFormat());
-         format.setToolTip(QString("Hex: %1: %2<br>"
-                                   "Dec: %3: %4").arg(addr, valString, 
-                           QString::number(address, 10), 
-                           QString::number(value, 10)));
-         format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-*/
+
+void TextEditor::testMouseMove(QMouseEvent *e, const QPoint &pos) {
+//   cerr << "TODO testMouseMove\n";
+}
+
+// -----------
+// RegisterTip
+// -----------
+
+RegisterTip::RegisterTip(TextEditor *parent) 
+   : QLabel(parent), m_parent(parent), 
+   m_timer(new QTimer(this)), m_state(S_Hidden)
+{
+/*   QPalette pal = palette();
+   QColor c(255, 255, 215); // light yellow
+   //c.setAlpha(120);
+   
+   pal.setColor(QPalette::Window, c);
+   pal.setColor(QPalette::Foreground, Qt::black);
+   setPalette(pal);*/
+   
+   setWordWrap(false);
+   setAutoFillBackground(false);
+   setBackgroundRole(QPalette::Window);
+   
+   // timer to automatically repaint for fading effects
+   connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
+   
+//   cerr << testAttribute(Qt::WA_NoMousePropagation) << endl;
+//   cerr << testAttribute(Qt::WA_NoSystemBackground) << endl;
+   //setMargin(-1);
+
+   setMouseTracking(false);
+   //setFrameShadow(QFrame::Raised);
+   //setFrameShape(QFrame::StyledPanel);
+   setFocusPolicy(Qt::NoFocus);
+   QLabel::hide();
+   
+   QFont font("Courier New", 11);
+   setFont(font);
+}
+
+void RegisterTip::mousePressEvent(QMouseEvent *e) {
+   this->hide();
+}
+
+void RegisterTip::hide() {
+   if (!isVisible())
+      return;
+   
+   if (m_state == S_Fading || m_state == S_Hidden)
+      return;
+   
+   m_state = S_Fading;
+   m_alpha = 255;
+   m_timer->start(EXTENDED_FADE_INTERVAL);
+}
+
+void RegisterTip::show(const QString &text, const QPoint &pos)
+{
+   m_timer->stop();
+   setText(text);
+   
+   const QSize &hint = sizeHint();
+   QRect r(pos.x() + 6, pos.y() + 4, hint.width(), hint.height());
+   QRect container = m_parent->rect();
+   
+   // force label to stay within bounds of container
+   if (r.right() > container.right()) 
+      r.translate(container.right() - r.right(), 0);
+   
+   if (r.bottom() > container.bottom()) 
+      r.translate(0, container.bottom() - r.bottom());
+   
+   setGeometry(r);
+   if (!isVisible()) {
+      m_state = S_Appearing;
+      m_alpha = 0;
+      QLabel::show();
+      m_timer->start(EXTENDED_FADE_INTERVAL);
+   } else if (m_state != S_Appearing) {
+      m_state = S_Normal;
+      update();
+   }
+   //connect(m_parent, SIGNAL(cursorPositionChanged()), this, SLOT(testCursorPos()));
+}
+
+void RegisterTip::mouseMoveEvent(QMouseEvent *e) {
+   e->ignore();
+   m_parent->testMouseMove(e, mapTo(m_parent, e->pos()));
+}
+
+// @overridden
+void RegisterTip::paintEvent(QPaintEvent *e) {
+   QPainter p(this);
+   QRect r = rect();
+   
+   int alpha = 255;
+   int fading = -(m_state == S_Fading) + (m_state == S_Appearing);
+   if (fading) {
+      // 255 * interval / duration
+      m_alpha += fading * (255 * EXTENDED_FADE_INTERVAL) / EXTENDED_FADE_DURATION;
+      // cap interval
+      alpha = (m_alpha < 0 ? 0 : (m_alpha > 255 ? 255 : m_alpha));
+   }
+
+   QColor c(255, 255, 225, alpha); // light yellow
+   QColor c2(255, 255, 150, alpha); // light yellow
+   QColor black = Qt::black;
+   black.setAlpha(alpha);
+   
+   QLinearGradient grad(0, 0, r.width(), r.height());
+   grad.setColorAt(0.0, c);
+   grad.setColorAt(1, c2);
+   
+   p.setPen(QPen(QBrush(black), 2));
+   
+   p.fillRect(r, grad);
+   p.drawRect(r);//, 10, 10);
+   p.end();
+   
+   if (fading < 0 && alpha <= 0) { // S_Fading
+      m_timer->stop();
+      m_state = S_Hidden;
+      QLabel::hide();
+      return;
+   } else if (fading > 0 && alpha >= 255) { // S_Appearing
+      m_timer->stop();
+      m_state = S_Normal;
+   }
+   
+   QLabel::paintEvent(e);
+}
+
+int TextEditor::attemptRegisterParse(QString &text) {
+   if (!Parser::simplify(text))
+      return -1;
+   
+   int regIndex = text.indexOf('$');
+   int len = text.length();
+
+   if (regIndex < 0)
+      return -1;
+
+   if (regIndex + 1 >= len)
+      return -1;
+
+   QString reg;
+   QRegExp endOfReg("\\$[a-z0-9]+\\b");
+   int endIndex = text.indexOf(endOfReg, regIndex);
+
+   if (endIndex + endOfReg.matchedLength() > regIndex + 3)
+      return -1;
+
+   if (regIndex + 2 >= len || (endIndex > 0 && endIndex + endOfReg.matchedLength() == regIndex + 2 && endIndex == regIndex))
+      reg = Parser::substring(text, regIndex + 0, 2);
+   else reg = Parser::substring(text, regIndex + 0, 3);
+
+/*   if (VERBOSE) cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
+   if (VERBOSE) cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;*/
+
+   int registerNo = -1;
+   // determine which $r register
+   if (reg.at(1).isDigit()) {
+      reg = Parser::substring(text, 1, reg.length() - 1);  //2, reg.length() - 2);  (old, for $r3 type syntax -- which doesn't exist)
+
+      bool okay = false;
+      registerNo = reg.toInt(&okay, 10);
+      if (!okay || registerNo < zero || registerNo >= pc)
+         return -1;
+   } else { // determine between aliases
+      bool found = false;
+
+      for(int i = 0; i < pc ; i++) {
+         QRegExp r(QString("\\$") + QString(registerAliases[i]));
+
+         if (r.exactMatch(reg)) {
+            found = true;
+            registerNo = i;
+            break;
+         }
+      }
+
+      if (!found)
+         return -1;
+   }
+
+   // at this point, should know register number
+//   if (VERBOSE) cerr << _tab << "Register: " << registerNo << " \t $" << registerAliases[registerNo] << "\n";
+
+   return registerNo;
+}
 

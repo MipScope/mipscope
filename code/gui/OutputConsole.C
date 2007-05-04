@@ -54,6 +54,8 @@ void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) 
          break;
       case S_PRINT_STRING:
          output = QString(s->getString(valueOfa0));
+         //cerr << "syscall print string: '" << output.toStdString() << "'  (status=" << status << endl;
+
          break;
       case S_PRINT_CHAR:
          output = QString::number((char)(valueOfa0 & 0xFF));
@@ -68,6 +70,12 @@ void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) 
    }
    
    m_outputActions.push_back(new NewOutputAction(this, output, syscallNo));
+   if (status == PAUSED) {
+      updateDisplay();
+
+      if (!m_visible)
+         m_gui->ensureVisibility(this);
+   }
 }
 
 void OutputConsole::undoSyscall(int syscallNo) {

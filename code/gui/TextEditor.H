@@ -20,6 +20,7 @@
 using namespace std;
 
 class Program;
+class RegisterTip;
 class ParseNode;
 class QTextBlock;
 class QFont;
@@ -37,6 +38,7 @@ class ParseNode;
 class QPainter;
 class QColor;
 class QResizeEvent;
+class QTimer;
 
 typedef map<int, int> LineToPosMap;
 typedef LineToPosMap::const_iterator LineToMapIterator;
@@ -105,6 +107,8 @@ class TextEditor : public QTextEdit {
       
       void updateSyntaxErrors(SyntaxErrors *errors);
       
+      void testMouseMove(QMouseEvent *e, const QPoint &pos);
+      
 // returns actual filename of open file
       QString fileName() const;
       QFile *file() const { return m_file; }
@@ -155,6 +159,8 @@ class TextEditor : public QTextEdit {
       // selections without ctrl+click selection
       QList<ExtraSelection> m_selections;
       bool m_hasControlSelection;
+
+      RegisterTip *m_registerTip;
       
       // @overridden to deal w/ showing syntax help
       virtual void keyReleaseEvent(QKeyEvent *e);
@@ -166,6 +172,8 @@ class TextEditor : public QTextEdit {
       // @overridden to allow for CTRL+clicking to goto declaration
       virtual void mousePressEvent(QMouseEvent *e);
       virtual void mouseMoveEvent(QMouseEvent *e);
+      
+      int attemptRegisterParse(QString &text);
       
       void highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height);
 };
@@ -196,6 +204,34 @@ class SyntaxTip : public QLabel {
       QTextBlock *m_block;
 //      int m_startPos;
 };
+
+class RegisterTip : public QLabel {
+   
+   Q_OBJECT
+   
+   public:
+      RegisterTip(TextEditor *parent);
+       
+      void show(const QString &text, const QPoint &pos);
+      
+      // @overridden
+      virtual void mousePressEvent(QMouseEvent*);
+      virtual void mouseMoveEvent(QMouseEvent *);
+
+   public slots:
+      void hide();
+
+   protected:
+      TextEditor *m_parent;
+
+      enum State { S_Hidden, S_Appearing, S_Fading, S_Normal };
+      QTimer *m_timer;
+      State m_state;
+      int m_alpha;
+      
+      void paintEvent(QPaintEvent *e);
+};
+
 
 #endif // __TEXTEDITOR_H__
 

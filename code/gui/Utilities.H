@@ -30,6 +30,9 @@ using namespace std;
 //#define ICONS              IMAGES "/" ICON_DIR
 #define ICONS                IMAGES
 
+#define EXTENDED_FADE_INTERVAL   (33)
+#define EXTENDED_FADE_DURATION   (EXTENDED_FADE_INTERVAL * 10)
+
 extern QStatusBar *STATUS_BAR;
 
 /*enum DEBUG_MODE {

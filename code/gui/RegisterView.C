@@ -722,7 +722,6 @@ void ExtendedView::hide() {
 void ExtendedView::show(const QString &text, const QString &statusText, 
       const QPoint &pos, RegisterLabel *orig)
 {
-   m_timer->stop();
    m_orig = orig;
    setText(text);
    STATUS_BAR->showMessage(statusText);

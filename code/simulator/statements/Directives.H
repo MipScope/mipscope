@@ -20,7 +20,7 @@ using namespace std;
 // ----------------------------------
 class AsciiDirective : public Directive {
    public:
-      AsciiDirective(const QString &string) : Directive(string.length()), 
+      AsciiDirective(const QString &string = "") : Directive(string.length()), 
          m_string(string) { }
       
       virtual void initialize(ParseNode *p, State *s) {
@@ -46,7 +46,7 @@ class AsciiDirective : public Directive {
 // ----------------------------------
 class AsciizDirective : public Directive {
    public:
-      AsciizDirective(const QString &string) : Directive(string.length() + 1), 
+      AsciizDirective(const QString &string = "") : Directive(string.length() + 1), 
          m_string(string) { }
       
       virtual void initialize(ParseNode *p, State *s) {
@@ -175,7 +175,7 @@ class AlignDirective : public Directive {
 // ----------------------------------
 class SpaceDirective : public Directive {
    public:
-      SpaceDirective(int noBytes) : Directive(noBytes) { }
+      SpaceDirective(int noBytes = 0) : Directive(noBytes) { }
       
       // @overridden from Statement
       virtual const char *getName() const { return ".space"; }
@@ -210,7 +210,7 @@ class GlobalDirective : public Directive {
 // --------------------------------------------
 class ByteDirective : public Directive {
    public:
-      ByteDirective(unsigned char value, unsigned int no = 1) : Directive(no * sizeof(char)), m_values(NULL) {
+      ByteDirective(unsigned char value = 0, unsigned int no = 1) : Directive(no * sizeof(char)), m_values(NULL) {
          if ((m_values = (unsigned char *)malloc(m_size)) == NULL) {
             perror("malloc");
             cerr << "\nERROR:  Ran out of memory!\n";
@@ -264,7 +264,7 @@ class ByteDirective : public Directive {
 // --------------------------------------------
 class HalfDirective : public Directive {
    public:
-      HalfDirective(unsigned short value, unsigned short no = 1) : Directive(no * sizeof(short)), m_values(NULL) {
+      HalfDirective(unsigned short value = 0, unsigned short no = 1) : Directive(no * sizeof(short)), m_values(NULL) {
          if ((m_values = (unsigned short *)malloc(m_size)) == NULL) {
             perror("malloc");
             cerr << "\nERROR:  Ran out of memory!\n";
@@ -325,7 +325,7 @@ class HalfDirective : public Directive {
 // --------------------------------------------
 class WordDirective : public Directive {
    public:
-      WordDirective(unsigned int value, unsigned int no = 1) : Directive(no * sizeof(int)), m_values(NULL) {
+      WordDirective(unsigned int value = 0, unsigned int no = 1) : Directive(no * sizeof(int)), m_values(NULL) {
          if ((m_values = (unsigned int *)malloc(m_size)) == NULL) {
             perror("malloc");
             cerr << "\nERROR:  Ran out of memory!\n";

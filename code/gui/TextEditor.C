@@ -103,14 +103,24 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
    if (key == Qt::Key_Space && !textCursor().hasSelection()) {
       QTextCursor c = textCursor();
       c.movePosition(QTextCursor::StartOfLine/*PreviousWord*/, QTextCursor::KeepAnchor);
-      const QString &selectedText = c.selectedText().trimmed();
+      QString selectedText = c.selectedText().trimmed();
 //      bool match = m_syntaxHighligher->matches(selectedText);
       bool match1 = (selectedText != "" && instructionMap.contains(selectedText)), match2 = false;
       
 //      cerr << selectedText.toStdString() << ", " << match1 << ", " << match2 << endl;
 //      cerr << instructionMap.contains(selectedText) << ", " << (void*)instructionMap[selectedText] << endl;
+      
+      if (!match1) {
+         int index;
+         selectedText = selectedText.right((index = selectedText.lastIndexOf(" ")) >= 0 ? selectedText.length() - index - 2 : selectedText.length() - 1);
 
-      if (match1 || (match2 = directiveMap.contains(selectedText))) {
+//         cerr << "TEXT2: " << selectedText.toStdString() << ", " << directiveMap.contains(selectedText) << endl;
+
+         if (directiveMap.contains(selectedText))
+            match2 = true;
+      }
+      
+      if (match1 || match2) {
          // move cursor to start of matched word
          c = textCursor();
          c.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
@@ -121,7 +131,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
          
          const Statement *statement = (match1 ? (Statement*)instructionMap[selectedText] : (Statement*)directiveMap[selectedText]);
          if (statement != NULL) {
-            const QString text = QString("<p style='white-space:pre'><b>%1</b> %2").arg(selectedText, QString(statement->getSyntax()));
+            const QString text = QString("<p style='white-space:pre'><b>%1</b> %2</style>").arg(selectedText, QString(statement->getSyntax()));
 
             QString statusText = statement->getDescription();
             //"Adds two signed integers, storing the result in $dest.";
@@ -129,8 +139,11 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
             //cerr << text.toStdString() << endl;
             //cerr << statusText.toStdString() << endl;
 
+            if (m_registerTip->isVisible() && m_registerTip->text() == text)
+               m_registerTip->hide();
+            
             m_syntaxTip->show(text, statusText, pos, c);
-
+            
 //         highlightLine(c, Qt::red);
 //         QToolTip::showText(mapToGlobal(pos), text, this);
          }
@@ -651,20 +664,21 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
    
    bool showingRegister = false;
    
-   // see if the user's hovering over a register
-   if (m_program->getStatus() == PAUSED) {
-      const QPoint &pos = e->pos();
+   int status = m_program->getStatus();
+   const QPoint &pos = e->pos();
+   QTextCursor c = cursorForPosition(pos);
+
+   c.select(QTextCursor::WordUnderCursor);
+   QRect r = cursorRect(c);
+   r.setX(r.x() - 25); // ensure mouse is actually close to word under cursor
+   r.setY(r.y() - 25);
+   r.setWidth(r.width() + 30);
+   r.setHeight(r.height() + 30);
+   if (r.contains(pos)) {
+      QString text = c.selectedText();
       
-      QTextCursor c = cursorForPosition(pos);
-      
-      c.select(QTextCursor::WordUnderCursor);
-      QRect r = cursorRect(c);
-      r.setX(r.x() - 20); // ensure mouse is actually close to word under cursor
-      r.setY(r.y() - 20);
-      r.setWidth(r.width() + 20);
-      r.setHeight(r.height() + 20);
-      if (r.contains(pos)) {
-         QString text = c.selectedText();
+      // see if the user's hovering over a register
+      if (status == PAUSED) {
          int registerNo = attemptRegisterParse(text);
 
          //      cerr << "found registerNo: " << registerNo << endl;
@@ -673,7 +687,38 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
             m_registerTip->show(m_parent->m_parent->getRegisterView()->getRegisterText(registerNo), pos);
          }
       }
-   }
+      
+      // see if the user's hovering over a instruction or directive and display its syntax
+      if (status == STOPPED || (status == PAUSED && showingRegister == false)) {
+         bool match1 = (text != "" && instructionMap.contains(text)), match2 = false;
+         
+//         cerr << directiveMap.contains(text) << ", '" << text.toStdString() << "'\n";
+
+         if (match1 || (match2 = directiveMap.contains(text))) {
+            // move cursor to start of matched word
+//            c = textCursor();
+//            c.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+//            const QRect &rect = cursorRect(c);
+            //         const int top = rect.top();
+//            const QPoint pos(rect.center().x() + 2, rect.bottom() + 1);
+            //top + ((rect.bottom() - top) >> 3));
+            
+            const Statement *statement = (match1 ? (Statement*)instructionMap[text] : (Statement*)directiveMap[text]);
+            if (statement != NULL) {
+               const QString tip = QString("<p style='white-space:pre'><b>%1</b> %2</style>").arg(text, QString(statement->getSyntax()));
+               QString statusText = statement->getDescription();
+               if (m_syntaxTip->isVisible() && m_syntaxTip->text() == tip)
+                  m_syntaxTip->hide();
+               
+               if (STATUS_BAR != NULL)
+                  STATUS_BAR->showMessage(statusText.replace("&lt;", "<").replace("&gt;", ">"), STATUS_DELAY * 2);
+               
+               showingRegister = true;
+               m_registerTip->show(tip, pos);
+            }
+         }
+      }
+   } 
    
    if (!showingRegister && m_registerTip->isVisible())
       m_registerTip->hide();
@@ -1177,7 +1222,6 @@ void RegisterTip::hide() {
 
 void RegisterTip::show(const QString &text, const QPoint &pos)
 {
-   m_timer->stop();
    setText(text);
    
    const QSize &hint = sizeHint();

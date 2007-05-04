@@ -912,9 +912,19 @@ Directive::Directive(unsigned int requiredSizeInBytes)
 
 DirectiveMap directiveMap;
 void Directive::InitializeDirectiveMap() {
-   int i = 0;
-   while(directives[i] != NULL)
-      directiveMap.insert(directives[i++], NULL);
+   directiveMap.insert("global", new GlobalDirective());
+   directiveMap.insert("align", new AlignDirective());
+   directiveMap.insert("data", new DataDirective());
+   directiveMap.insert("text", new TextDirective());
+   directiveMap.insert("ktext", new KTextDirective());
+   directiveMap.insert("space", new SpaceDirective());
+   directiveMap.insert("asciiz", new AsciizDirective());
+   directiveMap.insert("ascii", new AsciiDirective());
+   directiveMap.insert("byte", new ByteDirective());
+   directiveMap.insert("half", new HalfDirective());
+   directiveMap.insert("word", new WordDirective());
+/*   while(directives[i] != NULL)
+      directiveMap.insert(directives[i++], NULL);*/
 }
 
 // Default is no initialization (setting to NULL to avoid warnings)

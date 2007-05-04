@@ -32,7 +32,7 @@ ROWS        = 8      # the number of Rows in the Grid (8 default)
 COLUMNS     = 10     # the number of Columns in the Grid (10 default)
 GRID_SIZE   = 80     # ROWS * COLUMNS (80 default)
 
-GENERATIONS = 2      # Number of Generations to simulate
+GENERATIONS = 5      # Number of Generations to simulate
 
 # ----------------------------
 # Global Variable Declarations

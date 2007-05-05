@@ -127,17 +127,23 @@ void Instruction::InitializeInstructionMap() {
    insert(new Mulo());
    insert(new Mulou());
    insert(new Madd());
-   /*insert(new Maddu());
+   insert(new Maddu());
    insert(new Msub());
    insert(new Msubu());
    insert(new Neg());
    insert(new Negu());
    insert(new Nor());
-   insert(new Not());*/
+   insert(new Not());
    insert(new Or());
    insert(new Ori());
    insert(new Rem());
    insert(new Remu());
+   insert(new Sll());
+   insert(new Sllv());
+   insert(new Sra());
+   insert(new Srav());
+   insert(new Srl());
+   insert(new Srlv());
    insert(new Sub());
 
    // DataTransfer.H

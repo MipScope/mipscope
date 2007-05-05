@@ -1,16 +1,18 @@
+SPIM and MipScope handle immediate arguments greater than 2147483647 differently. MipScope treats these as unsigned integers, and loads them. It's not clear what exactly SPIM is doing, but it doesn't error, and the values aren't right.
+
 ##############
 # Arithmetic & Logical
 ##############
 INSTRUCTION	IMPLEMENTED?	TESTED?		NOTES
-abs		YES		YES
+abs		YES		YES		
 add		YES		YES
 addu		YES		YES
 addi		YES		YES		We accept any immmediate - SPIM only takes -32k - 32k
 addiu		YES		YES		ditto
 and		YES		YES
 andi		YES		YES		We accept any immediate - SPIM only takes 0 - 64k
-clo		YES		NO		SPIM claims this doesn't exist - wtf?
-clz		YES		NO		ditto
+clo		YES		YES
+clz		YES		YES
 div 3-arg	YES		YES
 divu 3-arg	YES		YES
 div 2-arg	YES		YES
@@ -20,4 +22,27 @@ multu		YES		YES
 mul		YES		YES
 mulo		YES		YES
 mulou		YES		YES
-madd		YES		SOMEWHAT	SPIM seems to implement this wrong.
+madd		YES		YES
+maddu		YES		YES
+msub		NO		NO		SPIM bug
+msubu		NO		NO		SPIM bug
+neg		YES		YES
+negu		YES		YES		
+nor		YES		YES
+or		YES		YES
+ori		YES		YES
+rem		YES		YES
+remu		YES		YES
+sll		YES		YES
+sllv		YES		YES
+sra		YES		YES
+srav		YES		YES
+srl		YES		YES
+srlv		YES		YES
+rol
+ror
+sub
+subu
+xor
+xori
+

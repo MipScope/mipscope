@@ -10,14 +10,15 @@ endline = "End tests."
 def readUntilSync(fd, sync)
 	fd.each { |line|
 		break if line.include? sync;
+		puts line
 	}
 
-	if fd.eof
-		puts "Couldn't find sync line for SPIM input."
-		exit
-	else
-		#puts "Found sync line."
-	end
+#	if fd.eof?
+#		puts "Couldn't find sync line for SPIM input."
+#		exit
+#	else
+#		#puts "Found sync line."
+#	end
 end
 
 file = ARGV[0]
@@ -27,8 +28,14 @@ if !file
 	exit(1)
 end
 
-spim = IO.popen("#{spimpath} -file #{file}")
-mips = IO.popen("#{mipscopepath} -nox #{file}")
+system "#{spimpath} -file #{file} > .spim.out"
+system "#{mipscopepath} -nox #{file} > .mipscope.out"
+
+#spim = IO.popen("#{spimpath} -file #{file}")
+#mips = IO.popen("#{mipscopepath} -nox #{file}")
+
+spim = File.open(".spim.out")
+mips = File.open(".mipscope.out")
 
 readUntilSync(spim, startline)
 readUntilSync(mips, startline)

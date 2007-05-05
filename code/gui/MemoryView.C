@@ -530,7 +530,7 @@ void MemoryView::populateScene(Program *program) {
       
       QColor color = QColor(activityGradient.pixel(scale, 0));
       
-      QGraphicsItem *item = new Chip(QColor(color), x, y, address, value, NULL);
+      QGraphicsItem *item = new Chip(m_view, QColor(color), x, y, address, value, NULL);
       item->setPos(QPointF(x, y));
       m_scene->addItem(item);
    }

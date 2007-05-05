@@ -23,20 +23,27 @@
 
 #include "chip.h"
 #include "../../simulator/ParseNode.H"
+#include "view.h"
 
 #include <QtGui>
 
-Chip::Chip(const QColor &color, int x, int y, 
+Chip::Chip(View *view, const QColor &color, int x, int y, 
       unsigned int address, unsigned int value, 
       ParseNode *setBy)
-: m_address(address), m_value(value), 
+: m_view(view), m_address(address), m_value(value), 
    m_setBy(setBy)
 {
    this->x = x;
    this->y = y;
    this->color = color;
    setZValue((x + y) % 2);
+   QString toolTip = QString("Address: %1<br>Value: %2").arg(QString::number(m_address, 16), QString::number(m_value, 16));
 
+   if (m_setBy != NULL)
+      toolTip += QString("<br><br>(Set by '%1')").arg(m_setBy->getTextBlock()->text());
+   
+   setToolTip(toolTip);
+   
    setFlags(ItemIsSelectable);// | ItemIsMovable);
    setAcceptsHoverEvents(true);
 }
@@ -91,8 +98,8 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
    }
 
    // Draw text
-   if (option->levelOfDetail >= 2.5) {
-      QFont font("Times", 10);
+   if (option->levelOfDetail >= 0.5f) {
+      QFont font("Times", 16);
       font.setStyleStrategy(QFont::ForceOutline);
       painter->setFont(font);
       painter->setRenderHint(QPainter::TextAntialiasing, true); // false
@@ -101,10 +108,10 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
       /*        painter->drawText(170, 180, QString("Model: VSC-2000 (Very Small Chip) at %1x%2").arg(x).arg(y));
                 painter->drawText(170, 200, QString("Serial number: DLWR-WEER-123L-ZZ33-SDSJ"));
                 painter->drawText(170, 220, QString("Manufacturer: Chip Manufacturer"));*/
-      painter->drawText(85, 90, QString("Address: %1").arg(QString::number(m_address, 16)));
-      painter->drawText(85, 104, QString("Value: %1").arg(QString::number(m_value, 16)));
+      painter->drawText(85, 90, QString("Address: 0x%1").arg(QString::number(m_address, 16)));
+      painter->drawText(85, 110, QString("Value: 0x%1").arg(QString::number(m_value, 16)));
       if (m_setBy != NULL)
-         painter->drawText(85, 118, QString("(Set by '%1'").arg(m_setBy->getTextBlock()->text()));
+         painter->drawText(85, 130, QString("(Set by '%1')").arg(m_setBy->getTextBlock()->text()));
 
       painter->restore();
    }
@@ -149,6 +156,12 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 void Chip::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
    QGraphicsItem::mousePressEvent(event);
+   if (event->button() & Qt::LeftButton) {
+//      m_view->view()->centerOn(this);
+      
+      m_view->zoomInOn(this, event);
+//      m_view->setZoom(320); // zoom in on this chip :)
+   }
    update();
 }
 

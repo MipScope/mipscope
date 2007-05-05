@@ -22,6 +22,8 @@
  ****************************************************************************/
 
 #include "view.h"
+#include "chip.h"
+#include <QGraphicsSceneMouseEvent>
 
 #include <QtGui>
 #ifndef QT_NO_OPENGL
@@ -31,26 +33,29 @@
 #include <math.h>
 
 View::View(const QString &name, QWidget *parent)
-: QFrame(parent)
+   : QFrame(parent), m_active(NULL)
 {
    setFrameStyle(Sunken | StyledPanel);
    graphicsView = new QGraphicsView;
    graphicsView->setRenderHint(QPainter::Antialiasing, true);
+   graphicsView->setRenderHint(QPainter::TextAntialiasing, true);
    graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
    graphicsView->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+   
+//   graphicsView->setBackgroundBrush(QPixmap(":/stackBackground.jpg"));
 
    int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
    QSize iconSize(size, size);
 
    QToolButton *zoomInIcon = new QToolButton;
    zoomInIcon->setAutoRepeat(true);
-   zoomInIcon->setAutoRepeatInterval(33);
+   zoomInIcon->setAutoRepeatInterval(16);
    zoomInIcon->setAutoRepeatDelay(0);
    zoomInIcon->setIcon(QPixmap(":/zoomin.png"));
    zoomInIcon->setIconSize(iconSize);
    QToolButton *zoomOutIcon = new QToolButton;
    zoomOutIcon->setAutoRepeat(true);
-   zoomOutIcon->setAutoRepeatInterval(33);
+   zoomOutIcon->setAutoRepeatInterval(16);
    zoomOutIcon->setAutoRepeatDelay(0);
    zoomOutIcon->setIcon(QPixmap(":/zoomout.png"));
    zoomOutIcon->setIconSize(iconSize);
@@ -95,12 +100,16 @@ View::View(const QString &name, QWidget *parent)
    antialiasButton = new QToolButton;
    antialiasButton->setText(tr("Antialiasing"));
    antialiasButton->setCheckable(true);
-   antialiasButton->setChecked(false);
+   antialiasButton->setChecked(true);
    openGlButton = new QToolButton;
    openGlButton->setText(tr("OpenGL"));
    openGlButton->setCheckable(true);
 #ifndef QT_NO_OPENGL
    openGlButton->setEnabled(QGLFormat::hasOpenGL());
+   if (openGlButton->isEnabled()) {
+      openGlButton->setChecked(true);
+      graphicsView->setViewport(openGlButton->isChecked() ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
+   }
 #else
    openGlButton->setEnabled(false);
 #endif
@@ -144,6 +153,7 @@ QGraphicsView *View::view() const
 
 void View::resetView()
 {
+   m_timer.stop();
    zoomSlider->setValue(250);
    rotateSlider->setValue(0);
    setupMatrix();
@@ -179,6 +189,7 @@ void View::toggleOpenGL()
 void View::toggleAntialiasing()
 {
    graphicsView->setRenderHint(QPainter::Antialiasing, antialiasButton->isChecked());
+   graphicsView->setRenderHint(QPainter::TextAntialiasing, antialiasButton->isChecked());
 }
 
 void View::print()
@@ -188,6 +199,22 @@ void View::print()
    if (dialog.exec() == QDialog::Accepted) {
       QPainter painter(&printer);
       graphicsView->render(&painter);
+   }
+}
+
+#include <iostream>
+using namespace std;
+
+void View::zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event) {
+   m_active = chip;
+   graphicsView->centerOn(chip);
+   
+   if (event->button() & Qt::LeftButton) {
+      m_timer.start(20, this);
+   } else {
+      cerr << "else\n";
+      m_timer.stop();
+      setZoom(320);
    }
 }
 
@@ -201,6 +228,10 @@ void View::zoomOut()
    zoomSlider->setValue(zoomSlider->value() - 1);
 }
 
+void View::setZoom(int value) {
+   zoomSlider->setValue(value);
+}
+
 void View::rotateLeft()
 {
    rotateSlider->setValue(rotateSlider->value() - 10);
@@ -209,5 +240,17 @@ void View::rotateLeft()
 void View::rotateRight()
 {
    rotateSlider->setValue(rotateSlider->value() + 10);
+}
+
+void View::timerEvent(QTimerEvent *event) {
+   int target = 320;
+   int val = zoomSlider->value();
+   
+   graphicsView->centerOn(m_active);
+   if (val < target - 1)
+      zoomSlider->setValue(val + 2);
+   else if (val > target + 1)
+      zoomSlider->setValue(val - 2);
+   else m_timer.stop();//killTimer(event->timerId());
 }
 

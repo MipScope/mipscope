@@ -6,6 +6,7 @@
 #include "typedefs.H"
 #include <string.h>
 
+// expected maximum memory usage (will grow if necessary)
 #define INTERNAL_MEMORY_SIZE (16384)
 
 State::State(Debugger *debugger) : 
@@ -13,6 +14,7 @@ State::State(Debugger *debugger) :
    m_undoIsAvailable(false), m_debugger(debugger)
 {
    m_memory.reserve(INTERNAL_MEMORY_SIZE);
+   m_memoryUseMap.reserve(2048);
    reset();
 }
 
@@ -29,6 +31,13 @@ void State::setMemoryWord(unsigned int address, unsigned int value) {
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, address, m_memory[address]));
    
    m_memory[address] = value;
+
+   // record assignment in memory use map
+   if (!m_memoryUseMap.contains(address))
+      m_memoryUseMap.insert(address, new QList<TIMESTAMP>);
+   QList<TIMESTAMP> *list = m_memoryUseMap[address];
+   list->push_back(m_currentTimestamp);
+
    memoryChanged(address, value, m_pc);
 }
 
@@ -42,12 +51,25 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
 
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, aligned, m_memory[aligned]));
+
+   // record assignment in memory use map
+   if (!m_memoryUseMap.contains(aligned))
+      m_memoryUseMap.insert(aligned, new QList<TIMESTAMP>);
+   QList<TIMESTAMP> *list = m_memoryUseMap[aligned];
+   list->push_back(m_currentTimestamp);
+   
    memoryChanged(aligned, result, m_pc);
 }
 
-unsigned int State::getMemoryWord(unsigned int address) const {
+unsigned int State::getMemoryWord(unsigned int address) {
    ensureValidAlignment(address, 3);
-    
+   
+   // record assignment in memory use map
+   if (!m_memoryUseMap.contains(address))
+      m_memoryUseMap.insert(address, new QList<TIMESTAMP>);
+   QList<TIMESTAMP> *list = m_memoryUseMap[address];
+   list->push_back(m_currentTimestamp);
+  
    if (m_memory.contains(address))
       return m_memory[address];
    
@@ -55,7 +77,14 @@ unsigned int State::getMemoryWord(unsigned int address) const {
    //return *((unsigned int*) (m_memory.data() + address) );
 }
 
-unsigned char State::getMemoryByte(unsigned int address) const {
+unsigned int State::getMemoryWordUnobserved(unsigned int address) {
+   if (m_memory.contains(address))
+      return m_memory[address];
+
+   return 0;
+}
+
+unsigned char State::getMemoryByte(unsigned int address) {
    ensureValidAlignment(address, 0);
 
    unsigned int word = getMemoryWord(address & ~3);
@@ -90,7 +119,7 @@ void State::memset(unsigned int destAddress, const int value, unsigned int size)
       setMemoryByte(destAddress++, value);
 }
 
-QString State::getString(unsigned int address) const {
+QString State::getString(unsigned int address) {
    unsigned char byte;
    QString s;
    
@@ -145,7 +174,7 @@ ParseNode* State::getPC(void) const {
    return m_pc;	
 }
 
-void State::getStack(QVector<int> &stack) const {
+void State::getStack(QVector<int> &stack) {
    unsigned int stackAddr = m_registers[sp];
 
    stack.clear();
@@ -234,6 +263,8 @@ void State::reset() {
    m_currentTimestamp = CLEAN_TIMESTAMP;
    m_pc = NULL;
    m_memory.clear();
+   m_memoryUseMap.clear();
+
    foreach(StateAction *s, m_undoList) {
       if (s != NULL)
          delete s;
@@ -260,6 +291,11 @@ void State::doSyscall(void) {
 void State::assertEquals(int val1, int val2) {
    if (val1 != val2) throw AssertionFailure(val1, val2, m_pc->getTextBlock());
 }
+
+MemoryUseMap *State::getMemoryUseMap() {
+   return &m_memoryUseMap;
+}
+
 
 StateAction::StateAction(TIMESTAMP timestamp)//, ParseNode *isPC) 
    : m_timestamp(timestamp)//, m_isPCAction(isPC)
@@ -304,6 +340,8 @@ void MemoryChangedAction::undo(State *s) {
    s->m_memory[m_address] = m_value;
    s->memoryChanged(m_address, m_value, s->m_pc);
    
+   QList<TIMESTAMP> *list = s->m_memoryUseMap[m_address];
+   list->pop_back();
    //cerr << "Mem " << m_address << " -> " << m_value << endl;
 }
 

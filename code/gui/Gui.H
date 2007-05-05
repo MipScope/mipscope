@@ -25,11 +25,13 @@ class OutputConsole;
 class ErrorConsole;
 class RegisterView;
 class StackView;
+class MemoryView;
 class TextEditor;
 class DirectoryListing;
 class SyscallListener;
 class ParseNode;
 class QFont;
+class Program;
 
 class Gui : public QMainWindow {
    
@@ -54,6 +56,7 @@ class Gui : public QMainWindow {
       void watchPointModified(unsigned int reg, bool watchPoint);
       bool *getWatchpoints() const;
       bool handleProgramTerminated(int reason);
+      void updateMemoryView(Program *active);
       
       void activeEditorChanged(TextEditor *current);
       
@@ -69,6 +72,8 @@ class Gui : public QMainWindow {
       void stepBackward(int noInstructions);
       //void stepBackwardToTimestamp(TIMESTAMP stamp);
       //void jumpTo(const QTextBlock&);
+      
+      void updateMemory(Program*);
       
    public slots:
       // emitted upon run, pause, or stop of Debugger
@@ -147,6 +152,7 @@ class Gui : public QMainWindow {
               *m_viewErrorsAction, 
               *m_viewRegistersAction, 
               *m_viewStackAction, 
+              *m_viewMemoryAction, 
               *m_viewDirectoryListingAction;
       
       // Central EditorPane and Dockable Widgets
@@ -157,6 +163,7 @@ class Gui : public QMainWindow {
       OutputConsole *m_output;
       RegisterView *m_registerView;
       StackView *m_stackView;
+      MemoryView *m_memoryView; // requires OpenGL support to be enabled
       DirectoryListing *m_directorylisting;
       
       QFont m_guiFont;

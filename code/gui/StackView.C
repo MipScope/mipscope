@@ -134,6 +134,7 @@ CustomTextEdit::CustomTextEdit(StackView *parent, const QString &background)
    setLineWrapMode(QTextEdit::NoWrap);
 
    setAutoFillBackground(false);
+   setAttribute(Qt::WA_NoSystemBackground);
 }
 
 // @overridden

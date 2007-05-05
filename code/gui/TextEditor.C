@@ -113,7 +113,6 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       if (!match1) {
          int index;
          selectedText = selectedText.right((index = selectedText.lastIndexOf(" ")) >= 0 ? selectedText.length() - index - 2 : selectedText.length() - 1);
-
 //         cerr << "TEXT2: " << selectedText.toStdString() << ", " << directiveMap.contains(selectedText) << endl;
 
          if (directiveMap.contains(selectedText))

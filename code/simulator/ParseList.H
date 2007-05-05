@@ -97,6 +97,7 @@ class ParseList : public QObject {
       ParseNode *getDeclaration(const QString &identifier);
       
       LabelMap *getLabelMap();
+      unsigned int getHeapSize() const;
       
    private:
       QTextDocument *m_source;

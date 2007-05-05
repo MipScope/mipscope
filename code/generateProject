@@ -7,9 +7,10 @@ sed -i "s/simulator\/main.C//g" code.pro && \
 sed -i 's/INCLUDEPATH \+=.*/INCLUDEPATH += $(DEPENDPATH)/g' code.pro && \
 echo "
    TARGET = mipscope
+   QT    += opengl
    
    OBJECTS_DIR = objects/release
-   MOC_DIR = objects/release
+   MOC_DIR     = objects/release
 " >> code.pro && \
 /course/cs036_projects/mipscope/bin/qmake && \
 make all && \

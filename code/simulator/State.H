@@ -30,8 +30,9 @@ class State : public QObject {
       // memory
       void setMemoryWord(unsigned int address, unsigned int value);
       void setMemoryByte(unsigned int address, unsigned char value);
-      unsigned int getMemoryWord(unsigned int address) const;
-      unsigned char getMemoryByte(unsigned int address) const;
+      unsigned int getMemoryWordUnobserved(unsigned int address);
+      unsigned int getMemoryWord(unsigned int address);
+      unsigned char getMemoryByte(unsigned int address);
 
       void ensureValidAlignment(unsigned int address, unsigned int align) const;
 
@@ -39,7 +40,7 @@ class State : public QObject {
       void memcpy(unsigned int destAddress, const void *src, unsigned int size);
       void memset(unsigned int destAddress, const int value, unsigned int size);
       
-      QString getString(unsigned int address) const;
+      QString getString(unsigned int address);
       
       // registers
       void setRegister(int reg, unsigned int value);
@@ -56,7 +57,7 @@ class State : public QObject {
       
       // convenience-methods
       void getLastXInstructions(int no, QVector<ParseNode*> &instrs) const;
-      void getStack(QVector<int> &stack) const;
+      void getStack(QVector<int> &stack);
       
       // special
       void doSyscall(void);
@@ -66,6 +67,8 @@ class State : public QObject {
       void reset();
       
       bool undoIsAvailable() const;
+      
+      MemoryUseMap *getMemoryUseMap();
       
    signals:
       void syscall(int, int);
@@ -92,6 +95,7 @@ class State : public QObject {
       bool m_undoIsAvailable;
       
       Debugger *m_debugger;
+      MemoryUseMap m_memoryUseMap;
 
       void setUndoAvailability(bool isAvailable, bool force = false);
 };

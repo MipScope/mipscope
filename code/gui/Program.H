@@ -62,6 +62,9 @@ class Program : public QObject {
       ParseNode *getDeclaration(const QString &identifier);
       TIMESTAMP getCurrentTimestamp() const;
       
+      MemoryUseMap *getMemoryUseMap() const;
+      unsigned int getHeapSize() const;
+      
    protected:
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);

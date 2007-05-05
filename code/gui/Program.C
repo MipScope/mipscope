@@ -12,6 +12,7 @@
 #include "SyscallHandler.H"
 #include "RegisterView.H"
 #include "StackView.H"
+#include "MemoryView.H"
 #include "ErrorConsole.H"
 #include "../simulator/Debugger.H"
 #include "../simulator/ParseList.H"
@@ -152,6 +153,7 @@ void Program::pcChangeReceived(ParseNode *pc) {
    if (m_current && getStatus() == PAUSED && pc == getPC()) {
       pcChanged(pc);
       m_gui->getStackView()->updateDisplay(getState(), PAUSED);
+      m_gui->updateMemoryView(this);
    }
 }
 
@@ -179,6 +181,7 @@ void Program::programStatusChangeReceived(int s) {
       if (s != RUNNING) {
          m_gui->getStackView()->updateDisplay(getState(), s);
          m_gui->getRegisterView()->updateDisplay(s);
+         m_gui->updateMemoryView(this);
       }
    }
 }
@@ -558,5 +561,13 @@ ParseNode *Program::getDeclaration(const QString &identifier) {
 
 TIMESTAMP Program::getCurrentTimestamp() const {
    return getState()->getCurrentTimestamp();
+}
+
+MemoryUseMap *Program::getMemoryUseMap() const {
+   return getState()->getMemoryUseMap();
+}
+
+unsigned int Program::getHeapSize() const {
+   return m_parseList->getHeapSize();
 }
 

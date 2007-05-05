@@ -1,6 +1,7 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * Add MemoryView
+   * Make MemoryView!
+         Use dynamically-updating pBuffers for texture; get 2d texture-version working correctly first
    * Test several of the on-the-fly editing issues;
 
    * Clear button on OutputConsole?

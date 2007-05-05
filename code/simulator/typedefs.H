@@ -68,6 +68,8 @@ typedef ParseNodeList::iterator ParseNodeListIterator;
 typedef QHash<QString, ParseNodeList*> SemanticErrors;
 typedef SemanticErrors::iterator SemanticErrorsIterator;
 
+typedef QHash<unsigned int, QList<TIMESTAMP>* > MemoryUseMap;
+typedef MemoryUseMap::iterator MemoryUseMapIterator;
 
 // Global QHashes containing representative instances (factories) of each supported Statement
 extern InstructionMap instructionMap;

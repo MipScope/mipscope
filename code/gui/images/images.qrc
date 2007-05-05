@@ -1,6 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
 
+    <file>test.png</file>
+    <file>activityGradient.png</file>
     <file>breakPoint.png</file>
     <file>breakPointCurrentPC.png</file>
     <file>bug.png</file>

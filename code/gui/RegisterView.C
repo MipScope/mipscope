@@ -95,6 +95,7 @@ class BackgroundWidget : public QWidget {
          p.setBrush(QPalette::Window, *m_pixMap);
          setPalette(p);*/
          setAutoFillBackground(false);
+         setAttribute(Qt::WA_NoSystemBackground);
       }
 
    protected:

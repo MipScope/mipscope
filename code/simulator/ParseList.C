@@ -670,6 +670,10 @@ LabelMap *ParseList::getLabelMap() {
    return &m_labelMap;
 }
 
+unsigned int ParseList::getHeapSize() const {
+   return (m_nextDataAddress - DATA_BASE_ADDRESS);
+}
+
 
 SemanticError::SemanticError(const QString &description, const QString &unrecognized, ParseNode *parseNode) 
    : ParseError(description, unrecognized), m_parseNode(parseNode)

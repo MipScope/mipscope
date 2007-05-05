@@ -11,6 +11,7 @@
 #include "ErrorConsole.H"
 #include "RegisterView.H"
 #include "StackView.H"
+#include "MemoryView.H"
 #include "FindDialog.H"
 #include "DirectoryListing.H"
 #include "SyscallHandler.H"
@@ -253,6 +254,15 @@ void Gui::setupDockWidgets() {
    m_viewStackAction = m_stackView->toggleViewAction();
    m_viewStackAction->setIcon(QIcon(ICONS"/viewStack.png"));
    menu->addAction(m_viewStackAction);
+   
+   m_memoryView = NULL;
+   
+   if (MemoryView::isSupported()) { // ensure platform is OpenGL-compatible
+      m_memoryView = new MemoryView(this);
+      m_viewMemoryAction = m_memoryView->toggleViewAction();
+      m_viewMemoryAction->setIcon(QIcon(ICONS"/viewMemory.png"));
+      menu->addAction(m_viewMemoryAction);
+   }
 
    m_directorylisting = new DirectoryListing(this, m_editorPane);
    m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
@@ -263,6 +273,8 @@ void Gui::setupDockWidgets() {
    addDockWidget(Qt::BottomDockWidgetArea, m_errors);
    addDockWidget(Qt::RightDockWidgetArea, m_stackView);
    addDockWidget(Qt::RightDockWidgetArea, m_registerView);
+   if (m_memoryView != NULL)
+      addDockWidget(Qt::LeftDockWidgetArea, m_memoryView);
    addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    tabifyDockWidget(m_output, m_errors);
 }
@@ -747,5 +759,12 @@ void Gui::activeEditorChanged(TextEditor *current) {
       m_runningEditor = current;
 
    updateDebugActions();
+}
+
+void Gui::updateMemoryView(Program *active) {
+   if (active == NULL || m_memoryView == NULL)
+      return; // platform doesn't support OpenGL
+   
+   m_memoryView->updateDisplay(active);
 }
 

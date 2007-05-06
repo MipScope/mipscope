@@ -25,7 +25,7 @@ class Lui : public Instruction {
       }
 
       virtual void execute(State *s, ParseList* parseList) const {
-         s->setRegister((*m_args)[0]->getRegister(), ((*m_args)[1]->getValue(s) << 16 );
+         s->setRegister((*m_args)[0]->getRegister(), ((*m_args)[1]->getValue(s) << 16 ));
       }
       
       // @overridden from Statement

@@ -20,9 +20,9 @@
 /* only handles non-negative integers */
 int pow(int base, int exponent) {
    int r = 1;
-   for (int i = 0 ; i < exponent ; i++, r *= base);
+   for (int i = 0 ; i < exponent ; i++) r *= base;
    return r;
-} 
+}
    
 
 // ----------------------------------
@@ -74,6 +74,9 @@ class Add : public Instruction {
       virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 1);
          int val2 = m_args->getValue(s, 2);
+         
+         if ( (qint64) val1 + (qint64) val2 != val1 + val2) 
+             throw ArithmeticOverflow(s->getPC()->getTextBlock()); 
 
          s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 + val2));
       }
@@ -83,7 +86,7 @@ class Add : public Instruction {
       virtual const char *getName() const { return "add"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Adds two integers, storing the result in $dest.";
+         return "Adds two integers (with overflow detection), storing the result in $dest.";
       }
 };
 
@@ -110,39 +113,63 @@ class Addi : public Add {
       virtual const char *getName() const { return "addi"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src3&gt;"; }
       virtual const char *getDescription() const {
-         return "Adds two integers, storing the result in $dest.";
+         return "Adds two integers (with overflow detection), storing the result in $dest.";
       }
 };
 
 // ----------------------------------
 // Instruction addu $dest, $src1, CONSTANT
-// We implement it as a type of Add.
 // ----------------------------------
-class Addu : public Add {
+class Addu : public Instruction {
    public:
-      Addu(StatementArgList *args = NULL) : Add(args) { }
+      Addu(StatementArgList *args = NULL) : Instruction(args) { }
       
-      // @overridden from Add
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
       virtual Instruction *create(StatementArgList *args) const {
          return new Addu(args);
-      }      
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+         
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 + val2));
+      }
+      
       // @overridden from Statement
+      
       virtual const char *getName() const { return "addu"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Adds two integers (without overflow detection), storing the result in $dest.";
+      }
+      
+      
+      
 };
 
 // Instruction addiu $dest, $src1, CONSTANT
-// We implement it as a type of Addi.
 // ----------------------------------
-class Addiu : public Addi {
+class Addiu : public Addu {
    public:
-      Addiu(StatementArgList *args = NULL) : Addi(args) { }
+      Addiu(StatementArgList *args = NULL) : Addu(args) { }      
       
-      // @overridden from Add
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
+      }
+      
+      // @overridden from Addu
       virtual Instruction *create(StatementArgList *args) const {
          return new Addiu(args);
       }      
       // @overridden from Statement
       virtual const char *getName() const { return "addiu"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;immediate&gt;"; }
 };
 
 // ----------------------------------
@@ -637,13 +664,13 @@ class Msub : public Instruction {
          
          qint64 sum = (((qint64) (unsigned int) s->getRegister(hi)) << 32) | (qint64) ((unsigned int) s->getRegister(lo));
          
-         cerr << "Before msub Sum: " << std::hex << sum << "\n";    
+         //cerr << "Before msub Sum: " << std::hex << sum << "\n";    
          
          sum -= (qint64) val1 * (qint64) val2;
          s->setRegister(hi, (unsigned int) (sum >> 32));
          s->setRegister(lo, sum);
          
-         cerr << "After msub Sum: " << std::hex << sum << "\n";
+         //cerr << "After msub Sum: " << std::hex << sum << "\n";
       }
       
       // @overridden from Statement
@@ -677,13 +704,13 @@ class Msubu : public Instruction {
          
          quint64 sum = (((quint64) (unsigned int) s->getRegister(hi)) << 32) | (quint64) ((unsigned int) s->getRegister(lo));
          
-         cerr << "Before Sum: " << std::hex << sum << "\n";
+         //cerr << "Before Sum: " << std::hex << sum << "\n";
          
          sum -= (quint64) val1 * (quint64) val2;
          s->setRegister(hi, sum >> 32);
          s->setRegister(lo, sum);
          
-         cerr << "After Sum: " << std::hex << sum << "\n";
+         //cerr << "After Sum: " << std::hex << sum << "\n";
       }
       
       // @overridden from Statement
@@ -1144,7 +1171,7 @@ class Srav : public Instruction {
 
 
 // ----------------------------------
-// Instruction srav $dest, $src1, src2
+// Instruction rol $dest, $src1, src2
 // ----------------------------------
 class Rol : public Instruction {
    public:
@@ -1168,12 +1195,49 @@ class Rol : public Instruction {
       
       // @overridden from Statement
       
-      virtual const char *getName() const { return "srav"; }
+      virtual const char *getName() const { return "rol"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
-         return "Stores in $dest the result of shifting to the right $src1 by an amount given by the low-order 5 bits of the register $src2, inserting zeros if $src >= 0 and ones if $src < 0";
+         return "Stores in $dest the result of rotating to the left $src1 by an amount given by the low-order 5 bits of the register $src2";
       }
 };
+
+
+// ----------------------------------
+// Instruction ror $dest, $src1, src2
+// ----------------------------------
+class Ror : public Instruction {
+   public:
+      Ror(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Ror(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         unsigned int value = m_args->getValue(s, 1);
+         unsigned int shiftAmount = m_args->getValue(s, 2) & (0x1F); // use only low-order 5 bits
+
+         s->setRegister((*m_args)[0]->getRegister(), (value >> shiftAmount) | ( (value << (32 - shiftAmount))));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "ror"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
+      virtual const char *getDescription() const {
+         return "Stores in $dest the result of rotating to the right $src1 by an amount given by the low-order 5 bits of the register $src2";
+      }
+};
+
+
+
+
 
 
 // ----------------------------------
@@ -1195,6 +1259,9 @@ class Sub : public Instruction {
       virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 1);
          int val2 = m_args->getValue(s, 2);
+         
+         if ( (qint64) val1 - (qint64) val2 != val1 - val2) 
+            throw ArithmeticOverflow(s->getPC()->getTextBlock()); 
 
          s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 - val2));
       }
@@ -1204,10 +1271,101 @@ class Sub : public Instruction {
       virtual const char *getName() const { return "sub"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Subtracts &lt;src2&gt; from $src1, storing the result in $dest.";
+         return "Subtracts (with overflow detection) &lt;src2&gt; from $src1, storing the result in $dest.";
       }
 };
 
+
+// ----------------------------------
+// Instruction Sub $dest, $src1, src2
+// ----------------------------------
+class Subu : public Instruction {
+   public:
+      Subu(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Subu(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+         
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 - val2));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "subu"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Subtracts (without overflow detection) &lt;src2&gt; from $src1, storing the result in $dest.";
+      }
+};
+
+
+// ----------------------------------
+// Instruction xor $dest, $src1, src2
+// ----------------------------------
+class Xor : public Instruction {
+   public:
+      Xor(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Xor(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         int val1 = m_args->getValue(s, 1);
+         int val2 = m_args->getValue(s, 2);
+
+         s->setRegister((*m_args)[0]->getRegister(), (unsigned)(val1 ^ val2));
+      }
+      
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "xor"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
+      virtual const char *getDescription() const {
+         return "Stores in $dest the result of XOR'ing the bits of $src1 and &lt;src2&gt;.";
+      }
+};
+
+
+// ----------------------------------
+// Instruction xor $dest, $src1, src2
+// ----------------------------------
+class Xori : public Xor {
+   public:
+      Xori(StatementArgList *args = NULL) : Xor(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Xori(args);
+      }
+
+      // @overridden from Statement
+      
+      virtual const char *getName() const { return "xori"; }
+      virtual const char *getSyntax() const { return "$dest, $src1, &lt;IMMEDIATE&gt;"; }
+      virtual const char *getDescription() const {
+         return "Stores in $dest the result of XOR'ing the bits of $src1 and &lt;IMMEDIATE&gt;.";
+      }
+};
 
 
 

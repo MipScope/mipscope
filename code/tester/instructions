@@ -39,10 +39,10 @@ sra		YES		YES
 srav		YES		YES
 srl		YES		YES
 srlv		YES		YES
-rol
-ror
-sub
-subu
-xor
-xori
+rol		YES		YES
+ror		YES		YES
+sub		YES		YES
+subu		YES		YES
+xor		YES		YES
+xori		YES		YES
 

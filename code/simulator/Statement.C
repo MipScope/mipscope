@@ -144,7 +144,12 @@ void Instruction::InitializeInstructionMap() {
    insert(new Srav());
    insert(new Srl());
    insert(new Srlv());
+   insert(new Rol());
+   insert(new Ror());
    insert(new Sub());
+   insert(new Subu());
+   insert(new Xor());
+   insert(new Xori());
 
    // DataTransfer.H
    insert(new Li());

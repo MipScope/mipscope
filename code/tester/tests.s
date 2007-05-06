@@ -3694,6 +3694,1401 @@ main:
 	
 	
 	
+####################################################################
+	# slt
+	
+	li $s0, 0
+	li $s1, 0
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	slt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	slt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	slt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	slt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	slt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	slt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	slt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	slt $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	slt $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	slt $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	slt $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	slt $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	slt $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	slt $a0, $s0, -89832
+	syscall	
+	jal printnewline	
+	
+####################################################################
+	# sltu
+	
+	li $s0, 0
+	li $s1, 0
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sltu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sltu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sltu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sltu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sltu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sltu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sltu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sltu $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sltu $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sltu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sltu $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sltu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sltu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sltu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	
+####################################################################
+	# sgt
+	
+	li $s0, 0
+	li $s1, 0
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sgt $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sgt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sgt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sgt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sgt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sgt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sgt $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sgt $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sgt $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sgt $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sgt $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sgt $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sgt $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sgt $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	
+####################################################################
+	# sgtu
+	
+	li $s0, 0
+	li $s1, 0
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sgtu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sgtu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sgtu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sgtu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sgtu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sgtu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sgtu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sgtu $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sgtu $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sgtu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sgtu $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sgtu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sgtu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sgtu $a0, $s0, -89832
+	syscall	
+	jal printnewline	
+	
+		
+####################################################################
+	# sge
+	
+	li $s0, 0
+	li $s1, 0
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sge $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sge $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sge $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sge $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sge $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sge $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sge $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sge $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sge $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sge $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sge $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sge $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sge $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sge $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 234232
+	sge $a0, $s0, 234232
+	syscall	
+	jal printnewline	
+	
+
+
+####################################################################
+	# sgeu
+	
+	li $s0, 0
+	li $s1, 0
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sgeu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sgeu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sgeu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sgeu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sgeu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sgeu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sgeu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sgeu $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sgeu $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sgeu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sgeu $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sgeu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sgeu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sgeu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 234232
+	sgeu $a0, $s0, 234232
+	syscall	
+	jal printnewline
+	
+####################################################################
+	# sle
+	
+	li $s0, 0
+	li $s1, 0
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sle $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sle $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sle $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sle $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sle $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sle $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sle $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sle $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sle $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sle $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sle $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sle $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sle $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sle $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 234232
+	sle $a0, $s0, 234232
+	syscall	
+	jal printnewline	
+	
+		
+####################################################################
+	# sleu
+	
+	li $s0, 0
+	li $s1, 0
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sleu $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sleu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sleu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sleu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sleu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sleu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sleu $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sleu $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sleu $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sleu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sleu $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sleu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sleu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sleu $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 234232
+	sleu $a0, $s0, 234232
+	syscall	
+	jal printnewline
+	
+####################################################################
+	# seq
+	
+	li $s0, 0
+	li $s1, 0
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	seq $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	seq $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	seq $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	seq $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	seq $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	seq $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	seq $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	seq $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	seq $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	seq $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	seq $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	seq $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	seq $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	seq $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 234232
+	seq $a0, $s0, 234232
+	syscall	
+	jal printnewline		
+	
+	
+####################################################################
+	# sne
+	
+	li $s0, 0
+	li $s1, 0
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 0
+	li $s1, 151232
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 1
+	li $s1, 0
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 1
+	li $s1, 1
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -1
+	li $s1, -1
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline		
+	
+	li $s0, 0
+	li $s1, 1
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, 4
+	li $s1, 3
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline			
+	
+	li $s0, 127328
+	li $s1, 151232
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	li $s1, -8390392
+	sne $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	li $s1, -89832
+	sne $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0x1
+	sne $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sne $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	li $s1, 0
+	sne $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	li $s1, 0xFFFFFFFF
+	sne $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	li $s1, -89832
+	sne $a0, $s0, $s1
+	syscall	
+	jal printnewline
+	
+	li $s0, 127328
+	sne $a0, $s0, 151232
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sne $a0, $s0, -8390392
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sne $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sne $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sne $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sne $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sne $a0, $s0, -89832
+	syscall	
+	jal printnewline
+	
+	li $s0, 234232
+	sne $a0, $s0, 234232
+	syscall	
+	jal printnewline			
+	
+	
+####################################################################
+	# slti
+	li $s0, 127328
+	slti $a0, $s0, 15128
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	slti $a0, $s0, -8390
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	slti $a0, $s0, -8983
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	slti $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	slti $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	slti $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	slti $a0, $s0, -8983
+	syscall	
+	jal printnewline
+	
+####################################################################
+	# sltiu
+	li $s0, 127328
+	sltiu $a0, $s0, 15128
+	syscall
+	jal printnewline	
+	
+	li $s0, 512312
+	sltiu $a0, $s0, -8390
+	syscall
+	jal printnewline
+	
+	li $s0, -98736
+	sltiu $a0, $s0, -8983
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sltiu $a0, $s0, 1
+	syscall	
+	jal printnewline
+	
+	li $s0, 0xFFFFFFFF
+	sltiu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, -0xFFFFFFF
+	sltiu $a0, $s0, 0xFFFFFFFF
+	syscall	
+	jal printnewline
+	
+	li $s0, 2147483647
+	sltiu $a0, $s0, -8983
+	syscall	
+	jal printnewline	
+	
+	
+	
+	
 #############################################
 ##############################################
 ##############################################

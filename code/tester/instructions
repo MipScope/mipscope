@@ -46,3 +46,87 @@ subu		YES		YES
 xor		YES		YES
 xori		YES		YES
 
+
+#########
+# Comparison
+#########
+slt		YES		YES
+sltu		YES		YES
+slti		YES		YES
+sltiu		YES		YES
+seq		YES		YES
+sge		YES		YES
+sgeu		YES		YES
+sgt		YES		YES
+sgtu		YES		YES
+sle		YES		YES
+sleu		YES		YES
+sne		YES		YES
+
+
+#########
+# Branch
+#########
+b
+beq
+bgez
+bgezal
+bgtz
+blez
+bltzal
+bltz
+bne
+beqz
+bge
+bgeu
+bgt
+bgtu
+ble
+bleu
+blt
+bltu
+bnez
+j
+jal
+jalr
+jr
+
+
+
+
+##########
+# Data Transfer
+##########
+
+lui
+li
+la
+lb
+lbu
+lh
+lhu
+lw
+lwl
+lwr
+ld
+ulh
+ulhu
+ulw
+ll
+sb
+sh
+sw
+swl
+swr
+sd
+ush
+usw
+sc
+move
+mfhi
+mflo
+mthi
+mtlo
+movn
+movz
+

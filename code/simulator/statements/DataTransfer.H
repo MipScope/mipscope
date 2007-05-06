@@ -9,6 +9,35 @@
 #define __DATATRANSFER_H__
 
 // ----------------------------------
+// Instruction lui $dest, <constant>
+// ----------------------------------
+class Lui : public Instruction {
+   public:
+      Lui(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Lui(args);
+      }
+
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setRegister((*m_args)[0]->getRegister(), ((*m_args)[1]->getValue(s) << 16 );
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "lui"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;immediate&gt;"; }
+      virtual const char *getDescription() const {
+         return "Sets the upper half-word of the register $dest to the lower half-word of &lt;immediate&gt;, filling in 0s for the lower bits.";
+      }
+};
+
+
+// ----------------------------------
 // Instruction li $dest, <constant>
 // ----------------------------------
 class Li : public Instruction {

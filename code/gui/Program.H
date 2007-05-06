@@ -64,6 +64,10 @@ class Program : public QObject {
       
       MemoryUseMap *getMemoryUseMap() const;
       unsigned int getHeapSize() const;
+
+      LabelMap *getLabelMap() const;
+      void gotoDeclaration(unsigned int address);
+      bool getLabelForAddress(unsigned int address, QString &label);
       
    protected:
       void setRunnable(bool);

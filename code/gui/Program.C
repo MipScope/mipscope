@@ -19,10 +19,8 @@
 #include "../simulator/ParseNode.H"
 #include "../simulator/Parser.H"
 #include "../simulator/State.H"
+#include "../simulator/Identifier.H"
 #include <QTextBlock>
-
-
-// TODO:  Test how it looks w/ pc/registers/memory constantly updating; not only when paused
 
 
 // Proxy between Gui and Debugger and vice-versa
@@ -194,26 +192,26 @@ void Program::programTerminated(int reason) {
    if (STATUS_BAR == NULL)
       return;
    
-   const int delay = STATUS_DELAY + 8000;
+//   const int delay = STATUS_DELAY + 40000;
    const QString &name = m_parent->fileName();
 
    switch(reason) {
       case T_COMPLETED:
-         STATUS_BAR->showMessage(QString("Program %1 completed successfully.").arg(name), delay);
+         STATUS_BAR->showMessage(QString("Program %1 completed successfully.").arg(name));
          break;
       case T_TERMINATED:
-         STATUS_BAR->showMessage(QString("Program %1 terminated.").arg(name), delay);
+         STATUS_BAR->showMessage(QString("Program %1 terminated.").arg(name));
          break;
       case T_INVALID_PROGRAM:
-         STATUS_BAR->showMessage(QString("Program %1 contains errors.").arg(name), delay);
+         STATUS_BAR->showMessage(QString("Program %1 contains errors.").arg(name));
          break;
       case T_FORCE_ROLLBACK:
-         STATUS_BAR->showMessage(QString("Execution halted:  Program %1 rolled back past entry point!").arg(name), delay);
+         STATUS_BAR->showMessage(QString("Execution halted:  Program %1 rolled back past entry point!").arg(name));
          break;
       case T_UNCAUGHT_EXCEPTION:
          {
             const ParseError &err = m_debugger->getException();
-            STATUS_BAR->showMessage(err, delay + 12000);
+            STATUS_BAR->showMessage(err);
             ErrorConsole *console = m_gui->getErrorConsole();
             
             if (console != NULL) {
@@ -226,7 +224,7 @@ void Program::programTerminated(int reason) {
          break;
       case T_ABNORMAL:
       default:
-         STATUS_BAR->showMessage(QString("Warning: Program %1 terminated abnormally.").arg(name), delay);
+         STATUS_BAR->showMessage(QString("Warning: Program %1 terminated abnormally.").arg(name));
          break;
    }
 }
@@ -305,10 +303,13 @@ void Program::run() {
    if (status == STOPPED) {
       // reparse program; ensure it was successful
       loadProgram();
+      if (m_parseList == NULL || !m_parseList->isValid())
+         return; // errors remain
 
       m_debugger->setParseList(m_parseList);
       m_debugger->setWatchpoints(getWatchpoints());
-
+      
+      m_gui->updateMemoryView(this);
       // content changed during Pause textEditor->notifies Proxy
 //      connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    } else if (status == RUNNING) {
@@ -568,6 +569,43 @@ MemoryUseMap *Program::getMemoryUseMap() const {
 }
 
 unsigned int Program::getHeapSize() const {
+   if (m_parseList == NULL)
+      return 0;
+   
    return m_parseList->getHeapSize();
+}
+
+LabelMap *Program::getLabelMap() const {
+   if (m_parseList == NULL)
+      return NULL;
+
+   return m_parseList->getLabelMap();
+}
+
+void Program::gotoDeclaration(unsigned int address) {
+   if (m_parseList == NULL)
+      return;
+   
+   ParseNode *target = m_parseList->getNodeForDataAddress(address);
+   if (target == NULL)
+      return;
+   
+   m_parent->gotoNode(target);
+}
+
+bool Program::getLabelForAddress(unsigned int address, QString &label) {
+    if (m_parseList == NULL)
+      return false;
+   
+   ParseNode *target = m_parseList->getNodeForDataAddress(address);
+   if (target == NULL)
+      return false;
+   
+   AddressIdentifier *addr = target->getLabel();
+   if (addr == NULL)
+      return false;
+
+   label = addr->getID();
+   return true;
 }
 

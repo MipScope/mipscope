@@ -20,6 +20,14 @@
  ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  **
  ****************************************************************************/
+/* ---------------------------------------------- *\
+   file: chip.cpp
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 5/6/2007
+
+   Modified version of Qt 'chip' demo.
+\* ---------------------------------------------- */
 
 #include "chip.h"
 #include "../../simulator/ParseNode.H"
@@ -29,22 +37,25 @@
 
 Chip::Chip(View *view, const QColor &color, int x, int y, 
       unsigned int address, unsigned int value, 
-      ParseNode *setBy)
+      const QString &label, ParseNode *setBy)
 : m_view(view), m_address(address), m_value(value), 
-   m_setBy(setBy)
+   m_setBy(setBy), m_label(label)
 {
    this->x = x;
    this->y = y;
    this->color = color;
    setZValue((x + y) % 2);
-   QString toolTip = QString("Address: %1<br>Value: %2").arg(QString::number(m_address, 16), QString::number(m_value, 16));
+   QString toolTip = QString("Address: 0x%1<br>Value: 0x%2").arg(QString::number(m_address, 16), QString::number(m_value, 16));
+   
+   if (!m_label.isEmpty())
+      toolTip += QString("<br>Within label <u>%1</u>").arg(m_label);
 
    if (m_setBy != NULL)
       toolTip += QString("<br><br>(Set by '%1')").arg(m_setBy->getTextBlock()->text());
    
    setToolTip(toolTip);
    
-   setFlags(ItemIsSelectable);// | ItemIsMovable);
+//   setFlags(ItemIsSelectable);// | ItemIsMovable);
    setAcceptsHoverEvents(true);
 }
 
@@ -90,7 +101,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
    painter->setBrush(QBrush(fillColor.dark(option->state & QStyle::State_Sunken ? 120 : 100)));
 
    painter->drawRect(QRect(14, 14, 79, 39));
-   if (option->levelOfDetail >= 1) {
+   if (option->levelOfDetail >= 0.2f) {
       painter->setPen(QPen(Qt::gray, 1));
       painter->drawLine(15, 54, 94, 54);
       painter->drawLine(94, 53, 94, 15);
@@ -98,50 +109,55 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
    }
 
    // Draw text
-   if (option->levelOfDetail >= 0.5f) {
-      QFont font("Times", 16);
+   if (option->levelOfDetail >= 0.2f) {
+      QFont font("Times", 18);
       font.setStyleStrategy(QFont::ForceOutline);
       painter->setFont(font);
       painter->setRenderHint(QPainter::TextAntialiasing, true); // false
       painter->save();
       painter->scale(0.2, 0.2);
-      /*        painter->drawText(170, 180, QString("Model: VSC-2000 (Very Small Chip) at %1x%2").arg(x).arg(y));
-                painter->drawText(170, 200, QString("Serial number: DLWR-WEER-123L-ZZ33-SDSJ"));
-                painter->drawText(170, 220, QString("Manufacturer: Chip Manufacturer"));*/
-      painter->drawText(85, 90, QString("Address: 0x%1").arg(QString::number(m_address, 16)));
-      painter->drawText(85, 110, QString("Value: 0x%1").arg(QString::number(m_value, 16)));
-      if (m_setBy != NULL)
-         painter->drawText(85, 130, QString("(Set by '%1')").arg(m_setBy->getTextBlock()->text()));
+      
+      painter->drawText(85, 92, QString("Address: 0x%1").arg(QString::number(m_address, 16)));
+      painter->drawText(85, 116, QString("Value: 0x%1").arg(QString::number(m_value, 16)));
+
+      if (!m_label.isEmpty())
+         painter->drawText(85, 140, QString("Within label '%1'").arg(m_label));
+      else if (m_setBy != NULL)
+         painter->drawText(85, 140, QString("(Set by '%1')").arg(m_setBy->getTextBlock()->text()));
 
       painter->restore();
    }
 
    // Draw lines
    QVarLengthArray<QLineF, 36> lines;
-   if (option->levelOfDetail >= 0.5) {
-      for (int i = 0; i <= 10; i += (option->levelOfDetail > 0.5 ? 1 : 2)) {
+   if (option->levelOfDetail >= 0.2) {
+      for (int i = 0; i <= 10; i += (option->levelOfDetail > 0.2 ? 1 : 2)) {
          lines.append(QLineF(18 + 7 * i, 13, 18 + 7 * i, 5));
          lines.append(QLineF(18 + 7 * i, 54, 18 + 7 * i, 62));
       }
-      for (int i = 0; i <= 6; i += (option->levelOfDetail > 0.5 ? 1 : 2)) {
+      for (int i = 0; i <= 6; i += (option->levelOfDetail > 0.2 ? 1 : 2)) {
          lines.append(QLineF(5, 18 + i * 5, 13, 18 + i * 5));
          lines.append(QLineF(94, 18 + i * 5, 102, 18 + i * 5));
       }
    }
-   if (option->levelOfDetail >= 0.3) {
+   if (option->levelOfDetail >= 0.2) {
+
+#define LBASE  (15)
+#define VBASE  (3)
+
       const QLineF lineData[] = {
-         QLineF(25, 35, 35, 35),
-         QLineF(35, 30, 35, 40),
-         QLineF(35, 30, 45, 35),
-         QLineF(35, 40, 45, 35),
-         QLineF(45, 30, 45, 40),
-         QLineF(45, 35, 55, 35)
+         QLineF(LBASE+25, VBASE+35, LBASE+35, VBASE+35),
+         QLineF(LBASE+35, VBASE+30, LBASE+35, VBASE+40),
+         QLineF(LBASE+35, VBASE+30, LBASE+45, VBASE+35),
+         QLineF(LBASE+35, VBASE+40, LBASE+45, VBASE+35),
+         QLineF(LBASE+45, VBASE+30, LBASE+45, VBASE+40),
+         QLineF(LBASE+45, VBASE+35, LBASE+55, VBASE+35)
       };
       lines.append(lineData, 6);
    }
    painter->drawLines(lines.data(), lines.size());
 
-   // Draw red ink
+/* // Draw red ink
    if (stuff.size() > 1) {
       painter->setPen(QPen(Qt::red, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
       painter->setBrush(Qt::NoBrush);
@@ -150,7 +166,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
       for (int i = 1; i < stuff.size(); ++i)
          path.lineTo(stuff.at(i));
       painter->drawPath(path);
-   }
+   }*/
 }
 
 void Chip::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -162,6 +178,7 @@ void Chip::mousePressEvent(QGraphicsSceneMouseEvent *event)
       m_view->zoomInOn(this, event);
 //      m_view->setZoom(320); // zoom in on this chip :)
    }
+
    update();
 }
 
@@ -180,3 +197,12 @@ void Chip::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
    QGraphicsItem::mouseReleaseEvent(event);
    update();
 }
+
+void Chip::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
+   m_view->showContextMenu(event->screenPos(), this);
+}
+
+unsigned int Chip::getAddress() const {
+   return m_address;
+}
+

@@ -5,6 +5,7 @@
 #include "Debugger.H"
 #include "typedefs.H"
 #include <string.h>
+#include "../gui/Syscalls.H"
 
 // expected maximum memory usage (will grow if necessary)
 #define INTERNAL_MEMORY_SIZE (16384)
@@ -27,16 +28,17 @@ TIMESTAMP State::newTimestamp() {
 
 void State::setMemoryWord(unsigned int address, unsigned int value) {
    ensureValidAlignment(address, 3);   
-   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) { // record change
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, address, m_memory[address]));
-   
-   m_memory[address] = value;
 
-   // record assignment in memory use map
-   if (!m_memoryUseMap.contains(address))
-      m_memoryUseMap.insert(address, new QList<TIMESTAMP>);
-   QList<TIMESTAMP> *list = m_memoryUseMap[address];
-   list->push_back(m_currentTimestamp);
+      // record assignment in memory use map
+      if (!m_memoryUseMap.contains(address))
+         m_memoryUseMap.insert(address, new QList<TIMESTAMP>);
+      QList<TIMESTAMP> *list = m_memoryUseMap[address];
+      list->push_back(m_currentTimestamp);
+   }
+
+   m_memory[address] = value;
 
    memoryChanged(address, value, m_pc);
 }
@@ -49,14 +51,15 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
    unsigned int result = 
       (m_memory[aligned] |= (value << ((address & 3) << 3)));
 
-   if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) { // record change
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, aligned, m_memory[aligned]));
 
-   // record assignment in memory use map
-   if (!m_memoryUseMap.contains(aligned))
-      m_memoryUseMap.insert(aligned, new QList<TIMESTAMP>);
-   QList<TIMESTAMP> *list = m_memoryUseMap[aligned];
-   list->push_back(m_currentTimestamp);
+      // record assignment in memory use map
+      if (!m_memoryUseMap.contains(aligned))
+         m_memoryUseMap.insert(aligned, new QList<TIMESTAMP>);
+      QList<TIMESTAMP> *list = m_memoryUseMap[aligned];
+      list->push_back(m_currentTimestamp);
+   }
    
    memoryChanged(aligned, result, m_pc);
 }
@@ -64,12 +67,14 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
 unsigned int State::getMemoryWord(unsigned int address) {
    ensureValidAlignment(address, 3);
    
-   // record assignment in memory use map
-   if (!m_memoryUseMap.contains(address))
-      m_memoryUseMap.insert(address, new QList<TIMESTAMP>);
-   QList<TIMESTAMP> *list = m_memoryUseMap[address];
-   list->push_back(m_currentTimestamp);
-  
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) {
+      // record assignment in memory use map
+      if (!m_memoryUseMap.contains(address))
+         m_memoryUseMap.insert(address, new QList<TIMESTAMP>);
+      QList<TIMESTAMP> *list = m_memoryUseMap[address];
+      list->push_back(m_currentTimestamp);
+   }
+   
    if (m_memory.contains(address))
       return m_memory[address];
    
@@ -119,13 +124,18 @@ void State::memset(unsigned int destAddress, const int value, unsigned int size)
       setMemoryByte(destAddress++, value);
 }
 
-QString State::getString(unsigned int address) {
+QString State::getString(unsigned int address, bool affect) {
    unsigned char byte;
    QString s;
+   TIMESTAMP old = m_currentTimestamp;
+   if (!affect)
+      m_currentTimestamp = CLEAN_TIMESTAMP;
    
    while((byte = getMemoryByte(address++)) != 0)
       s += QChar(byte);
    
+   if (!affect)
+      m_currentTimestamp = old;
    return s;
 }
 
@@ -280,7 +290,7 @@ void State::doSyscall(void) {
    if (VERBOSE) cerr << "\t\tSyscall called v0 = " << syscallNo << ", a0 = " << getRegister(a0) << endl;
    
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
-      m_undoList.push_back(new SyscallAction(m_currentTimestamp, syscallNo));
+      m_undoList.push_back(new SyscallAction(this, syscallNo));
    
    if (syscallNo == 10) // syscall 10 is end program
       m_debugger->programStop();   
@@ -303,12 +313,33 @@ StateAction::StateAction(TIMESTAMP timestamp)//, ParseNode *isPC)
 
 StateAction::~StateAction() { }
 
-SyscallAction::SyscallAction(TIMESTAMP timestamp, int syscallNo)
-   : StateAction(timestamp), m_syscallNo(syscallNo)
-{ }
+SyscallAction::SyscallAction(State *s, int syscallNo)
+   : StateAction(s->m_currentTimestamp), m_syscallNo(syscallNo), 
+   m_baseAddress(0), m_affectedLength(0)
+{
+   if (syscallNo == S_PRINT_STRING) {
+      m_baseAddress = s->getRegister(a0);
+      const QString &string = s->getString(m_baseAddress, false); // do not affect memoryUseMap
+      
+      m_affectedLength = string.length() + 1;
+   }
+}
+
+SyscallAction::~SyscallAction() { }
 
 void SyscallAction::undo(State *s) {
    s->undoSyscall(m_syscallNo);
+   
+   // undo memory accesses for printing strings
+   if (m_syscallNo == S_PRINT_STRING) {
+      for(unsigned int addr = 0; addr < m_affectedLength; addr++) {
+         unsigned int address = ((m_baseAddress + addr) & ~3);
+         QList<TIMESTAMP> *list = s->m_memoryUseMap[address];
+         
+         if (list != NULL && !list->isEmpty())
+            list->pop_back();
+      }
+   }
    //cerr << "Undoing syscall " << m_syscallNo << endl;
 }
 

@@ -20,10 +20,20 @@
  ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  **
  ****************************************************************************/
+/* ---------------------------------------------- *\
+   file: view.cpp
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 5/6/2007
+
+   Modified version of Qt 'chip' demo.
+\* ---------------------------------------------- */
 
 #include "view.h"
 #include "chip.h"
 #include <QGraphicsSceneMouseEvent>
+#include "../MemoryView.H"
+#include "../Utilities.H"
 
 #include <QtGui>
 #ifndef QT_NO_OPENGL
@@ -32,14 +42,15 @@
 
 #include <math.h>
 
-View::View(const QString &name, QWidget *parent)
-   : QFrame(parent), m_active(NULL)
+View::View(const QString &name, MemoryView *parent)
+   : QFrame(parent), m_active(NULL), m_contextChip(NULL), 
+   m_parent(parent), m_contextMenu(NULL)
 {
    setFrameStyle(Sunken | StyledPanel);
    graphicsView = new QGraphicsView;
    graphicsView->setRenderHint(QPainter::Antialiasing, true);
    graphicsView->setRenderHint(QPainter::TextAntialiasing, true);
-   graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
+   graphicsView->setDragMode(QGraphicsView::NoDrag);//RubberBandDrag);
    graphicsView->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
    
 //   graphicsView->setBackgroundBrush(QPixmap(":/stackBackground.jpg"));
@@ -142,7 +153,8 @@ View::View(const QString &name, QWidget *parent)
    connect(zoomInIcon, SIGNAL(clicked()), this, SLOT(zoomIn()));
    connect(zoomOutIcon, SIGNAL(clicked()), this, SLOT(zoomOut()));
    connect(printButton, SIGNAL(clicked()), this, SLOT(print()));
-
+   
+   setupContextMenu();
    setupMatrix();
 }
 
@@ -204,6 +216,7 @@ void View::print()
 
 #include <iostream>
 using namespace std;
+#define TARGET_ZOOM     (337)
 
 void View::zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event) {
    m_active = chip;
@@ -214,7 +227,7 @@ void View::zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event) {
    } else {
       cerr << "else\n";
       m_timer.stop();
-      setZoom(320);
+      setZoom(TARGET_ZOOM);
    }
 }
 
@@ -243,7 +256,7 @@ void View::rotateRight()
 }
 
 void View::timerEvent(QTimerEvent *event) {
-   int target = 320;
+   int target = TARGET_ZOOM;
    int val = zoomSlider->value();
    
    graphicsView->centerOn(m_active);
@@ -252,5 +265,28 @@ void View::timerEvent(QTimerEvent *event) {
    else if (val > target + 1)
       zoomSlider->setValue(val - 2);
    else m_timer.stop();//killTimer(event->timerId());
+}
+
+void View::showContextMenu(const QPoint &pos, Chip *active) {
+   m_contextChip = active;
+
+   m_contextMenu->popup(pos);
+}
+
+void View::setupContextMenu() {
+   QMenu *menu = new QMenu(this);
+   QAction *gotoAction = new QAction(QIcon(ICONS"/editGotoDeclaration.png"), "Goto .data Declaration", this);
+   
+   connect(gotoAction, SIGNAL(triggered()), this, SLOT(gotoDeclarationAction()));
+   
+   menu->addAction(gotoAction);
+   m_contextMenu = menu;
+}
+
+void View::gotoDeclarationAction() {
+   if (m_contextChip == NULL)
+      return;
+
+   m_parent->gotoDeclaration(m_contextChip);
 }
 

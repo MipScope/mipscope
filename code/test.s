@@ -1,9 +1,9 @@
 	.data
 	
-	CONST = 50
+	CONST = '\t'
 label: .asciiz "Debugging\n" # then show 'Reversible Debuggin"
 
-labsl2: .asciiz "Debugging2\n"
+label2: .asciiz "Debugging2\n"
 	.text
 	
 main:
@@ -12,9 +12,10 @@ main:
    nop
 #   sw $1, 20($sp)
    li $v0, 4
-   li $a0, CONST
+#   li $a0, CONST
    la $a0, label
-   la $a1, labsl2
+   la $a1, label2
+
    syscall
    nop
    

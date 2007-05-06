@@ -243,9 +243,13 @@ void FindDialog::replaceAll() {
    updateReplace(true);
 }
 
-void FindDialog::show(bool replace, bool hasSelection) {
+void FindDialog::show(bool replace, const QTextCursor &cursor) {
    if (!isVisible())
       m_searching = false;
+   
+   bool hasSelection  = cursor.hasSelection();
+   if (hasSelection && !cursor.isNull())
+      m_lineEdit->setText(cursor.selectedText());
    
    updateReplace(replace && m_modifiable);
    m_searchSelection->setEnabled(hasSelection);

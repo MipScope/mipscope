@@ -48,7 +48,7 @@ class TempWidget : public QWidget {
       void paintEvent(QPaintEvent *e) {
          QPainter p(this);
          QRect r(QPoint(0, 0), m_pixMap.size());
-         const QRect &bounds = rect();
+         //const QRect &bounds = rect();
          //bool resizeH = (bounds.width() > r.width());
          //bool resizeV = (bounds.height() > r.height());
 
@@ -66,7 +66,7 @@ class TempWidget : public QWidget {
 
 
 bool MemoryView::isSupported() {
-   cerr << "hasOpenGL: " << QGLFormat::hasOpenGL() << ", hasPBuffers: " << QGLPixelBuffer::hasOpenGLPbuffers() << endl;
+//   cerr << "hasOpenGL: " << QGLFormat::hasOpenGL() << ", hasPBuffers: " << QGLPixelBuffer::hasOpenGLPbuffers() << endl;
    
    return true;//(QGLFormat::hasOpenGL());// && QGLPixelBuffer::hasOpenGLPbuffers());
 }
@@ -77,6 +77,12 @@ MemoryView::MemoryView(Gui *gui)
 {
    QDockWidget::setObjectName(tr("Memory View"));
    
+   Q_INIT_RESOURCE(memoryImages);
+
+   m_view = new View(tr("Memory View"), this);
+   setWidget(m_view);
+   populateDefault();
+
 //   m_glMemoryPane = new GLMemoryPane(this, m_gui);
 //   setWidget(m_glMemoryPane);
    
@@ -89,7 +95,15 @@ MemoryView::~MemoryView() {
    safeDelete(m_view);
 }
 
-unsigned char m_data[128 * 128 * 4];
+void MemoryView::gotoDeclaration(Chip *chip) {
+   if (chip == NULL)
+      return;
+
+   unsigned int address = chip->getAddress();
+   m_gui->gotoDeclaration(address);
+}
+
+//unsigned char m_data[128 * 128 * 4];
 
 void MemoryView::updateDisplay(Program *program) {
    populateScene(program);
@@ -430,21 +444,16 @@ void GLMemoryPane::normalizeAngle(int *angle) {
 
 
 void MemoryView::populateScene(Program *program) {
-   QGraphicsScene *oldScene = m_scene;
-   m_scene = new QGraphicsScene;
-   
    // TODO:  etwas w/ division by 4?  that's why maxY went from *80
    // not working to *20 and working??
    
    MemoryUseMap *memoryUseMap = program->getMemoryUseMap();
 //   unsigned int noAddresses   = memoryUseMap->size();
    unsigned int heapSize  = program->getHeapSize();
-   unsigned int noAddresses = heapSize;
+   unsigned int noAddresses = heapSize >> 2;
    unsigned int maxHeap = DATA_BASE_ADDRESS + heapSize;
-   State *state = program->getState();
-   int maxY = (noAddresses >> 3) * 20;
    
-   TIMESTAMP current = program->getCurrentTimestamp();
+   //TIMESTAMP current = program->getCurrentTimestamp();
    unsigned int earliest = 0;//current - 100; // earliest timestamp to consider
    unsigned int largestList = 1;
 
@@ -513,39 +522,67 @@ void MemoryView::populateScene(Program *program) {
          values[i] /= occurrences[i];
    } // take average
    
-   QImage activityGradient(IMAGES"/activityGradient.png");
+   createChips(values, noAddresses, program);
+   free(occurrences);
+}
+
+// create a nice gradient-effect for the default
+void MemoryView::populateDefault() {
+   unsigned int height = 25;
+   unsigned int noAddresses = height << 3;
+   float *values = (float*)malloc(sizeof(float) * noAddresses);
+   memset(values, 0, sizeof(float) * noAddresses);
+   float max = (noAddresses >> 1) + ((noAddresses & 7) << 2);
    
+   for(unsigned int i = 0; i < noAddresses; i++)
+      values[i] = ((i >> 1) + ((i & 7) << 2)) / max;
+
+   createChips(values, noAddresses, NULL);
+}
+
+void MemoryView::createChips(float *values, unsigned int noAddresses, Program *program) {
+   State *state = (program == NULL ? NULL : program->getState());
+   QGraphicsScene *oldScene = m_scene;
+   m_scene = new QGraphicsScene;
+   
+   QImage activityGradient(IMAGES"/activityGradient.png");
+   int maxY = 500;//(noAddresses >> 3) * 60;
+   //int maxY = (noAddresses >> 1) * 5;
+   const unsigned int factor = (state == NULL ? 255 : 300);
+//   cerr << "noAddresses: " << noAddresses << ", maxY = " << maxY << endl;
+
    // ============
    // Create Chips
    // ============
-   for(unsigned int addr = 0; addr < heapSize; addr++) {
+   for(unsigned int addr = 0; addr < noAddresses; addr++) {
       int x = -784  + (addr & 7) * (1568 / 16);
       int y = -maxY + (addr >> 3) * (maxY / 8);
       
       unsigned int address = DATA_BASE_ADDRESS + (addr << 2);
-      unsigned int value = state->getMemoryWordUnobserved(address);
+      unsigned int value = (state == NULL ? 0 : state->getMemoryWordUnobserved(address));
       unsigned char scale = 255;
-      if (300 * values[addr] < 255)
-         scale = (unsigned char)(300 * values[addr]);
+      
+      if (factor * values[addr] < 255)
+         scale = (unsigned char)(factor * values[addr]);
       
       QColor color = QColor(activityGradient.pixel(scale, 0));
       
-      QGraphicsItem *item = new Chip(m_view, QColor(color), x, y, address, value, NULL);
+      QString label;
+      if (program != NULL)
+         program->getLabelForAddress(address, label);
+         
+      QGraphicsItem *item = new Chip(m_view, QColor(color), x, y, address, value, label, NULL);
       item->setPos(QPointF(x, y));
       m_scene->addItem(item);
    }
    
-   if (m_view == NULL) {
-      m_view = new View(tr("Memory View"));
-      m_view->view()->setScene(m_scene);
-      setWidget(m_view);
-   }
    m_view->view()->setScene(m_scene);
    if (oldScene != NULL)
       delete oldScene;
    
    free(values);
-   free(occurrences);
+}
+
 //    QImage image(":/test.png");
 
     // Populate m_scene
@@ -567,7 +604,6 @@ void MemoryView::populateScene(Program *program) {
             ++nitems;
         }
     }*/
-}
 
 /*
    GLdouble x1 = +0.06;

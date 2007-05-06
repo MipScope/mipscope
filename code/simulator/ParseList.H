@@ -52,6 +52,9 @@ class ParseList : public QObject {
       
       // Used for jumping to a specific address
       ParseNode *getNodeForAddress(unsigned int address) const;
+      // Useful for getting the ParseNode associated with a specific 
+      // address, regardless of its executability (.data, for example)
+      ParseNode *getNodeForDataAddress(unsigned int address) const;
       
       // (static) Returns the closest executable ParseNode at or after the given ParseNode 
       static ParseNode *getClosestInstruction(ParseNode *p);

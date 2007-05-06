@@ -20,6 +20,14 @@
  ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  **
  ****************************************************************************/
+/* ---------------------------------------------- *\
+   file: chip.h
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 5/6/2007
+
+   Modified version of Qt 'chip' demo.
+\* ---------------------------------------------- */
 
 #ifndef CHIP_H
 #define CHIP_H
@@ -34,26 +42,29 @@ class Chip : public QGraphicsItem
 {
    public:
       Chip(View *view, const QColor &color, int x, int y, unsigned int address, 
-            unsigned int value, ParseNode *setBy = NULL);
+            unsigned int value, const QString &label, ParseNode *setBy = NULL);
 
       QRectF boundingRect() const;
       QPainterPath shape() const;
       void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
+      unsigned int Chip::getAddress() const;
 
    protected:
       void mousePressEvent(QGraphicsSceneMouseEvent *event);
       void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
       void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-
+      void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+      
    private:
       int x, y;
       QColor color;
-      QList<QPointF> stuff;
+//      QList<QPointF> stuff;
 
       View *m_view;
       unsigned int m_address;
       unsigned int m_value;
       ParseNode *m_setBy;
+      QString m_label;
 };
 
 #endif

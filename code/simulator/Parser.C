@@ -457,7 +457,79 @@ ImmediateIdentifier *Parser::parseImmediate(QString text, ParseList *list) {
    QString copy = text;
    if ((pasted = list->m_preProcessorMap.contains(text)))
       text = list->m_preProcessorMap[text];
-  
+   
+   if (text.contains('\'')) {
+      // Parse ascii characters  'a' for example
+      int index = text.indexOf('\'');
+      int index2 = text.indexOf('\'', index + 1);
+      
+      //cerr << "attempting to parse ASCII: " << text.toStdString() << endl;
+      
+      if (index != 0 || index2 != text.length() - 1 || index2 < 0) {
+         _tab = orig;
+         return NULL;
+      }
+      
+      QString origText(text);
+      // remove two single-quotes
+      text = text.left(text.length() - 1);
+      text = text.right(text.length() - 1);
+      int value = -1;
+      
+      switch(text.length()) {
+         case 1:
+            value = text.at(0).toAscii();
+            break;
+         case 2:
+            if (text.at(0) != '\\') {
+               _tab = orig;
+               return NULL;
+            }
+            
+            switch(text.at(1).toAscii()) {
+               case 'n':
+                  value = '\n';
+                  break;
+               case '\\':
+                  value = '\\';
+                  break;
+               case '"':
+                  value = '"';
+                  break;
+               case 't':
+                  value = '\t';
+                  break;
+               default:
+                  _tab = orig;
+                  return NULL;
+                  break;
+            }
+            break;
+         default:
+            _tab = orig;
+            return NULL;
+      }
+
+      if (value < 0) {
+         _tab = orig;
+         return NULL;
+      }
+
+      if (VERBOSE) {
+         cerr << _tab << "Found Immediate: " << value;
+         if (pasted)
+            cerr << "  (from const '" << copy.toStdString() << "')";
+
+         cerr << endl;
+      }
+           
+      _tab = orig;
+      return new ImmediateIdentifier(origText, value);
+
+//      cerr << "VALUE:  " << value << endl;
+//      cerr << text.toStdString() << endl;
+   }
+   
    bool okay = false;
    qint64 value_long = text.toLongLong(&okay, 0); // includes C-like hex and binary conversion :)
    int value;

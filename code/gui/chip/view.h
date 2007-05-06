@@ -20,6 +20,14 @@
  ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  **
  ****************************************************************************/
+/* ---------------------------------------------- *\
+   file: view.h
+   auth: Travis Fischer, Tim O'Donnell
+   acct: tfischer, tim
+   date: 5/6/2007
+
+   Modified version of Qt 'chip' demo.
+\* ---------------------------------------------- */
 
 #ifndef VIEW_H
 #define VIEW_H
@@ -27,6 +35,7 @@
 #include <QFrame>
 #include <QBasicTimer>
 
+class QMenu;
 class QGraphicsView;
 class QLabel;
 class QSlider;
@@ -34,20 +43,25 @@ class QToolButton;
 class QTimerEvent;
 class Chip;
 class QGraphicsSceneMouseEvent;
+class QPoint;
+class MemoryView;
 
 class View : public QFrame
 {
    Q_OBJECT
 
    public:
-      View(const QString &name, QWidget *parent = 0);
+      View(const QString &name, MemoryView *parent);
 
       QGraphicsView *view() const;
       void setZoom(int value);
       void zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event);
 
+      void showContextMenu(const QPoint &pos, Chip *active);
+      
    protected:
       void timerEvent(QTimerEvent *event);
+      void setupContextMenu();
       
    private slots:
       void resetView();
@@ -62,6 +76,8 @@ class View : public QFrame
       void rotateLeft();
       void rotateRight();
 
+      void gotoDeclarationAction();
+
    private:
       QGraphicsView *graphicsView;
       QLabel *label;
@@ -72,8 +88,10 @@ class View : public QFrame
       QSlider *zoomSlider;
       QSlider *rotateSlider;
 
-      Chip *m_active;
+      Chip *m_active, *m_contextChip;
       QBasicTimer m_timer;
+      MemoryView *m_parent;
+      QMenu *m_contextMenu;
 };
 
 #endif

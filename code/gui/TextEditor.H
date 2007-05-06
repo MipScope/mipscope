@@ -89,7 +89,10 @@ class TextEditor : public QTextEdit {
       int currentLineNumber() const;
       int noLines() const; // returns the total number of lines
       void gotoLine(int); // moves text cursor to given line, scrolling editor if necessary
+      QTextCursor findDeclaration(const QString &identifier);
+      bool gotoDeclaration(const QString &identifier);
       bool gotoDeclaration(const QTextCursor &c);
+      void gotoNode(ParseNode *node);
       QTextCursor findDeclaration(const QTextCursor &c);
       
       QTextDocument *getTextDocument() const;
@@ -172,6 +175,7 @@ class TextEditor : public QTextEdit {
       // @overridden to allow for CTRL+clicking to goto declaration
       virtual void mousePressEvent(QMouseEvent *e);
       virtual void mouseMoveEvent(QMouseEvent *e);
+      virtual void leaveEvent(QEvent *);
       
       int attemptRegisterParse(QString &text);
       

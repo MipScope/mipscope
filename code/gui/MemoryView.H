@@ -14,10 +14,12 @@ class QGraphicsScene;
 class QGraphicsView;
 class View;
 
+class State;
 class Gui;
 class GLMemoryPane;
 class Program;
 class TempWidget;
+class Chip;
 
 class MemoryView : public QDockWidget {
    
@@ -33,6 +35,7 @@ class MemoryView : public QDockWidget {
       void reset();
       void updateDisplay(Program *program);
       
+      void gotoDeclaration(Chip *chip);
       // Returns largest list after removing early accesses
       //unsigned int MemoryUseMap::removeEarlyAccesses(MemoryUseMap *memoryUseMap, TIMESTAMP earliest) const;
 
@@ -44,6 +47,8 @@ class MemoryView : public QDockWidget {
       
       View *m_view;
       void populateScene(Program*);
+      void populateDefault();
+      void createChips(float *values, unsigned int heapSize, Program *program = NULL);
       QGraphicsScene *m_scene;
 };
 

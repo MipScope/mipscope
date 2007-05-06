@@ -59,6 +59,7 @@ class Gui : public QMainWindow {
       void updateMemoryView(Program *active);
       
       void activeEditorChanged(TextEditor *current);
+      void gotoDeclaration(unsigned int address);
       
       // Proxy-DEBUGGER Related
       // ----------------------

@@ -356,11 +356,11 @@ void EditorPane::selectAll() {
 }
 
 void EditorPane::find() {
-   m_findDialog->show(false, m_activeEditor->textCursor().hasSelection());
+   m_findDialog->show(false, m_activeEditor->textCursor());
 }
 
 void EditorPane::findAndReplace() {
-   m_findDialog->show(true, m_activeEditor->textCursor().hasSelection());
+   m_findDialog->show(true, m_activeEditor->textCursor());
 }
 
 

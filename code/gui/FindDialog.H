@@ -57,7 +57,7 @@ class FindDialog : public QDialog
       QTextCursor replace(const QTextCursor &start, QTextDocument *doc, int startPos = -1, int endPos = -1);
       void replaceAll();
       
-      void show(bool replace, bool hasSelection);
+      void show(bool replace, const QTextCursor&);
       void updateReplace(bool enabled);
       
       // when active TextEditor is read-only, don't display option for replace

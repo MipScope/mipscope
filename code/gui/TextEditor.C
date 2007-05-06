@@ -16,6 +16,7 @@
 #include "../simulator/ParseNode.H"
 #include "../simulator/Statement.H"
 #include "../simulator/Parser.H"
+#include "../simulator/Identifier.H"
 #include "Program.H"
 #include <QtGui>
 #include <QtCore>
@@ -669,6 +670,23 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
 
    c.select(QTextCursor::WordUnderCursor);
    QRect r = cursorRect(c);
+   
+   QTextCursor temp(c);
+   int position = temp.selectionStart();
+   temp.movePosition(QTextCursor::End);
+   int lastPosition = temp.position();
+   temp.setPosition(position);
+   
+   
+   do {
+      r = r.united(cursorRect(temp));
+      
+      if (++position >= lastPosition)
+         break;
+      temp.setPosition(position);
+   } while(position < temp.selectionEnd());
+
+   
    r.setX(r.x() - 25); // ensure mouse is actually close to word under cursor
    r.setY(r.y() - 25);
    r.setWidth(r.width() + 30);
@@ -684,6 +702,15 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
          if (registerNo >= 0 && registerNo < register_count) {
             showingRegister = true;
             m_registerTip->show(m_parent->m_parent->getRegisterView()->getRegisterText(registerNo), pos);
+         } else { // check if user's hovering over a label in .data section and display address
+            LabelMap *labelMap = m_program->getLabelMap();
+            
+            if (labelMap->contains(text)) {
+               const QString tip = QString("<p style='white-space:pre'>Address: 0x<b>%1</b></style>").arg(QString::number(labelMap->value(text)->getValue(), 16));
+
+               showingRegister = true;
+               m_registerTip->show(tip, pos);
+            }
          }
       }
       
@@ -717,7 +744,7 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
             }
          }
       }
-   } 
+   }
    
    if (!showingRegister && m_registerTip->isVisible())
       m_registerTip->hide();
@@ -726,8 +753,10 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
 }
 
 QTextCursor TextEditor::findDeclaration(const QTextCursor &c) {
-   const QString &identifier = c.selectedText();
-   
+   return findDeclaration(c.selectedText());
+}
+
+QTextCursor TextEditor::findDeclaration(const QString &identifier) {
    ParseNode *declaration = m_program->getDeclaration(identifier);
    QTextBlock *declarationBlock;
    
@@ -753,7 +782,11 @@ QTextCursor TextEditor::findDeclaration(const QTextCursor &c) {
 }
 
 bool TextEditor::gotoDeclaration(const QTextCursor &c) {
-   QTextCursor cursor = findDeclaration(c);
+   return gotoDeclaration(c.selectedText());
+}
+
+bool TextEditor::gotoDeclaration(const QString &identifier) {
+   QTextCursor cursor = findDeclaration(identifier);
    
    if (!cursor.isNull()) {
       setTextCursor(cursor);
@@ -761,13 +794,22 @@ bool TextEditor::gotoDeclaration(const QTextCursor &c) {
       
       return true;
    }
-   const QString &identifier = c.selectedText();
 
    // display error indicator if we couldn't locate identifier declaration
    if (STATUS_BAR != NULL)
       STATUS_BAR->showMessage(QString("Could not find declaration of '%1'.").arg(identifier), STATUS_DELAY);
    
    return false;
+}
+
+void TextEditor::gotoNode(ParseNode *node) {
+   if (node == NULL)
+      return;
+
+   AddressIdentifier *addr = node->getLabel();
+   if (addr != NULL)
+      gotoDeclaration(addr->getID());
+   else gotoLine(lineNumber(*(node->getTextBlock())));
 }
 
 /*
@@ -1165,6 +1207,12 @@ void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
 void TextEditor::testMouseMove(QMouseEvent *e, const QPoint &pos) {
 //   cerr << "TODO testMouseMove\n";
 }
+
+void TextEditor::leaveEvent(QEvent *e) {
+   if (m_registerTip != NULL && m_registerTip->isVisible())
+      m_registerTip->hide();
+}
+
 
 // -----------
 // RegisterTip

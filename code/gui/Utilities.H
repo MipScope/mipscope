@@ -14,7 +14,7 @@ using namespace std;
 #define PROJECT_NAME       "MipScope"
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a);;All Files (*)")
-#define STATUS_DELAY       (3500)
+#define STATUS_DELAY       (12000)
 #define IMAGES             ":/"//"gui/images"
 //#define LARGE_ICONS
 #define SMALL_ICONS

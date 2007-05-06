@@ -64,6 +64,27 @@ ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
    return NULL;
 }
 
+// returns non-executable .data ParseNode
+ParseNode *ParseList::getNodeForDataAddress(unsigned int address) const {
+   if (address < DATA_BASE_ADDRESS || address > m_nextDataAddress)
+      return NULL;
+
+   ParseNode *cur = first();
+
+   while(cur != NULL) {
+      unsigned int startAddress = cur->getAddress();
+      unsigned int endAddress = cur->getEndAddress();
+      
+      if (address >= startAddress && address < endAddress)
+         return cur;
+
+      cur = cur->getNext();
+   }
+   
+   // invalid addess
+   return NULL;
+}
+
 // (static) Returns the closest executable ParseNode at or After the given ParseNode 
 ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
    if (p == NULL)

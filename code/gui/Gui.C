@@ -768,3 +768,13 @@ void Gui::updateMemoryView(Program *active) {
    m_memoryView->updateDisplay(active);
 }
 
+void Gui::gotoDeclaration(unsigned int address) {
+   TextEditor *active = m_runningEditor;
+
+   if (active == NULL)
+      active = m_editorPane->m_activeEditor;
+
+   if (active != NULL)
+      active->getProgram()->gotoDeclaration(address);
+}
+

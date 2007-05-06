@@ -40,7 +40,7 @@ class State : public QObject {
       void memcpy(unsigned int destAddress, const void *src, unsigned int size);
       void memset(unsigned int destAddress, const int value, unsigned int size);
       
-      QString getString(unsigned int address);
+      QString getString(unsigned int address, bool affect = true);
       
       // registers
       void setRegister(int reg, unsigned int value);
@@ -111,11 +111,14 @@ class StateAction {
 
 class SyscallAction : public StateAction {
    public:
-      SyscallAction(TIMESTAMP timestamp, int syscallNo);
+      SyscallAction(State *s, int syscallNo);
+      virtual ~SyscallAction();
       
       void undo(State *s);
    private:
       int m_syscallNo;
+      unsigned int m_baseAddress;
+      unsigned int m_affectedLength;
 };
 
 class PCChangedAction : public StateAction {

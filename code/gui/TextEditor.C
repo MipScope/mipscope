@@ -729,7 +729,7 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
       }
       
       // see if the user's hovering over a instruction or directive and display its syntax
-      if (status == STOPPED || (status == PAUSED && showingRegister == false)) {
+      if (status == STOPPED) {// || (status == PAUSED && showingRegister == false)) {
          bool match1 = (text != "" && instructionMap.contains(text)), match2 = false;
          
 //         cerr << directiveMap.contains(text) << ", '" << text.toStdString() << "'\n";
@@ -750,8 +750,8 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
                if (m_syntaxTip->isVisible() && m_syntaxTip->text() == tip)
                   m_syntaxTip->hide();
                
-               if (STATUS_BAR != NULL)
-                  STATUS_BAR->showMessage(statusText.replace("&lt;", "<").replace("&gt;", ">"), STATUS_DELAY * 2);
+               //if (STATUS_BAR != NULL)
+                  //STATUS_BAR->showMessage(statusText.replace("&lt;", "<").replace("&gt;", ">"), STATUS_DELAY * 2);
                
                showingRegister = true;
                m_registerTip->show(tip, pos);

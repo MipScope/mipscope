@@ -1,28 +1,25 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * Make MemoryView!
-         Use dynamically-updating pBuffers for texture; get 2d texture-version working correctly first
    * Test several of the on-the-fly editing issues;
-   
-   * Line numbers, breakpoints correction,
-   * DELAYED parsing!!!
    * Memory watchpoints!
    
    * Clear button on OutputConsole?
    * Add 'last pc' to StackView?
-   * Better view of errors
 
-Highlighting a line of Text:
-   QTextEdit::setExtraSelections ( const QList<ExtraSelection> & selections )
-   TextEditor::highlightLine(const QTextCursor &c, const QTextCharFormat &f);
-
+OLD:
+   * Line numbers, breakpoints correction,
    * Add 'Find and/or Replace' Dialog
+   * Better view of errors
+   * Make MemoryView!
+         Use dynamically-updating pBuffers for texture; get 2d texture-version working correctly first
 
 
 
+   * DELAYED parsing!!!
 DELAYED Parsing Ideas:
    * Main thing is updating of syntaxErrors; ErrorConsole
       * fix multiple calls to contentsChanged (inserting whitespace on Return press)
 
    * Know whether last errors were syntactic or semantic; attempt to use that intelligently
       * Attempt to only re-add parseNodes if non-trivial changes were made
+

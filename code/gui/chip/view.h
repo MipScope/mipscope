@@ -45,6 +45,7 @@ class Chip;
 class QGraphicsSceneMouseEvent;
 class QPoint;
 class MemoryView;
+class QGraphicsScene;
 
 class View : public QFrame
 {
@@ -54,6 +55,7 @@ class View : public QFrame
       View(const QString &name, MemoryView *parent);
 
       QGraphicsView *view() const;
+      void setScene(QGraphicsScene *scene);
       void setZoom(int value);
       void zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event);
 

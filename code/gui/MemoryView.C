@@ -253,7 +253,7 @@ void MemoryView::updateDisplay(Program *program) {
 }
 
 void MemoryView::reset() {
-   populateDefault();
+   //populateDefault();
 //   m_glMemoryPane->reset();
 }
 
@@ -453,9 +453,6 @@ void GLMemoryPane::normalizeAngle(int *angle) {
 
 
 void MemoryView::populateScene(Program *program) {
-   // TODO:  etwas w/ division by 4?  that's why maxY went from *80
-   // not working to *20 and working??
-   
    MemoryUseMap *memoryUseMap = program->getMemoryUseMap();
 //   unsigned int noAddresses   = memoryUseMap->size();
    unsigned int heapSize  = program->getHeapSize();
@@ -585,7 +582,7 @@ void MemoryView::createChips(float *values, unsigned int noAddresses, Program *p
       m_scene->addItem(item);
    }
    
-   m_view->view()->setScene(m_scene);
+   m_view->setScene(m_scene);
    if (oldScene != NULL)
       delete oldScene;
    

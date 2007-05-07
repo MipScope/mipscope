@@ -531,7 +531,9 @@ void ParseList::updateSyntacticValidity(State *currentState) {
          try {
             newNode = Parser::parseLine(actual, this);
          } catch(ParseError &e) {
-            cerr << "Error line  " << lineNo << ": " << e.toStdString() << endl;
+            if (VERBOSE)
+               cerr << "Error line  " << lineNo << ": " << e.toStdString() << endl;
+
             e.setTextBlock(actual);
             e.setLineNo(lineNo);
             errors.push_back(e);

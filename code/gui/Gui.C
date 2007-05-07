@@ -711,12 +711,28 @@ bool Gui::handleProgramTerminated(int reason) {
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
+   //cerr << "validityChanged: " << isValid << endl;
+   
    if (m_debugStepXAction != NULL) {
       m_debugRunAction->setEnabled(isValid);
-      m_debugStepAction->setEnabled(isValid);
-      m_debugBStepAction->setEnabled(isValid);
-      m_debugStepXAction->setEnabled(isValid);
-      m_debugBStepXAction->setEnabled(isValid);
+
+      if (m_mode == PAUSED) {
+         m_debugStepAction->setEnabled(isValid);
+         m_debugBStepAction->setEnabled(isValid);
+         m_debugStepXAction->setEnabled(isValid);
+         m_debugBStepXAction->setEnabled(isValid);
+         
+         if (m_runningEditor != NULL) {
+            Program *program = m_runningEditor->getProgram();
+
+            if (program != NULL) {
+               bool undoIsAvailable = program->undoIsAvailable();
+
+               m_debugBStepAction->setEnabled(undoIsAvailable);
+               m_debugBStepXAction->setEnabled(undoIsAvailable);
+            }
+         }
+      }
    }
 }
 
@@ -734,6 +750,7 @@ void Gui::memoryChanged(unsigned int address, unsigned int value, ParseNode *pc)
 }
 
 void Gui::programUndoAvailabilityChanged(bool isAvailable) {
+   //cerr << "programUndoAvailabilityChanged: " << isAvailable << endl;
    m_debugBStepAction->setEnabled(isAvailable);
    m_debugBStepXAction->setEnabled(isAvailable);
 }

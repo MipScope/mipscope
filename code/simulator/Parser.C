@@ -172,7 +172,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
 
    if (i == instructionMap.end()) {
       if (VERBOSE) cerr << "instr " << instr.toStdString() << " not found in map\n";
-      PARSE_ERRORL(QString("'") + instr + QString("' is not a valid instruction."), text, instr.length());
+      PARSE_ERRORL(QString("'") + instr + QString("' is not a valid instruction."), instr, instr.length());
    }
 
    StatementArgList *argList;
@@ -650,7 +650,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
    
    if (VERBOSE) cerr << _tab << "Parsing directive: '" << text.toStdString() << "'\n";
    if (text[0] != QChar('.'))
-      PARSE_ERROR(QString("error parsing directive"), text);
+      PARSE_ERRORL(QString("error parsing directive"), ".", 1);
    
    text = text.right(text.length() - 1);
    

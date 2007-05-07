@@ -275,6 +275,9 @@ void Program::updateSyntaxErrors(SyntaxErrors *newS) {
    
    m_syntaxErrors = newS;
    
+   if (!noChange)
+      m_parent->updateSyntaxErrors(m_syntaxErrors);
+
    if (m_syntaxErrors == NULL) {
       //cerr << "NO Syntax Errors: forcing update!\n";
       forceUpdateOfSyntaxErrors(false);
@@ -298,9 +301,6 @@ void Program::singleShotSyntaxErrors() {
 void Program::forceUpdateOfSyntaxErrors(bool noChange) {
 //   cerr << "forcingUpdateOfSyntaxErrors: noChange=" << noChange << endl;
    
-   if (!noChange)
-      m_parent->updateSyntaxErrors(m_syntaxErrors);
-
    ErrorConsole *err; // ErrorConsole has its own change-checking
    // (can't only check strings since error line numbers might have changed as well)
    if ((err = m_gui->getErrorConsole()) != NULL)
@@ -340,6 +340,14 @@ void Program::loadProgram() {
    }
 }
 
+QString Program::getName() {
+   QString name = m_parent->fileName();
+   if (name.endsWith(".s") && name.length() != 2)
+      name = name.left(name.length() - 2);
+   
+   return name;
+}
+
 void Program::run() {
    if (!m_current)
       return;
@@ -355,9 +363,14 @@ void Program::run() {
       m_debugger->setWatchpoints(getWatchpoints());
       
       m_gui->updateMemoryView(this);
+      if (STATUS_BAR != NULL)
+         STATUS_BAR->showMessage(QString("Running program %1...").arg(getName()));
+      
       // content changed during Pause textEditor->notifies Proxy
 //      connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    } else if (status == RUNNING) {
+      if (STATUS_BAR != NULL)
+         STATUS_BAR->clearMessage();
       pause();
       return;
    }
@@ -501,7 +514,8 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       try {
          m_parseList->updateSyntacticValidity(getState());
       } catch(SyntaxErrors &e) {
-         cerr << "\tProgram is invalid; " << e.size() << " syntax errors\n";
+         if (VERBOSE)
+            cerr << "\tProgram is invalid; " << e.size() << " syntax errors\n";
          //c.setPosition(originalPosition);
          //m_parent->setTextCursor(c);
          setRunnable(false);
@@ -512,7 +526,8 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       
       SyntaxErrors *semanticErrors = m_parseList->getSyntaxErrors();
       if (semanticErrors != NULL && !semanticErrors->empty()) {
-         cerr << "\tProgram is invalid; " << semanticErrors->size() << " semantic errors\n";
+         if (VERBOSE)
+            cerr << "\tProgram is invalid; " << semanticErrors->size() << " semantic errors\n";
          //c.setPosition(originalPosition);
          //m_parent->setTextCursor(c);
          setRunnable(false);

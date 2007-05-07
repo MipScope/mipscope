@@ -168,6 +168,30 @@ QGraphicsView *View::view() const
    return graphicsView;
 }
 
+void View::setScene(QGraphicsScene *scene) {
+   if (scene == NULL)
+      return;
+
+   m_timer.stop();
+   bool wasFocusing = (m_active != NULL);
+   QPointF location = (wasFocusing ? m_active->mapToScene(m_active->boundingRect().center()) : QPointF());
+   m_active = NULL;
+   m_contextChip = NULL;
+   graphicsView->setScene(scene);
+   
+   // attempt to keep zooming in on the same chip, even through scene changes
+   if (wasFocusing) {
+      QGraphicsItem *item = scene->itemAt(location);
+      
+      if (item != NULL) {
+         m_active = dynamic_cast<Chip*>(item);
+
+         if (m_active != NULL)
+            m_timer.start(20, this);
+      }
+   }
+}
+
 /*void View::resetView()
 {
    m_timer.stop();

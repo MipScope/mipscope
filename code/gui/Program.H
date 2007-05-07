@@ -74,6 +74,7 @@ class Program : public QObject {
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);
       void forceUpdateOfSyntaxErrors(bool noChange = false);
+      QString getName();
       
       void rollBackToEarliest(TIMESTAMP optionalTimestamp);
       

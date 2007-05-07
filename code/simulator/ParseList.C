@@ -18,10 +18,15 @@
 #include <QTextBlock>
 #include <QTextCursor>
 
+int ParseList::m_status = STOPPED;
+
 ParseList::ParseList(QTextDocument *document) :
    m_source(document), m_nextTextAddress(TEXT_BASE_ADDRESS), 
-   m_nextDataAddress(DATA_BASE_ADDRESS), m_program(NULL)
-{ }
+   m_nextDataAddress(DATA_BASE_ADDRESS), 
+   m_program(NULL)
+{
+   m_status = STOPPED;
+}
 
 ParseList::~ParseList() { }
 
@@ -38,6 +43,10 @@ ParseNode *ParseList::last() const {
    return ParseNode::Node(m_source->end().previous());
 }
 
+void ParseList::setStatus(int status) {
+   m_status = status;
+}
+
 ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
    if (address < TEXT_BASE_ADDRESS || address >= m_nextTextAddress)
       return NULL;
@@ -49,13 +58,15 @@ ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
    // and/or binary-search for ParseNode at address
    // and/or maintain Map or text addresses -> ParseNode*
    
-
+   
    while(cur != NULL) {
       unsigned int startAddress = cur->getAddress();
       unsigned int endAddress = cur->getEndAddress();
       
-      if (address >= startAddress && address < endAddress)
-         return getClosestInstruction(cur); // closest executable instr
+      if (address >= startAddress && address < endAddress) {
+         cerr << "gettingNode for addr: " << address << endl;
+         return getClosestInstruction(cur, RUNNING); // closest executable instr
+      }
 
       cur = cur->getNext();
    }
@@ -86,15 +97,29 @@ ParseNode *ParseList::getNodeForDataAddress(unsigned int address) const {
 }
 
 // (static) Returns the closest executable ParseNode at or After the given ParseNode 
-ParseNode *ParseList::getClosestInstruction(ParseNode *p) {
+ParseNode *ParseList::getClosestInstruction(ParseNode *p, int status) {
    if (p == NULL)
       return NULL;
    
-   // run-protection for data segments
+   // execution-protection for data segments
    if (ParseList::getSegment(p) == S_DATA)
       return NULL;
    
+/*   if (status != m_status && status == PAUSED) { // default
+      cerr << "STATUS getClosestInstruction: " << status << " vs " << m_status << endl;
+
+      status = m_status; // for jump instructions to pause at breakpoints not on lines w/ instructions
+   }*/
+   
    while(!p->isExecutable()) {
+      // this doesn't work because lines without executable instructions do not have addresses!
+      
+      /*if (p->containsBreakPoint() && status == RUNNING) {
+         cerr << "BP found on line w/out instr!\n'" << p << "'\n";
+         break;  // for breakpoints on lines without executable instructions
+      // (for ex, to put a breakpoint on a label or a blank line inbetween instructions)
+      }*/
+      
       if ((p = p->getNext()) == NULL)
          return NULL;  // end of program (tested and works :)
    }

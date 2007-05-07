@@ -307,7 +307,7 @@ void TextEditor::clearLastInstructions() {
    m_lastInstructions.clear();
 }
 
-void TextEditor::pcChanged(ParseNode *pc) {
+void TextEditor::pcChanged(ParseNode *pc, bool justRolledBack) {
    ParseNode *old = m_pc;
 //   cerr << "\tpcChanged id:" << QThread::currentThreadId() << "\n";
    
@@ -333,10 +333,12 @@ void TextEditor::pcChanged(ParseNode *pc) {
          b->setUserState(B_CURRENT_PC);
       else b->setUserState(state | B_CURRENT_PC);
       
-      QTextCursor c = textCursor();
-      c.setPosition(b->position());
-      setTextCursor(c);
-      ensureCursorVisible();
+      if (!justRolledBack) {
+         QTextCursor c = textCursor();
+         c.setPosition(b->position());
+         setTextCursor(c);
+         ensureCursorVisible();
+      }
    }
    
    m_parent->updateLineNumbers(0);
@@ -351,8 +353,8 @@ void TextEditor::programStatusChanged(int status) {
 //   cerr << "\t" << QThread::currentThreadId() << "\n";
 
    if (status == PAUSED)
-      pcChanged(m_program->getPC());
-   else pcChanged(NULL);
+      pcChanged(m_program->getPC(), false);
+   else pcChanged(NULL, false);
 }
 
 void TextEditor::updateCursorPosition() {
@@ -667,31 +669,43 @@ void TextEditor::mouseMoveEvent(QMouseEvent *e) {
    int status = m_program->getStatus();
    const QPoint &pos = e->pos();
    QTextCursor c = cursorForPosition(pos);
-
    c.select(QTextCursor::WordUnderCursor);
    QRect r = cursorRect(c);
    
    QTextCursor temp(c);
-   int position = temp.selectionStart();
+   int position = temp.selectionStart();//, endSelection = temp.selectionEnd();
+/*   if (c.hasSelection()) {
+      cerr << "Sel: " << position << " vs " << endSelection << endl;
+   };*/
+   
    temp.movePosition(QTextCursor::End);
    int lastPosition = temp.position();
+/*   temp.clearSelection();
+   temp.setPosition(endSelection);
+   int blockNo = temp.blockNumber();*/
    temp.setPosition(position);
-   
-   
-   do {
-      r = r.united(cursorRect(temp));
-      
-      if (++position >= lastPosition)
-         break;
-      temp.setPosition(position);
-   } while(position < temp.selectionEnd());
 
+//   bool isValidSelection = false;
+//   if (blockNo == temp.blockNumber()) { // ensure selection spans one line
+//      cerr << blockNo << " vs " << temp.blockNumber() << endl;
+      
+      do {
+         r = r.united(cursorRect(temp));
+
+         if (++position >= lastPosition)
+            break;
+         temp.setPosition(position);
+      } while(position < temp.selectionEnd());
+
+
+      r.setX(r.x() - 25); // ensure mouse is actually close to word under cursor
+      r.setY(r.y() - 25);
+      r.setWidth(r.width() + 30);
+      r.setHeight(r.height() + 30);
+//      isValidSelection = (r.contains(pos));
+//   }
    
-   r.setX(r.x() - 25); // ensure mouse is actually close to word under cursor
-   r.setY(r.y() - 25);
-   r.setWidth(r.width() + 30);
-   r.setHeight(r.height() + 30);
-   if (r.contains(pos)) {
+   if (r.contains(pos)) {//isValidSelection)
       QString text = c.selectedText();
       
       // see if the user's hovering over a register

@@ -42,6 +42,8 @@ class ParseList : public QObject {
    public:
       friend class Parser;
       
+      static int m_status; // hooked w/ debugger's status only when executing instructions
+      
       ParseList(QTextDocument *document);
       virtual ~ParseList();
       
@@ -57,8 +59,8 @@ class ParseList : public QObject {
       ParseNode *getNodeForDataAddress(unsigned int address) const;
       
       // (static) Returns the closest executable ParseNode at or after the given ParseNode 
-      static ParseNode *getClosestInstruction(ParseNode *p);
-
+      static ParseNode *getClosestInstruction(ParseNode *p, int status = PAUSED);
+      
       // (static) Returns the closest executable ParseNode at or before the given ParseNode 
       static ParseNode *getClosestInstructionBefore(ParseNode *p);
       
@@ -101,6 +103,8 @@ class ParseList : public QObject {
       
       LabelMap *getLabelMap();
       unsigned int getHeapSize() const;
+      
+      static void setStatus(int status);
       
    private:
       QTextDocument *m_source;

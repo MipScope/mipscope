@@ -101,7 +101,7 @@ void StackView::updateDisplay(State *s, int state) {
             
             if (last != NULL && last->isValid() && last->getTextBlock() != NULL && (active = m_gui->getActiveProgram()) != NULL) {
                tip += QString("<br>"
-                      "(Set by line <i>%1</i>)").arg(active->lineNumber(*last->getTextBlock()));
+                      "(Set by line <i>%1</i>)").arg(1 + active->lineNumber(*last->getTextBlock()));
             }
          }
          format.setToolTip(tip);

@@ -32,6 +32,7 @@ class ParseNode {
       ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statement = NULL, AddressIdentifier *label = NULL);
       
       static ParseNode *Node(const QTextBlock &b); // utility method
+      static ParseNode *Node(const QTextBlock *b); // utility method
       
       void notifyDeleted(bool alreadyKnown = false);
       
@@ -55,7 +56,7 @@ class ParseNode {
 
       // Returns whether or not this ParseNode contains a valid Instruction
       bool isExecutable() const;
-      void execute(State* state, ParseList* parseList);
+      void execute(State* state, ParseList* parseList, int status);
       bool isValid() const;
       void setSemanticValidity(bool isValid);
 

@@ -45,11 +45,13 @@ void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool 
       QString err;
       
       if (lineNo < 0 && i->getTextBlock() != NULL)
-         i->setLineNo((lineNo = editor->lineNumber(*i->getTextBlock())));
+         i->setLineNo((lineNo = (editor->lineNumber(*i->getTextBlock()))));
       
-      if (lineNo >= 0)
-         err = QString("<a href=\"%1\">%2</a>) %3<br>").arg(QString::number(lineNo), QString::number(lineNo), *i);
-      else err = *i + QString("<br>");
+      if (lineNo >= 0) {
+         const QString &lineNumberStr = QString::number(lineNo + 1);
+
+         err = QString("<a href=\"%1\">%2</a>) %3<br>").arg(lineNumberStr, lineNumberStr, *i);
+      } else err = *i + QString("<br>");
       
       m_text += err;
       //m_strings.append(err);
@@ -82,7 +84,7 @@ void ErrorConsole::anchorClicked(const QUrl &link) {
    // jump editor to line no specified
    if (m_activeEditor != NULL) {
       m_editorPane->setActiveEditor(m_activeEditor);
-      m_activeEditor->gotoLine(lineNo);
+      m_activeEditor->gotoLine(lineNo - 1);
    }
 }
 

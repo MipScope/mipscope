@@ -119,7 +119,7 @@ class Program : public QObject {
       void undoSyscall(int syscallNo);
       void undoAvailabilityChanged(bool isAvailable);
       
-      void pcChanged(ParseNode *pc);
+      void pcChanged(ParseNode *pc, bool justRolledBack);
       void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc);
       void memoryChanged(unsigned int address, unsigned int value, ParseNode *pc);
       
@@ -132,6 +132,9 @@ class Program : public QObject {
    protected:
       bool m_current; // if this Program is the currently active one
       bool m_runnable;
+
+      enum ROLLING_BACK { R_NORMAL, R_ROLLING, R_JUST_ROLLED };
+      ROLLING_BACK m_rollingBack;
 
       Gui *m_gui;
       EditorPane *m_editorPane;

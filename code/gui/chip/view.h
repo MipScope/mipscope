@@ -64,8 +64,8 @@ class View : public QFrame
       void setupContextMenu();
       
    private slots:
-      void resetView();
-      void setResetButtonEnabled();
+//      void resetView();
+//      void setResetButtonEnabled();
       void setupMatrix();
       void toggleOpenGL();
       void toggleAntialiasing();
@@ -73,20 +73,20 @@ class View : public QFrame
 
       void zoomIn();
       void zoomOut();
-      void rotateLeft();
-      void rotateRight();
+//      void rotateLeft();
+//      void rotateRight();
 
       void gotoDeclarationAction();
 
    private:
       QGraphicsView *graphicsView;
-      QLabel *label;
+//      QLabel *label;
       QToolButton *openGlButton;
       QToolButton *antialiasButton;
       QToolButton *printButton;
-      QToolButton *resetButton;
+//      QToolButton *resetButton;
       QSlider *zoomSlider;
-      QSlider *rotateSlider;
+ //     QSlider *rotateSlider;
 
       Chip *m_active, *m_contextChip;
       QBasicTimer m_timer;

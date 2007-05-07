@@ -52,11 +52,23 @@ void ParseNode::notifyDeleted(bool alreadyKnown) {
       m_parseList->notifyParseNodeDeleted(this);
 }
 
-ParseNode *ParseNode::Node(const QTextBlock &b) {
+ParseNode *ParseNode::Node(const QTextBlock &b) { // utility method
    if (!b.isValid() || b.userData() == NULL)
       return NULL;
    
    PlaceHolder *placeHolder = static_cast<PlaceHolder*>(b.userData());
+   
+   if (placeHolder == NULL || placeHolder->m_parent->m_placeHolder == NULL)
+      return NULL; // ensure it hasn't been deleted
+   
+   return placeHolder->m_parent;
+}
+
+ParseNode *ParseNode::Node(const QTextBlock *b) { // utility method
+   if (!b->isValid() || b->userData() == NULL)
+      return NULL;
+   
+   PlaceHolder *placeHolder = static_cast<PlaceHolder*>(b->userData());
    
    if (placeHolder == NULL || placeHolder->m_parent->m_placeHolder == NULL)
       return NULL; // ensure it hasn't been deleted
@@ -146,7 +158,7 @@ bool ParseNode::isExecutable() const {
    return (m_statement == NULL ? false : m_statement->isInstruction());
 }
 
-void ParseNode::execute(State* state, ParseList* parseList) {
+void ParseNode::execute(State* state, ParseList* parseList, int status) {
    bool increment = true, executed;
    
    if ((executed = isExecutable())) {
@@ -156,14 +168,16 @@ void ParseNode::execute(State* state, ParseList* parseList) {
 
       // actually execute
       Instruction *instr = static_cast<Instruction*>(m_statement);
+//      parseList->setStatus(status);
       instr->execute(state, parseList);
-
+//      parseList->setStatus(PAUSED); // turn off stopping at breakpoints in getClosestInstruction
+      
       // ensure PC gets updated properly (some branching instructions take care of this themselves)
       increment = instr->autoIncrementPC();
    }
 
    if (increment)
-      state->incrementPC();
+      state->incrementPC(status);
    
    // update state's timestamp
    if (executed)

@@ -26,7 +26,7 @@
 // Proxy between Gui and Debugger and vice-versa
 // ---------------------------------------------
 Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
-   : QObject(parent), m_current(true), m_runnable(false), m_gui(gui), m_editorPane(editorPane), m_parent(parent), m_syntaxErrors(NULL), m_parseList(NULL), m_debugger(new Debugger()) 
+   : QObject(parent), m_current(true), m_runnable(false), m_rollingBack(R_NORMAL), m_gui(gui), m_editorPane(editorPane), m_parent(parent), m_syntaxErrors(NULL), m_parseList(NULL), m_debugger(new Debugger())
 {
    State *s = m_debugger->getState();
 
@@ -62,7 +62,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
 
    // Initialize relationship between parent TextEditor and Proxy
    connect(m_parent, SIGNAL(jumpTo(const QTextBlock&)), this, SLOT(jumpTo(const QTextBlock&)));
-   connect(this, SIGNAL(pcChanged(ParseNode*)), m_parent, SLOT(pcChanged(ParseNode*)));
+   connect(this, SIGNAL(pcChanged(ParseNode*, bool)), m_parent, SLOT(pcChanged(ParseNode*, bool)));
    connect(this, SIGNAL(programStatusChanged(int)), m_parent, SLOT(programStatusChanged(int)));
    connect(this, SIGNAL(registerChanged(unsigned int, unsigned int, int, ParseNode*)), m_gui, SLOT(registerChanged(unsigned int, unsigned int, int, ParseNode*)));
    connect(this, SIGNAL(memoryChanged(unsigned int, unsigned int, ParseNode*)), m_gui, SLOT(memoryChanged(unsigned int, unsigned int, ParseNode*)));
@@ -148,8 +148,8 @@ void Program::pcChangeReceived(ParseNode *pc) {
 //   if (pc != NULL)
 //      cerr << pc << ", " << getStatus() << endl;
    
-   if (m_current && getStatus() == PAUSED && pc == getPC()) {
-      pcChanged(pc);
+   if (m_current && getStatus() == PAUSED && m_rollingBack != R_ROLLING && pc == getPC()) {
+      pcChanged(pc, (m_rollingBack == R_JUST_ROLLED));
       m_gui->getStackView()->updateDisplay(getState(), PAUSED);
       m_gui->updateMemoryView(this);
    }
@@ -163,7 +163,7 @@ void Program::registerChangeReceived(unsigned int reg, unsigned int current, Par
 }
 
 void Program::memoryChangeReceived(unsigned int address, unsigned int value, ParseNode *pc) {
-   if (m_current && getStatus() == PAUSED)
+   if (m_current && getStatus() == PAUSED && m_rollingBack != R_ROLLING)
       memoryChanged(address, value, pc);
 }
 
@@ -390,12 +390,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       int affected = position + (charsRemoved > charsAdded ? charsRemoved : charsAdded);
       int oldPosition;
       TIMESTAMP newlyInsertedTimestamp = MAX_TIMESTAMP;
-      
-      // TODO:  make this affected area a tighter/exact bound!!
-      //    Add so every ParseNode knows about its text() and do a 
-      // diff, basically to see the changes..
-      
-      
+     
       cerr << "\n>>> CONTENTS CHANGED: " << charsRemoved << " removed; " << charsAdded << " added" << endl;
       
       //cerr << "Pos: " << position << "; " << doc->findBlock(position).text().toStdString() << endl;//",   after pos: " << c.selectedText().toStdString() << endl;
@@ -407,8 +402,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          Parser::trimCommentsAndWhitespace(newText);
          
          if (modified != NULL) {
-            // TODO:  check if it actually changed?
-            // add an equality operator to Statement*
+            // TODO: add an equality operator to Statement*
             
             if (modified->getText() != newText) {
                modified->setText(newText);
@@ -481,8 +475,8 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          return;
       }
       
-      c.setPosition(originalPosition);
-      m_parent->setTextCursor(c);
+//      c.setPosition(originalPosition);
+//      m_parent->setTextCursor(c);
       setRunnable(true);
       updateSyntaxErrors(NULL);
       cerr << "Program is valid! Runnable = true\n";
@@ -532,9 +526,17 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
       cerr << "<<<ROLLING BACK to " << earliest << endl;
       
       setRunnable(false);
-      if (earliest > 1)
+      if (earliest > 1) {
+         m_rollingBack = R_ROLLING;
          m_debugger->programStepBackwardToTimestamp(earliest - 1);
-      else forceStop(); // rolled back past program entry point
+         m_rollingBack = R_JUST_ROLLED;
+         
+         // only one set of updates after rolling back
+         pcChangeReceived(getPC());
+         memoryChanged(DATA_BASE_ADDRESS, 0, getPC());
+
+         m_rollingBack = R_NORMAL;
+      } else forceStop(); // rolled back past program entry point
    }
 }
 

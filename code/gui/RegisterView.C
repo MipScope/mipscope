@@ -536,7 +536,7 @@ QString RegisterPane::getRegisterText(int registerNo) {
    TextEditor *active = NULL;
    if (lastModified != NULL && lastModified->isValid() && lastModified->getTextBlock() != NULL && (active = m_parent->m_gui->getActiveProgram()) != NULL) {
       mText += QString("<br>"
-                       "(Set by line <i>%1</i>)").arg(active->lineNumber(*lastModified->getTextBlock()));
+                       "(Set by line <i>%1</i>)").arg(1 + active->lineNumber(*lastModified->getTextBlock()));
    }
    
    mText += QString("</pre>");
@@ -588,7 +588,7 @@ void IDLabel::showExtended(const QPoint &p) {//, bool alreadyAdjusted, RegisterL
    TextEditor *active = NULL;
    if (m_lastModified != NULL && m_lastModified->isValid() && m_lastModified->getTextBlock() != NULL && (active = m_parent->m_parent->m_gui->getActiveProgram()) != NULL) {
       mText += QString("<br>"
-                       "(Set by line <i>%1</i>)").arg(active->lineNumber(*m_lastModified->getTextBlock()));
+                       "(Set by line <i>%1</i>)").arg(1 + active->lineNumber(*m_lastModified->getTextBlock()));
    }
    
    mText += QString("</pre>");

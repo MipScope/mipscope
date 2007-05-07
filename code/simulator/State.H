@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QVector>
+#include "ParseList.H"
 
 #include "typedefs.H"
 class ParseNode;
@@ -47,7 +48,7 @@ class State : public QObject {
       unsigned int getRegister(int reg) const;
 
       // pc
-      void incrementPC();
+      void incrementPC(int status = ParseList::m_status);
       void setPC(ParseNode* value);
       ParseNode* getPC(void) const;
 

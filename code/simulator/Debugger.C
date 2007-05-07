@@ -87,7 +87,7 @@ void Debugger::runAnotherStep(void) {
       // execute another parsenode
 //      cerr << m_state->getPC() << ",  " << m_state->getPC()->getAddress() << endl;
 
-      m_state->getPC()->execute(m_state, m_parseList);
+      m_state->getPC()->execute(m_state, m_parseList, m_status);
    } catch (StateException e) {
       m_exception = e; // propogate exception up to gui
       m_terminationReason = T_UNCAUGHT_EXCEPTION;
@@ -100,7 +100,7 @@ void Debugger::runAnotherStep(void) {
    //   return;
    if (m_state->getPC() == NULL) {
       setStatus(STOPPED);
-      if (VERBOSE) cerr << "<<< Program COMPLETED: " << (void*)m_state->getPC() << endl;
+      if (VERBOSE) cerr << "<<< Program COMPLETED (2): " << (void*)m_state->getPC() << endl;
       m_terminationReason = T_COMPLETED;
       return;
    }
@@ -122,7 +122,7 @@ bool Debugger::checkProgramCompleted() {
    if (programCompleted) {
       setStatus(STOPPED);
       m_terminationReason = T_COMPLETED;
-      if (VERBOSE) cerr << "<<< Program COMPLETED: " << (void*)pc << endl;
+      if (VERBOSE) cerr << "<<< Program COMPLETED (1): " << (void*)pc << endl;
       return true;
    }
    

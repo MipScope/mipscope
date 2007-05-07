@@ -12,6 +12,7 @@
 #include "Gui.H"
 #include "Utilities.H"
 #include <QtGui>
+#include "../simulator/ParseNode.H"
 
 // Right-click context-menu for tabs
 // ---------------------------------
@@ -80,13 +81,19 @@ void LineNo::mouseReleaseEvent(QMouseEvent *e) {
          int state = b->userState();
          
 //         cerr << state;
+         
+         ParseNode *node = ParseNode::Node(b);
+         bool canContainBP = 
+            (node != NULL && node->isExecutable());
+         
          // Toggle display of breakpoint
-         if (state < 0)
+         if (canContainBP && state < 0)
             state = B_BREAKPOINT;
          else if (state & B_BREAKPOINT)
             state &= ~B_BREAKPOINT;
-         else state |= B_BREAKPOINT;
-
+         else if (canContainBP)
+            state |= B_BREAKPOINT;
+         
          b->setUserState(state);
 //         cerr << ", vs " << state << endl;
       }
@@ -108,11 +115,11 @@ void LineNo::resetDisplay(QTextBlock *b) {
    QString text;
  
    if (m_lineNo < 10) {
-      text = QString("%1").arg(m_lineNo);
+      text = QString("%1").arg(m_lineNo + 1); // start counting at 1  :)
    } else {
       int max = m_editorPane->m_activeEditor->noLines();
       
-      text = QString((max > 99 ? "%1" : "%1")).arg(m_lineNo);
+      text = QString((max > 99 ? "%1" : "%1")).arg(m_lineNo + 1);
    }
    
    if (possibleBP) {

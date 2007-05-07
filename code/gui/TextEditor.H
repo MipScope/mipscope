@@ -132,7 +132,7 @@ class TextEditor : public QTextEdit {
       void fontChanged(const QFont&);
       
       // Related to Debugging
-      void pcChanged(ParseNode*);
+      void pcChanged(ParseNode*, bool justRolledBack);
       void programStatusChanged(int);
       
    protected:

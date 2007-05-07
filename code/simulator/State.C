@@ -166,8 +166,8 @@ unsigned int State::getRegister(int reg) const {
    return m_registers[reg];
 }
 
-void State::incrementPC() {
-   setPC(ParseList::getClosestInstruction(m_pc->getNext()));
+void State::incrementPC(int status) {
+   setPC(ParseList::getClosestInstruction(m_pc->getNext(), status));
 }
 
 void State::setPC(ParseNode* value) {

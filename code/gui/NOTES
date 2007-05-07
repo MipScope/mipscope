@@ -17,3 +17,12 @@ Highlighting a line of Text:
    TextEditor::highlightLine(const QTextCursor &c, const QTextCharFormat &f);
 
    * Add 'Find and/or Replace' Dialog
+
+
+
+DELAYED Parsing Ideas:
+   * Main thing is updating of syntaxErrors; ErrorConsole
+      * fix multiple calls to contentsChanged (inserting whitespace on Return press)
+
+   * Know whether last errors were syntactic or semantic; attempt to use that intelligently
+      * Attempt to only re-add parseNodes if non-trivial changes were made

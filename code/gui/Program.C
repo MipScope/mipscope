@@ -21,6 +21,7 @@
 #include "../simulator/State.H"
 #include "../simulator/Identifier.H"
 #include <QTextBlock>
+#include <QTimer>
 
 
 // Proxy between Gui and Debugger and vice-versa
@@ -255,11 +256,53 @@ void Program::pause() {
 }
 
 void Program::updateSyntaxErrors(SyntaxErrors *newS) {
+   unsigned int size = 0;
+   bool noChange;
+   
+   if (newS == m_syntaxErrors)
+      return;
+   
+   if ((noChange = (m_syntaxErrors != NULL && newS != NULL && 
+        (size = m_syntaxErrors->size()) == newS->size()))) {
+      
+      for(unsigned int i = 0; i < size; i++) {
+         if (newS->at(i) != m_syntaxErrors->at(i)) {
+            noChange = false;
+            break;
+         }
+      }
+   }
+   
    m_syntaxErrors = newS;
    
-   m_parent->updateSyntaxErrors(newS);
+   if (m_syntaxErrors == NULL) {
+      //cerr << "NO Syntax Errors: forcing update!\n";
+      forceUpdateOfSyntaxErrors(false);
+   } else {
+      m_syntaxErrorStack.push(noChange);
+      QTimer::singleShot(250, this, SLOT(singleShotSyntaxErrors()));
+   }
+}
+
+void Program::singleShotSyntaxErrors() {
+   if (m_syntaxErrorStack.isEmpty())
+      return;
+
+   bool noChange = m_syntaxErrorStack.pop();
+
+   if (m_syntaxErrorStack.isEmpty())
+      forceUpdateOfSyntaxErrors(noChange);
+   //else cerr << "aggregate: " << m_syntaxErrorStack.size() << endl;
+}
+
+void Program::forceUpdateOfSyntaxErrors(bool noChange) {
+//   cerr << "forcingUpdateOfSyntaxErrors: noChange=" << noChange << endl;
    
-   ErrorConsole *err;
+   if (!noChange)
+      m_parent->updateSyntaxErrors(m_syntaxErrors);
+
+   ErrorConsole *err; // ErrorConsole has its own change-checking
+   // (can't only check strings since error line numbers might have changed as well)
    if ((err = m_gui->getErrorConsole()) != NULL)
       err->updateSyntaxErrors(m_syntaxErrors, m_parent);
 }
@@ -269,6 +312,8 @@ void Program::loadProgram() {
    int status = getStatus();
    
    // content changed during Pause textEditor->notifies Proxy
+   // disconnect first to assure only one connection at a time!
+   disconnect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    connect(m_parent->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(contentsChange(int,int,int)));
    
 //   cerr << "Loading\n\n";
@@ -384,14 +429,14 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       QTextDocument *doc = m_parent->getTextDocument();
       
       QTextCursor c = m_parent->textCursor();
-      int originalPosition = c.position();
+//      int originalPosition = c.position();
       c.setPosition(position);
       //c.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
       int affected = position + (charsRemoved > charsAdded ? charsRemoved : charsAdded);
       int oldPosition;
       TIMESTAMP newlyInsertedTimestamp = MAX_TIMESTAMP;
-     
-      cerr << "\n>>> CONTENTS CHANGED: " << charsRemoved << " removed; " << charsAdded << " added" << endl;
+      
+      //cerr << "\n>>> CONTENTS CHANGED: " << charsRemoved << " removed; " << charsAdded << " added" << endl;
       
       //cerr << "Pos: " << position << "; " << doc->findBlock(position).text().toStdString() << endl;//",   after pos: " << c.selectedText().toStdString() << endl;
       
@@ -409,7 +454,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
                m_modified.push_back(modified);
             }
          } else if (newText != "") {
-            cerr << "SPECIAL CASE: '" << block.text().toStdString() << "'\n";
+            //cerr << "SPECIAL CASE: '" << block.text().toStdString() << "'\n";
             
             // Inserting a completely new text block; must roll back to the 
             // minimum timestamp of the previous and next blocks
@@ -417,7 +462,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
             
             if (prev != NULL) {
                TIMESTAMP timestamp = prev->getFirstExecuted();
-               cerr << "prev timestamp = " << timestamp << endl;
+               //cerr << "prev timestamp = " << timestamp << endl;
                
                if (timestamp != CLEAN_TIMESTAMP && timestamp < newlyInsertedTimestamp)
                   newlyInsertedTimestamp = timestamp + 1;
@@ -427,9 +472,9 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
             
             if (next != NULL) {
                TIMESTAMP timestamp = next->getFirstExecuted();
-               cerr << "next timestamp = " << timestamp << endl;
+               //cerr << "next timestamp = " << timestamp << endl;
                
-               cerr << "next: " << ParseNode::Node(block.next()) << ", segment = " << ParseList::getSegment(ParseNode::Node(block.next())) << endl;
+               //cerr << "next: " << ParseNode::Node(block.next()) << ", segment = " << ParseList::getSegment(ParseNode::Node(block.next())) << endl;
                
                if (timestamp != CLEAN_TIMESTAMP && timestamp < newlyInsertedTimestamp)
                   newlyInsertedTimestamp = timestamp;
@@ -457,8 +502,8 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          m_parseList->updateSyntacticValidity(getState());
       } catch(SyntaxErrors &e) {
          cerr << "\tProgram is invalid; " << e.size() << " syntax errors\n";
-         c.setPosition(originalPosition);
-         m_parent->setTextCursor(c);
+         //c.setPosition(originalPosition);
+         //m_parent->setTextCursor(c);
          setRunnable(false);
          updateSyntaxErrors(new SyntaxErrors(e));
          
@@ -468,8 +513,8 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       SyntaxErrors *semanticErrors = m_parseList->getSyntaxErrors();
       if (semanticErrors != NULL && !semanticErrors->empty()) {
          cerr << "\tProgram is invalid; " << semanticErrors->size() << " semantic errors\n";
-         c.setPosition(originalPosition);
-         m_parent->setTextCursor(c);
+         //c.setPosition(originalPosition);
+         //m_parent->setTextCursor(c);
          setRunnable(false);
          updateSyntaxErrors(semanticErrors);
          return;
@@ -479,7 +524,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
 //      m_parent->setTextCursor(c);
       setRunnable(true);
       updateSyntaxErrors(NULL);
-      cerr << "Program is valid! Runnable = true\n";
+      //cerr << "Program is valid! Runnable = true\n";
       setRunnable(true);
    }
 }
@@ -498,7 +543,7 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
    
    // TODO:  test this very thoroughly
    
-   cerr << "rollBackToEarliest: " << m_modified.size() << " modified\n";
+   //cerr << "rollBackToEarliest: " << m_modified.size() << " modified\n";
    
    foreach(ParseNode *modified, m_modified) {
 /*      TIMESTAMP curTimestamp = modified->getFirstExecuted();
@@ -523,7 +568,8 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
       return;
 
    if (earliest <= original) {
-      cerr << "<<<ROLLING BACK to " << earliest << endl;
+      if (VERBOSE)
+         cerr << "<<<ROLLING BACK to " << earliest << endl;
       
       setRunnable(false);
       if (earliest > 1) {

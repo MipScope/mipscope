@@ -30,6 +30,7 @@ class ErrorConsole : public Console {
    protected:
       QString m_text;
       TextEditor *m_activeEditor; // one for which we're displaying errors
+      SyntaxErrors *m_old;
 };
 
 #endif // __ERROR_CONSOLE_H__

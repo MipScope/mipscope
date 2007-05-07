@@ -9,6 +9,7 @@
 #ifndef __PROGRAM_H__
 #define __PROGRAM_H__
 #include <QObject>
+#include <QStack>
 #include "../simulator/typedefs.H"
 
 class State;
@@ -72,6 +73,7 @@ class Program : public QObject {
    protected:
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);
+      void forceUpdateOfSyntaxErrors(bool noChange = false);
       
       void rollBackToEarliest(TIMESTAMP optionalTimestamp);
       
@@ -80,6 +82,7 @@ class Program : public QObject {
       // ------------------------------------------
       void currentChanged(TextEditor*);
       void contentsChange(int position, int charsRemoved, int charsAdded);
+      void singleShotSyntaxErrors();
       void loadProgram();
       
       // Slots from Debugger -> Gui
@@ -146,6 +149,12 @@ class Program : public QObject {
       Debugger *m_debugger;
 
       ParseNodeList m_modified;
+
+      // Syntax errors aren't updated -immediately- cause it 
+      // gets slow/annoying, so they're updated every couple 
+      // hundred of ms. This stack keeps them in order as they're 
+      // received
+      QStack<bool> m_syntaxErrorStack;
 };
 
 #endif // __PROGRAM_H__

@@ -44,8 +44,10 @@ class MemoryView : public QDockWidget {
       GLMemoryPane *m_glMemoryPane;
       TempWidget *m_tempWidget;
       
-      
+      QSize minimumSizeHint() const;
+      QSize sizeHint() const;
       View *m_view;
+
       void populateScene(Program*);
       void populateDefault();
       void createChips(float *values, unsigned int heapSize, Program *program = NULL);

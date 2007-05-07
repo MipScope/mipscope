@@ -63,10 +63,8 @@ ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
       unsigned int startAddress = cur->getAddress();
       unsigned int endAddress = cur->getEndAddress();
       
-      if (address >= startAddress && address < endAddress) {
-         cerr << "gettingNode for addr: " << address << endl;
+      if (address >= startAddress && address < endAddress)
          return getClosestInstruction(cur, RUNNING); // closest executable instr
-      }
 
       cur = cur->getNext();
    }
@@ -334,7 +332,7 @@ bool ParseList::initialize(State *state) {
    ParseNode *l = last();
    for(ParseNode *cur = first(); cur != l && cur != NULL; cur = cur->getNext()) {
       if (cur == NULL) {
-         cerr << "\t\tDEBUG this!  cur == NULL ParseList::initialize\n\n";
+         //cerr << "\t\tDEBUG this!  cur == NULL ParseList::initialize\n\n";
          break;
       }
       Statement *s = cur->getStatement();
@@ -521,7 +519,8 @@ void ParseList::updateSyntacticValidity(State *currentState) {
       
       // Check for new blocks and update their validity by trying to insert them
       if (oldNode == NULL) {
-         cerr << "(UPDATE) attempting to parse block: '" << b.text().toStdString() << "'\n";
+         if (VERBOSE)
+            cerr << "(UPDATE) attempting to parse block: '" << b.text().toStdString() << "'\n";
 
          QTextBlock *actual = new QTextBlock(b);
          ParseNode *newNode = NULL;
@@ -559,7 +558,9 @@ TIMESTAMP ParseList::remove(ParseNode *node) {
    if (firstExecuted != CLEAN_TIMESTAMP) // only count timestamp if it's been run at least once (if it's "dirty")
       minTimestamp = firstExecuted;
    
-   cerr << "removing parseNode: '" << node << "'\n";
+   if (VERBOSE)
+      cerr << "removing parseNode: '" << node << "'\n";
+
    QList<ParseNode*> removeAtEnd;
    
    // Remove any references to this ParseNode's label

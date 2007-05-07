@@ -273,10 +273,14 @@ void Gui::setupDockWidgets() {
    addDockWidget(Qt::BottomDockWidgetArea, m_errors);
    addDockWidget(Qt::RightDockWidgetArea, m_stackView);
    addDockWidget(Qt::RightDockWidgetArea, m_registerView);
+   addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
+   
    if (m_memoryView != NULL)
       addDockWidget(Qt::LeftDockWidgetArea, m_memoryView);
-   addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    tabifyDockWidget(m_output, m_errors);
+
+   if (m_memoryView != NULL)
+      tabifyDockWidget(m_directorylisting, m_memoryView);
 }
 
 void Gui::ensureVisibility(QDockWidget *widget) {

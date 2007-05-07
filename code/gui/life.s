@@ -88,7 +88,7 @@ __start:
             li $a0, 2
             li $a1, 2
             jal addLiveCell
-
+			
             li $a0, 2
             li $a1, 1
             jal addLiveCell

@@ -193,7 +193,9 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
             args[i] = parseArg(arg, list);
          } catch(ParseError &e) {
             e.setUnrecognized(text);
-            e += QString("(in argument '%1' to instruction '%2')").arg(QString(i), instr);
+            e += QString(" (in %1 argument to instruction '%2')").arg(
+                  (i == 0 ? "first" : (i == 1 ? "second" : "third")), 
+                  instr);
             throw;
          }
 //         if ((args[i] = parseArg(arg)) == NULL) {
@@ -201,6 +203,14 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
 //            return NULL; // invalid argument
 //         }
       } while(++i < 3);
+
+      int noCommas = text.count(',');
+      if (noCommas >= i) {
+         if (i >= 3)
+            PARSE_ERROR(QString("Too many arguments to instruction '%1'").arg(instr), "");
+         
+         PARSE_ERROR(QString("Stray comma in arguments to instruction '%1'").arg(instr), "");
+      }
    }
    
    argList = new StatementArgList(args[0], args[1], args[2]);
@@ -251,7 +261,7 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
       if (id == NULL) {
          id = parseLabelWithOffset(text, list);
          if (id == NULL)
-            PARSE_ERRORL(QString("unrecognized argument: '%1'").arg(copy), copy, copy.length());
+            PARSE_ERRORL(QString("unrecognized argument"), copy, copy.length());
       }
       
       _tab = orig;

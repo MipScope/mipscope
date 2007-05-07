@@ -16,7 +16,8 @@
 // Error terminal for displaying parsing errors and program exceptions
 // -------------------------------------------------------------------
 ErrorConsole::ErrorConsole(Gui *gui, EditorPane *editorPane)
-   : Console(gui, editorPane, tr("Errors"), false), m_activeEditor(NULL)
+   : Console(gui, editorPane, tr("Errors"), false), m_activeEditor(NULL), 
+   m_old(NULL)
 {
    QTextBrowser *browser = new QTextBrowser(this);
    
@@ -28,24 +29,28 @@ ErrorConsole::ErrorConsole(Gui *gui, EditorPane *editorPane)
 }
 
 void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool forceUpdate) {
-   if (s == NULL || editor == NULL) {
+   if (s == NULL || editor == NULL || m_old == s) {
       reset();
       return;
    }
    
-   if (STATUS_BAR != NULL)
-      STATUS_BAR->showMessage(QString("Error: Program %1 contains %2 errors.").arg(m_editorPane->m_activeEditor->fileName(), QString::number(s->size())), STATUS_DELAY + 2000);
+//   bool possiblyTheSame = (m_old != NULL && m_activeEditor == editor && m_old->size() == s->size());
+   m_old = s;
    m_activeEditor = editor;
    
    //m_strings.clear();
-   m_text = QString("<span style=\"font:10pt courier;\">");
+   QString text = QString("<span style=\"font:10pt courier;\">");
    
-   for(SyntaxErrorIterator i = s->begin(); i != s->end(); i++) {
+   int index = 0;
+   for(SyntaxErrorIterator i = s->begin(); i != s->end(); ++i, ++index) {
       int lineNo = i->getLineNo();
       QString err;
       
       if (lineNo < 0 && i->getTextBlock() != NULL)
          i->setLineNo((lineNo = (editor->lineNumber(*i->getTextBlock()))));
+      
+//      if (possiblyTheSame && m_old->at(index) != *i)
+//         possiblyTheSame = false;
       
       if (lineNo >= 0) {
          const QString &lineNumberStr = QString::number(lineNo + 1);
@@ -53,18 +58,24 @@ void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool 
          err = QString("<a href=\"%1\">%2</a>) %3<br>").arg(lineNumberStr, lineNumberStr, *i);
       } else err = *i + QString("<br>");
       
-      m_text += err;
+      text += err;
       //m_strings.append(err);
    }
    
-   m_text += "</span>";
-   m_display->setHtml(m_text);
+   text += "</span>";
+   if (/*!possiblyTheSame && */m_text != text) {
+      m_text = text;
+      m_display->setHtml(m_text);
 
-//   m_display->setHtml(QString("<span style=\"font:10pt courier;\"><a href=\"test\">This is a test link.</a></span>"));
-//   updateDisplay();
-   
-   if (forceUpdate && !m_visible)
-      m_gui->ensureVisibility(this);
+      if (STATUS_BAR != NULL)
+         STATUS_BAR->showMessage(QString("Error: Program %1 contains %2 errors.").arg(m_editorPane->m_activeEditor->fileName(), QString::number(s->size())));
+
+      //   m_display->setHtml(QString("<span style=\"font:10pt courier;\"><a href=\"test\">This is a test link.</a></span>"));
+      //   updateDisplay();
+
+      if (forceUpdate && !m_visible)
+         m_gui->ensureVisibility(this);
+   }
 }
 
 void ErrorConsole::anchorClicked(const QUrl &link) {
@@ -89,7 +100,10 @@ void ErrorConsole::anchorClicked(const QUrl &link) {
 }
 
 void ErrorConsole::reset() {
-   m_text = "";
-   flush();
+   if (m_old != NULL) {
+      m_text = "";
+      m_old = NULL;
+      flush();
+   }
 }
 

@@ -453,7 +453,7 @@ bool TextEditor::openFile(QFile *file) {
       
       qApp->processEvents();
 
-      // hack to get this shit to display right..
+      // hack to get this sheise to display right..
       QTimer::singleShot(250, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(750, m_parent, SLOT(contentChangedProxy()));
       QTimer::singleShot(1300, m_parent, SLOT(contentChangedProxy()));

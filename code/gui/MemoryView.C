@@ -78,7 +78,7 @@ MemoryView::MemoryView(Gui *gui)
    QDockWidget::setObjectName(tr("Memory View"));
    
    Q_INIT_RESOURCE(memoryImages);
-
+   
    m_view = new View(tr("Memory View"), this);
    setWidget(m_view);
    populateDefault();
@@ -253,7 +253,16 @@ void MemoryView::updateDisplay(Program *program) {
 }
 
 void MemoryView::reset() {
-   m_glMemoryPane->reset();
+   populateDefault();
+//   m_glMemoryPane->reset();
+}
+
+QSize MemoryView::minimumSizeHint() const {
+   return QSize(10, 10);
+}
+
+QSize MemoryView::sizeHint() const {
+   return QSize(100, 200);
 }
 
 // ------------

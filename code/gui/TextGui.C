@@ -17,7 +17,7 @@ extern bool VERBOSE;
 TextGui::TextGui(QStringList args) : m_debugger(NULL), m_syscallListener(new SyscallListener(NULL)), m_output( new TextOutputConsole(m_syscallListener)) {
    
    QString filename = args.at(1);
-      
+    
    QFile *f = new QFile(filename);
    if (!f->exists()) {
       cerr << "error, cannot find file " << filename.toStdString() << endl;
@@ -50,10 +50,11 @@ TextGui::TextGui(QStringList args) : m_debugger(NULL), m_syscallListener(new Sys
    // No more connections since it's all happening in the debugger thread.
    // Good news is it should be really easy to subclass SycallHandler and register it w/ 
    // an instance of SyscallListener to get the same functionality (when we have more time...)
-
+   
+   // ... later, never mind, it should work no; just don't need the signals/slots
 
    
-   m_debugger = new Debugger(NULL, parseList);
+   m_debugger = new Debugger(m_syscallListener, parseList);
 //   QObject::connect(m_debugger->getState(), SIGNAL(syscall(int, int)), this, SLOT(syscallReceived(int,int)));
    QObject::connect(m_debugger, SIGNAL(programTerminated(int)), this, SLOT(programTerminated(int)));
 }

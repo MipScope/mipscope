@@ -27,13 +27,13 @@
 // Proxy between Gui and Debugger and vice-versa
 // ---------------------------------------------
 Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
-   : QObject(parent), m_current(true), m_runnable(false), m_rollingBack(R_NORMAL), m_gui(gui), m_editorPane(editorPane), m_parent(parent), m_syntaxErrors(NULL), m_parseList(NULL), m_debugger(new Debugger())
+   : QObject(parent), m_current(true), m_runnable(false), m_rollingBack(R_NORMAL), m_gui(gui), m_editorPane(editorPane), m_parent(parent), m_syntaxErrors(NULL), m_parseList(NULL), m_debugger(new Debugger(gui->getSyscallListener()))
 {
    State *s = m_debugger->getState();
 
    // Initialize relationship between Proxy and State
-   connect(s, SIGNAL(syscall(int,int)), this, SLOT(syscallReceived(int,int)));
-   connect(s, SIGNAL(undoSyscall(int)), this, SLOT(undoSyscallReceived(int)));
+   //connect(s, SIGNAL(syscall(int,int)), this, SLOT(syscallReceived(int,int)));
+//   connect(s, SIGNAL(undoSyscall(int)), this, SLOT(undoSyscallReceived(int)));
    connect(s, SIGNAL(undoAvailabilityChanged(bool)), this, SLOT(undoAvailabilityChangeReceived(bool)));
    connect(s, SIGNAL(memoryChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(memoryChangeReceived(unsigned int, unsigned int, ParseNode*)));
    connect(s, SIGNAL(registerChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(registerChangeReceived(unsigned int, unsigned int, ParseNode*)));
@@ -56,8 +56,8 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    
    // Proxy -> Gui
    connect(this, SIGNAL(programStatusChanged(int)), m_gui, SLOT(programStatusChanged(int)));
-   connect(this, SIGNAL(syscall(State*,int,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int,int)));
-   connect(this, SIGNAL(undoSyscall(int)), m_gui->getSyscallListener(), SLOT(undoSyscall(int)));
+//   connect(this, SIGNAL(syscall(State*,int,int,int)), m_gui->getSyscallListener(), SLOT(syscall(State*,int,int,int)));
+//   connect(this, SIGNAL(undoSyscall(int)), m_gui->getSyscallListener(), SLOT(undoSyscall(int)));
    connect(this, SIGNAL(undoAvailabilityChanged(bool)), m_gui, SLOT(programUndoAvailabilityChanged(bool)));
    connect(this, SIGNAL(validityChanged(bool)), m_gui, SLOT(validityChanged(bool)));
 
@@ -129,17 +129,17 @@ void Program::currentChanged(TextEditor *cur) {
 // --------------------------
 // Slots from Debugger -> Gui
 // --------------------------
-void Program::syscallReceived(int no, int valueOfa0) {
+/*void Program::syscallReceived(int no, int valueOfa0) {
 //   if (no == 1)
 //      m_gui->m_output->push(QString(getState()->getRegister(a0)));
    
 //   if (m_current);
       syscall(getState(), getStatus(), no, valueOfa0);
-}
+}*/
 
-void Program::undoSyscallReceived(int no) {
+/*void Program::undoSyscallReceived(int no) {
    undoSyscall(no);
-}
+}*/
 
 void Program::undoAvailabilityChangeReceived(bool isAvailable) {
    undoAvailabilityChanged(isAvailable);
@@ -184,10 +184,7 @@ void Program::programStatusChangeReceived(int s) {
          //m_gui->getStackView()->updateDisplay(getState(), s);
          m_gui->getRegisterView()->updateDisplay(s);
          
-         cerr << "3\n";
          updateMemory(this, getState(), s);
-         cerr << "4\n";
-         
          //m_gui->updateMemoryView(this);
       }
    }
@@ -206,10 +203,10 @@ void Program::programTerminated(int reason) {
 
    switch(reason) {
       case T_COMPLETED:
-         STATUS_BAR->showMessage(QString("Program %1 completed successfully.").arg(name));
+         STATUS_BAR->showMessage(QString("Program %1 completed successfully. %2").arg(name, m_debugger->getDuration()));
          break;
       case T_TERMINATED:
-         STATUS_BAR->showMessage(QString("Program %1 terminated.").arg(name));
+         STATUS_BAR->showMessage(QString("Program %1 terminated. %2").arg(name, m_debugger->getDuration()));
          break;
       case T_INVALID_PROGRAM:
          STATUS_BAR->showMessage(QString("Program %1 contains errors.").arg(name));
@@ -233,7 +230,7 @@ void Program::programTerminated(int reason) {
          break;
       case T_ABNORMAL:
       default:
-         STATUS_BAR->showMessage(QString("Warning: Program %1 terminated abnormally.").arg(name));
+         STATUS_BAR->showMessage(QString("Warning: Program %1 terminated abnormally. %2").arg(name, m_debugger->getDuration()));
          break;
    }
 }
@@ -377,9 +374,7 @@ void Program::run() {
       m_debugger->setParseList(m_parseList);
       m_debugger->setWatchpoints(getWatchpoints());
       
-      cerr << "1\n";
       updateMemory(this, getState(), RUNNING);//View(this);
-      cerr << "2\n";
       if (STATUS_BAR != NULL)
          STATUS_BAR->showMessage(QString("Running program %1...").arg(getName()));
       

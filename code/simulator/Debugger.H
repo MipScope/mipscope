@@ -13,11 +13,13 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QString>
+#include <QTime>
 
 #include "typedefs.H"
 
 class ParseList;
 class State;
+class SyscallListener;
 
 extern bool VERBOSE;
 
@@ -44,12 +46,15 @@ class Debugger : public QThread {
    Q_OBJECT
    
    public:
-      Debugger(ParseList* parseList = NULL);
+      Debugger(SyscallListener *listener, ParseList* parseList = NULL);
       
+      SyscallListener *getSyscallListener() const;
       int getStatusWithoutLocking() const;
       int getStatus();
       State *getState();
       void setParseList(ParseList *list);
+      
+      QString getDuration() const;
       
       void programStop(void);
       void programForceStop(void);
@@ -102,6 +107,10 @@ class Debugger : public QThread {
       bool m_registerWatchpoints[register_count];
       StateException m_exception;
       
+      // for keeping track of how long programs ran for
+      QTime m_time;
+      QString m_duration;
+
    private:
       // returns the new status once m_status has changed from the
       // status passed in.
@@ -112,6 +121,7 @@ class Debugger : public QThread {
       // set when user rolls program back past program entry point
       //    (ex. by deleting the main: label...)
       bool m_forceStopped;
+      SyscallListener *m_syscallListener;
 };
 
 /*

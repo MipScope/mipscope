@@ -14,8 +14,9 @@
 // Pseudo-Output terminal, capable of printing/undoing output
 // ----------------------------------------------------------
 OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
-   : Console(gui, editorPane, tr("Output Console")), 
-     SyscallHandler(gui->getSyscallListener(), S_PRINT)
+   : Console(gui, editorPane, "Output Console"), 
+     SyscallHandler(gui->getSyscallListener(), S_PRINT), 
+     m_outputHelper(new OutputHelper(this)), m_noUpdates(0)
 {
    m_display->setPlainText("Welcome to "PROJECT_NAME"!\nWritten by Travis Fischer and Tim O'Donnell\n\n");
 }
@@ -39,8 +40,10 @@ void OutputConsole::update() {
 
 void OutputConsole::pop() {
    m_strings.pop_back();
-
-   update();
+   
+   ++m_noUpdates;
+   updateBatchSignal();
+//   update();
 }
 
 void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
@@ -70,9 +73,19 @@ void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) 
    }
    
    m_outputActions.push_back(new NewOutputAction(this, output, syscallNo));
+   
    if (status == PAUSED) {
-      updateDisplay();
+      ++m_noUpdates;
+      updateBatchSignal();
+   }
+}
 
+// should always be called in Gui thread
+void OutputConsole::updateBatch() {
+   if (--m_noUpdates <= 0) {
+      updateDisplay();
+      m_noUpdates = 0;
+      
       if (!m_visible)
          m_gui->ensureVisibility(this);
    }
@@ -94,6 +107,7 @@ void OutputConsole::undoSyscall(int syscallNo) {
 
 void OutputConsole::reset() {
    flush();
+   m_noUpdates = 0;
 
    foreach(OutputAction *a, m_outputActions) {
       if (a != NULL)
@@ -173,5 +187,18 @@ void ClearOutputAction::undo(OutputConsole *output) {
    output->setStrings(m_strings);
 }
 
+
+
+OutputHelper::OutputHelper(OutputConsole *outputConsole) : QObject(outputConsole), 
+   m_output(outputConsole)
+{
+   connect(m_output, SIGNAL(updateBatchSignal()), this, SLOT(updateBatch()));
+}
+
+// should always be called in Gui thread
+void OutputHelper::updateBatch() {
+//   cerr << "OutputHelper::updateBatch\n";
+   m_output->updateBatch();
+}
 
 

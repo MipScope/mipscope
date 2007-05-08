@@ -10,6 +10,7 @@ class ParseNode;
 class ParseList;
 class StateAction;
 class Debugger;
+class SyscallListener;
 
 extern bool VERBOSE;
 
@@ -22,7 +23,7 @@ class State : public QObject {
       friend class RegisterChangedAction;
       friend class MemoryChangedAction;
       
-      State(Debugger *debugger);
+      State(SyscallListener *listener, Debugger *debugger);
 
       // increments timestamp
       TIMESTAMP newTimestamp();
@@ -71,9 +72,11 @@ class State : public QObject {
       
       MemoryUseMap *getMemoryUseMap();
       
+      void setSyscallListener(SyscallListener *listener);
+      
    signals:
-      void syscall(int, int);
-      void undoSyscall(int);
+      //void syscall(int, int);
+      //void undoSyscall(int);
       
       // emitted whenever the availability of 'undo' or 'step back' changes
       void undoAvailabilityChanged(bool isAvailable);
@@ -97,7 +100,11 @@ class State : public QObject {
       
       Debugger *m_debugger;
       MemoryUseMap m_memoryUseMap;
-
+      
+      // proxy for all syscalls; ensures syscall numbers get mapped to the right 
+      // handlers -- all of this happens in the debugger's thread!
+      SyscallListener *m_syscallListener;
+      
       void setUndoAvailability(bool isAvailable, bool force = false);
 };
 

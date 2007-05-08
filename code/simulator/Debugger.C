@@ -6,6 +6,7 @@
 \* ---------------------------------------------- */
 #include "Debugger.H"
 #include "../gui/Utilities.H"
+#include "../gui/SyscallHandler.H"
 #include "../gui/Program.H"
 #include "StateException.H"
 #include "ParseList.H"
@@ -14,13 +15,15 @@
 #include "State.H"
 #include <QMutexLocker>
 
-Debugger::Debugger(ParseList* parseList) 
-   : m_state(new State(this)), m_parseList(parseList), m_status(STOPPED), 
-     m_terminationReason(T_ABNORMAL), m_forceStopped(false)
+Debugger::Debugger(SyscallListener *listener, ParseList* parseList) 
+   : m_state(new State(listener, this)), m_parseList(parseList), m_status(STOPPED), 
+     m_terminationReason(T_ABNORMAL), m_forceStopped(false), 
+     m_syscallListener(listener)
 {
    memset(m_registerWatchpoints, 0, sizeof(bool) * register_count);
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
    
+   m_time.start();
    // cannot use signals/slots for watchpoints; has to be direct!
 //   connect(m_state, SIGNAL(registerChanged(unsigned int, unsigned int, ParseNode*)), this, SLOT(registerChanged(unsigned int, unsigned int, ParseNode*)));
 }
@@ -40,7 +43,17 @@ State *Debugger::getState() {
    return m_state;
 }
 
+QString Debugger::getDuration() const {
+   return m_duration;
+}
+
 void Debugger::threadTerminated(void) {
+   const unsigned long elapsed = m_time.elapsed();
+   const QString &durString  = QString::number(elapsed / 1000); // seconds
+   const QString &durString2 = QString::number(elapsed % 1000); // millisecs
+      //.toString("h:mm:ss.zzz ");
+   m_duration = QString("Executed in %1 cycles (%2.%3s)").arg(QString::number(m_state->getCurrentTimestamp()), durString, durString2);
+   
    if (VERBOSE) cerr << "Debugger::threadTerminated\n";
    
    emit programStatusChanged(STOPPED);
@@ -135,7 +148,7 @@ bool Debugger::waitOnDebuggerThread(unsigned long timeout) {
 
 //private
 void Debugger::executionInit(void) {
-   if (VERBOSE) cerr << "Debugger::run\n";
+   if (VERBOSE) cerr << "Initializing Debugger\n";
    m_forceStopped = false;
    
    if (!m_parseList->isValid()) {
@@ -149,6 +162,9 @@ void Debugger::executionInit(void) {
       m_terminationReason = T_INVALID_PROGRAM;
       return; 
    }
+   
+   // start the program timer!
+   m_time.restart();
 }
 
 // we remain PAUSED the whole time
@@ -336,4 +352,8 @@ StateException::StateException() : ParseError(QString(), QString()) { }
 StateException::StateException(const QString &message, QTextBlock *b, int lineNo)
    : ParseError(QString("Execution halted:  %1!").arg(message), QString(), -1, b, lineNo)
 { }
+
+SyscallListener *Debugger::getSyscallListener() const {
+   return m_syscallListener;
+}
 

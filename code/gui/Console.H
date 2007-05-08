@@ -34,6 +34,9 @@ class Console : public QDockWidget {
       
       virtual void visibilityChanged(bool isVisible);
       
+   signals:
+      void updateBatchSignal();
+      
    protected:
       Gui *m_gui;
       EditorPane *m_editorPane;

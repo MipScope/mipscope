@@ -17,12 +17,11 @@
 class Gui;
 class EditorPane;
 class OutputAction;
+class OutputHelper;
 
 class OutputConsole : public Console, 
                       public SyscallHandler 
 {
-   Q_OBJECT
-   
    public:
       friend class NewOutputAction;
       friend class ClearOutputAction;
@@ -30,6 +29,7 @@ class OutputConsole : public Console,
       OutputConsole(Gui *parent, EditorPane *editorPane);
       
       void update();
+      void updateBatch();
       
       // @overridden from Console
       void push(const QString &newOutput);
@@ -41,9 +41,25 @@ class OutputConsole : public Console,
       virtual void reset();
       
       void setStrings(QVector<QString> *strings);
-      
+   
    protected:
       QVector<OutputAction*> m_outputActions;
+      OutputHelper *m_outputHelper;
+      int m_noUpdates; // pseudo-stack to only update once-per-batch
+};
+
+class OutputHelper : public QObject {
+   
+   Q_OBJECT
+   
+   public:
+      OutputHelper(OutputConsole *outputConsole);
+ 
+   public slots:
+      void updateBatch();
+      
+   private:
+      OutputConsole *m_output;
 };
 
 class OutputAction {
@@ -79,8 +95,6 @@ class ClearOutputAction : public OutputAction {
 
 class TextOutputConsole : public SyscallHandler
 {
-   Q_OBJECT
-   
    public:
       
       TextOutputConsole(SyscallListener* listener);

@@ -1,5 +1,6 @@
+   * Timer for how long program ran in.
 
-Fis Restarting very fast and then segfault
+
 
 Gui TODO: (stuff i'll forget, otherwise)
    * Test several of the on-the-fly editing issues;
@@ -14,6 +15,8 @@ OLD:
    * Better view of errors
    * Make MemoryView!
          Use dynamically-updating pBuffers for texture; get 2d texture-version working correctly first
+
+   * Fix Restarting very fast and then segfault
 
 
 

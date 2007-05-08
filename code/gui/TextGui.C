@@ -44,8 +44,17 @@ TextGui::TextGui(QStringList args) : m_debugger(NULL), m_syscallListener(new Sys
    
    if (VERBOSE) cerr << "Executing the program.\n";
    
-   m_debugger = new Debugger(parseList);
-   QObject::connect(m_debugger->getState(), SIGNAL(syscall(int, int)), this, SLOT(syscallReceived(int,int)));
+
+
+   // TIM, the NULL in the Debugger's constructor should be an instance of SyscallListener.
+   // No more connections since it's all happening in the debugger thread.
+   // Good news is it should be really easy to subclass SycallHandler and register it w/ 
+   // an instance of SyscallListener to get the same functionality (when we have more time...)
+
+
+   
+   m_debugger = new Debugger(NULL, parseList);
+//   QObject::connect(m_debugger->getState(), SIGNAL(syscall(int, int)), this, SLOT(syscallReceived(int,int)));
    QObject::connect(m_debugger, SIGNAL(programTerminated(int)), this, SLOT(programTerminated(int)));
 }
 

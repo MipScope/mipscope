@@ -6,13 +6,15 @@
 #include "typedefs.H"
 #include <string.h>
 #include "../gui/Syscalls.H"
+#include "../gui/SyscallHandler.H"
 
 // expected maximum memory usage (will grow if necessary)
 #define INTERNAL_MEMORY_SIZE (16384)
 
-State::State(Debugger *debugger) : 
+State::State(SyscallListener *listener, Debugger *debugger) : 
    m_pc(NULL), m_currentTimestamp(CLEAN_TIMESTAMP), m_undoList(4096), 
-   m_undoIsAvailable(false), m_debugger(debugger)
+   m_undoIsAvailable(false), m_debugger(debugger), 
+   m_syscallListener(listener)
 {
    m_memory.reserve(INTERNAL_MEMORY_SIZE);
    m_memoryUseMap.reserve(2048);
@@ -288,15 +290,17 @@ void State::reset() {
 // does the OS action depending on what's in $v0
 void State::doSyscall(void) {
    int syscallNo = getRegister(v0);
-   if (VERBOSE) cerr << "\t\tSyscall called v0 = " << syscallNo << ", a0 = " << getRegister(a0) << endl;
+   int valueOfA0 = getRegister(a0);
+   if (VERBOSE) cerr << "\t\tSyscall called v0 = " << syscallNo << ", a0 = " << valueOfA0 << endl;
    
    if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
       m_undoList.push_back(new SyscallAction(this, syscallNo));
    
+   // ALL syscalls handled in the Debugger Thread -- key to synching output w/ prog state
    if (syscallNo == 10) // syscall 10 is end program
-      m_debugger->programStop();   
-   else   
-      syscall(syscallNo, getRegister(a0));
+      m_debugger->programStop();
+   else m_syscallListener->syscall(this, m_debugger->getStatusWithoutLocking(), syscallNo, valueOfA0);
+//      syscall(syscallNo, getRegister(a0));
 }
 
 void State::assertEquals(int val1, int val2) {
@@ -329,7 +333,8 @@ SyscallAction::SyscallAction(State *s, int syscallNo)
 SyscallAction::~SyscallAction() { }
 
 void SyscallAction::undo(State *s) {
-   s->undoSyscall(m_syscallNo);
+   s->m_syscallListener->undoSyscall(m_syscallNo);
+//   s->undoSyscall(m_syscallNo);
    
    // undo memory accesses for printing strings
    if (m_syscallNo == S_PRINT_STRING) {
@@ -375,5 +380,9 @@ void MemoryChangedAction::undo(State *s) {
    QList<TIMESTAMP> *list = s->m_memoryUseMap[m_address];
    list->pop_back();
    //cerr << "Mem " << m_address << " -> " << m_value << endl;
+}
+
+void State::setSyscallListener(SyscallListener *listener) {
+   m_syscallListener = listener;
 }
 

@@ -35,9 +35,11 @@ class SyscallListener : public QObject {
       
       void registerHandler(SyscallHandler *handler);
       
-   public slots:
+   //public slots:  // no longer slots; must occur in debugger thread
       void syscall(State *s, int status, int syscallNo, int valueOfa0);
       void undoSyscall(int syscallNo);
+
+   public slots:
       void reset();
       
    protected:
@@ -54,9 +56,7 @@ class SyscallListener : public QObject {
  * and provide it with a valid SyscallListener.
  *
  */
-class SyscallHandler : public QObject{
-   
-   Q_OBJECT
+class SyscallHandler {
    
    public:
       // Initializes and registers this SyscallHandler with the given SyscallListener

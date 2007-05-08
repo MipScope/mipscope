@@ -5289,75 +5289,689 @@ main:
 ####################################################################
 	# lwl	
 	
-	li $a0, 0
+	li $a0, 0	
+	lwl $a0, int1 + 1
+	syscall
+	jal printnewline
 	
+	li $a0, 0	
 	lwl $a0, int1 + 2
 	syscall
 	jal printnewline
 	
+	li $a0, 0	
+	lwl $a0, int1 + 0
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
 	lwl $a0, int2
 	syscall
 	jal printnewline
 	
-#	lwl $a0, int1 + 4
-#	syscall
-#	jal printnewline
-#		
-#	lwl $a0, int1 + 8
-#	syscall
-#	jal printnewline
-#		
-#	lwl $a0, string1 + 8
-#	syscall
-#	jal printnewline
-#
-#	la $s0, int1
-#	lwl $a0, ($s0)
-#	syscall
-#	jal printnewline
-#	
-#	la $s0, int1
-#	lwl $a0, 4($s0)
-#	syscall
-#	jal printnewline	
-#	
-#	lwl $a0, int1 + 1
-#	syscall
-#	jal printnewline
-#	
-#	lwl $a0, int2 + 1
-#	syscall
-#	jal printnewline
-#	
-#	lwl $a0, int1 + 3
-#	syscall
-#	jal printnewline
-#		
-#	lwl $a0, int1 + 7
-#	syscall
-#	jal printnewline
-#		
-#	lwl $a0, string1 + 7
-#	syscall
-#	jal printnewline
-#
-#	la $s0, int1
-#	lwl $a0, 2($s0)
-#	syscall
-#	jal printnewline
-#	
-#	la $s0, int1
-#	lwl $a0, 3($s0)
-#	syscall
-#	jal printnewline
-#	
-#	lwl $a0, string1 + 5
-#	syscall
-#	jal printnewline
-#	
-#	lwl $a0, string1 + 3
-#	syscall
-#	jal printnewline
+	li $a0, 0	
+	lwl $a0, int1 + 4
+	syscall
+	jal printnewline
+	
+	li $a0, 0		
+	lwl $a0, int1 + 8
+	syscall
+	jal printnewline
+	
+	li $a0, 0		
+	lwl $a0, string1 + 8
+	syscall
+	jal printnewline
+
+	li $a0, 0	
+	la $s0, int1
+	lwl $a0, ($s0)
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	la $s0, int1
+	lwl $a0, 4($s0)
+	syscall
+	jal printnewline	
+	
+	li $a0, 0	
+	lwl $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwl $a0, int2 + 1
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwl $a0, int1 + 3
+	syscall
+	jal printnewline
+	
+	li $a0, 3		
+	lwl $a0, int1 + 7
+	syscall
+	jal printnewline
+		
+	li $a0, 0xA
+	lwl $a0, string1 + 7
+	syscall
+	jal printnewline
+
+	li $a0, 0	
+	la $s0, int1
+	lwl $a0, 2($s0)
+	syscall
+	jal printnewline
+	
+	li $a0, 0xDEADB11F
+	la $s0, int1
+	lwl $a0, 3($s0)
+	syscall
+	jal printnewline
+	
+	li $a0, 0xA6
+	lwl $a0, string1 + 5
+	syscall
+	jal printnewline
+	
+	li $a0, -0x2345
+	lwl $a0, string1 + 3
+	syscall
+	jal printnewline
+	
+	
+####################################################################
+	# lwr	
+	
+	li $a0, 0	
+	lwr $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwr $a0, int1 + 2
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwr $a0, int1 + 0
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwr $a0, int2
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwr $a0, int1 + 4
+	syscall
+	jal printnewline
+	
+	li $a0, 0		
+	lwr $a0, int1 + 8
+	syscall
+	jal printnewline
+	
+	li $a0, 0		
+	lwr $a0, string1 + 8
+	syscall
+	jal printnewline
+
+	li $a0, 0	
+	la $s0, int1
+	lwr $a0, ($s0)
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	la $s0, int1
+	lwr $a0, 4($s0)
+	syscall
+	jal printnewline	
+	
+	li $a0, 0	
+	lwr $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwr $a0, int2 + 1
+	syscall
+	jal printnewline
+	
+	li $a0, 0	
+	lwr $a0, int1 + 3
+	syscall
+	jal printnewline
+	
+	li $a0, 3		
+	lwr $a0, int1 + 7
+	syscall
+	jal printnewline
+		
+	li $a0, 0xA
+	lwr $a0, string1 + 7
+	syscall
+	jal printnewline
+
+	li $a0, 0	
+	la $s0, int1
+	lwr $a0, 2($s0)
+	syscall
+	jal printnewline
+	
+	li $a0, 0xDEADB11F
+	la $s0, int1
+	lwr $a0, 3($s0)
+	syscall
+	jal printnewline
+	
+	li $a0, 0xA6
+	lwr $a0, string1 + 5
+	syscall
+	jal printnewline
+	
+	li $a0, -0x2345
+	lwr $a0, string1 + 3
+	syscall
+	jal printnewline
+	
+	
+#############################################
+#  ld
+	.data
+		double1: .word 0xDEADBEEF, 0xABCDEF
+		double2: .word 0x12345678, 0xABBE9
+	.text
+	
+	ld $10, double1
+	move $a0, $10
+	syscall
+	move $a0, $11
+	syscall
+	jal printnewline
+	
+	ld $17, double2
+	move $a0, $17
+	syscall
+	move $a0, $18
+	syscall
+	
+	ld $10, double1 + 4
+	move $a0, $10
+	syscall
+	move $a0, $11
+	syscall
+	jal printnewline
+
+#############################################		
+# ulh	
+	
+	ulh $a0, int1
+	syscall
+	jal printnewline
+	
+	ulh $a0, int2
+	syscall
+	jal printnewline
+	
+	ulh $a0, int1 + 4
+	syscall
+	jal printnewline
+		
+	ulh $a0, int1 + 8
+	syscall
+	jal printnewline
+		
+	ulh $a0, string1 + 8
+	syscall
+	jal printnewline
+
+	la $s0, int1
+	ulh $a0, ($s0)
+	syscall
+	jal printnewline
+	
+	la $s0, int1
+	ulh $a0, 4($s0)
+	syscall
+	jal printnewline	
+	
+	
+#############################################		
+# ulhu	
+	
+	ulhu $a0, int1
+	syscall
+	jal printnewline
+	
+	ulhu $a0, int2
+	syscall
+	jal printnewline
+	
+	ulhu $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+	ulhu $a0, int2 + 1
+	syscall
+	jal printnewline
+	
+	ulhu $a0, int1 + 2
+	syscall
+	jal printnewline
+	
+	ulhu $a0, int2 + 2
+	syscall
+	jal printnewline
+	
+	ulhu $a0, int1 + 4
+	syscall
+	jal printnewline
+		
+	ulhu $a0, int1 + 8
+	syscall
+	jal printnewline
+		
+	ulhu $a0, string1 + 8
+	syscall
+	jal printnewline
+
+	la $s0, int1
+	ulhu $a0, ($s0)
+	syscall
+	jal printnewline
+	
+	la $s0, int1
+	ulhu $a0, 4($s0)
+	syscall
+	jal printnewline	
+	
+	
+#############################################		
+# ulw	
+	
+	ulw $a0, int1
+	syscall
+	jal printnewline
+	
+	ulw $a0, int2
+	syscall
+	jal printnewline
+	
+	ulw $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+	ulw $a0, int2 + 1
+	syscall
+	jal printnewline
+	
+	ulw $a0, int1 + 2
+	syscall
+	jal printnewline
+	
+	ulw $a0, int2 + 2
+	syscall
+	jal printnewline
+	
+	ulw $a0, int1 + 4
+	syscall
+	jal printnewline
+		
+	ulw $a0, int1 + 8
+	syscall
+	jal printnewline
+		
+	ulw $a0, string1 + 8
+	syscall
+	jal printnewline
+
+	la $s0, int1
+	ulw $a0, ($s0)
+	syscall
+	jal printnewline
+	
+	la $s0, int1
+	ulw $a0, 4($s0)
+	syscall
+	jal printnewline	
+	
+#############################################		
+	# sb	
+	.data
+	hunk: .space 1000
+	
+	.text
+	
+	li $s0, 0xDEADBEEF
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	sb $s0, hunk + 0
+	sb $s1, hunk + 1
+	sb $s2, hunk + 2
+	sb $s3, hunk + 3
+	sb $s2, hunk + 4
+	sb $0, hunk + 5 #null terminate it
+	
+	li $v0, 4
+	la $a0, hunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
+#############################################		
+	# sh
+	
+	.data
+	sphunk: .space 1000
+	
+	.text
+	
+	li $s0, 0x2324
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	sh $s0, sphunk + 0
+	sh $s1, sphunk + 2
+	sh $s2, sphunk + 4
+	sh $s3, sphunk + 6
+	sh $s2, sphunk + 8
+	sh $s2, sphunk + 10
+	sh $s2, sphunk + 12
+	sh $0, sphunk + 14 #null terminate it
+	
+	lb $a0, sphunk
+	syscall
+	jal printnewline
+	
+	lb $a0, sphunk + 1
+	syscall
+	jal printnewline
+	
+	li $v0, 4
+	la $a0, sphunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
+	
+#############################################		
+	# ush
+	
+	.data
+	ushhunk: .space 1000
+	
+	.text
+	
+	li $s0, 0x2324
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	ush $s0, ushhunk + 0
+	ush $s1, ushhunk + 3
+	ush $s2, ushhunk + 4
+	ush $s3, ushhunk + 5
+	ush $s2, ushhunk + 6
+	ush $s2, ushhunk + 8
+	ush $s2, ushhunk + 10
+	ush $s2, ushhunk + 12
+	ush $0, ushhunk + 14 #null terminate it
+	
+	lb $a0, ushhunk
+	syscall
+	jal printnewline
+	
+	li $v0, 4
+	la $a0, ushhunk
+	syscall
+	li $v0, 1
+	jal printnewline	
+	
+	
+#############################################		
+	# sw
+	
+	.data
+	swhunk: .space 1000
+	
+	.text
+	
+	li $s0, 0x2324
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	sw $s0, swhunk + 0
+	sw $s1, swhunk + 4
+	sw $s2, swhunk + 8
+	sw $s3, swhunk + 12
+	sw $s2, swhunk + 16
+	sw $s2, swhunk + 20
+	sw $s2, swhunk + 24
+	sw $0, swhunk + 28 #null terminate it
+	
+	lb $a0, swhunk
+	syscall
+	jal printnewline
+	
+	lb $a0, swhunk + 1
+	syscall
+	jal printnewline
+	
+	li $v0, 4
+	la $a0, swhunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
+	
+#############################################		
+	# usw
+	
+	.data
+	uswhunk: .space 1000
+	
+	.text
+	
+	li $s0, 0x2324
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	usw $s0, uswhunk + 0
+	usw $s1, uswhunk + 2
+	usw $s2, uswhunk + 6
+	usw $s3, uswhunk + 11
+	usw $s2, uswhunk + 16
+	usw $s2, uswhunk + 20
+	usw $s2, uswhunk + 24
+	usw $0, uswhunk + 28 #null terminate it
+	
+	lb $a0, uswhunk
+	syscall
+	jal printnewline
+	
+	lb $a0, uswhunk + 1
+	syscall
+	jal printnewline
+	
+	li $v0, 4
+	la $a0, uswhunk
+	syscall
+	li $v0, 1
+	jal printnewline
+		
+#############################################		
+	# movn, movz
+	
+	li $s0, 10
+	li $s1, 11
+	li $s2, 12
+	li $a0, 23
+	
+	movn $a0, $s0, $0
+	syscall
+	jal printnewline	
+	
+	movn $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	movn $a0, $s0, $s0
+	syscall
+	jal printnewline
+	
+	movz $a0, $s0, $0
+	syscall
+	jal printnewline	
+	
+	movz $a0, $s0, $s1
+	syscall
+	jal printnewline
+	
+	movz $a0, $s0, $s0
+	syscall
+	jal printnewline
+	
+	movz $a0, $s0, $27
+	syscall
+	jal printnewline	
+	
+	
+#############################################		
+	# swl
+	.data
+	swlhunk: .space 1000
+	
+	.text
+	
+	li $s0, 0xDEADBEEF
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	swl $s0, swlhunk + 0
+	swl $s1, swlhunk + 100
+	swl $s2, swlhunk + 99
+	swl $s3, swlhunk + 3
+	swl $s2, swlhunk + 4
+	#swl $0, hunk + 5 #null terminate it
+	
+	lb $a0, swlhunk
+	syscall
+	jal printnewline
+	
+	lb $a0, swlhunk + 1
+	syscall
+	jal printnewline
+	
+	lb $a0, swlhunk + 100
+	syscall
+	jal printnewline
+	
+	lb $a0, swlhunk + 99
+	syscall
+	jal printnewline
+	
+	lb $a0, swlhunk + 3
+	syscall
+	jal printnewline
+	
+	lb $a0, swlhunk + 4
+	syscall
+	jal printnewline
+	
+	li $v0, 4
+	la $a0, swlhunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
+	
+#############################################		
+#	# swr
+	.data
+	swrhunk: .space 1000
+		
+	.text
+	
+	li $s0, 0xDEADBEEF
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	swr $s0, swrhunk + 0
+	swr $s1, swrhunk + 100
+	swr $s2, swrhunk + 99
+	swr $s3, swrhunk + 3
+	swr $s2, swrhunk + 4
+	#swl $0, hunk + 5 #null terminate it
+	
+	lb $a0, swrhunk
+	syscall
+	jal printnewline
+	
+	lb $a0, swrhunk + 1
+	syscall
+	jal printnewline
+	
+	lb $a0, swrhunk + 100
+	syscall
+	jal printnewline
+	
+	lb $a0, swrhunk + 99
+	syscall
+	jal printnewline
+	
+	lb $a0, swrhunk + 3
+	syscall
+	jal printnewline
+	
+	lb $a0, swrhunk + 4
+	syscall
+	jal printnewline
+	
+	li $v0, 4
+	la $a0, swrhunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
+#############################################
+# sd	
+	.data
+	sdspace: .space 1000
+	.text
+	
+	li $s0, 0xDEADBEEF
+	li $s1, 56
+	li $s2, -234
+	li $s3, 0xFFFFFFFF
+	
+	sd $s0, sdspace
+	
+	lw $t0, sdspace
+	lw $t1, sdspace + 4
+	
+	move $a0, $t0
+	syscall
+	jal printnewline
+	
+	move $a0, $t1
+	syscall
+	jal printnewline
+	
+	
 	
 	
 #############################################

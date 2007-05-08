@@ -106,27 +106,25 @@ lbu		YES		YES
 lh		YES		YES
 lhu		YES		YES
 lw		YES		YES
-lwl		
-lwr
-ld		YES
-ulh
-ulhu
-ulw
-ll
-sb		YES
-sh
-sw		YES
-swl
-swr
-sd
-ush
-usw
-sc
-move		YES
-mfhi		YES
-mflo		YES
-mthi		YES
-mtlo		YES
-movn
-movz
+lwl		YES		SPIM (almost certainly) or MipsCope has an obscure bug -- with li $a0, CONSTANT before, all is well
+lwr		YES		ditto
+ld		YES		YES
+ulh		YES		YES
+ulhu		YES		YES
+ulw		YES		YES
+sb		YES		YES
+sh		YES		YES
+sw		YES		YES
+swl		YES		YES
+swr		YES		YES
+sd		YES		YES
+ush		YES		YES		mildly questionable -- several in order seem to fuck up SPIM
+usw		YES		YES		ditto
+move		YES		ASSUMED
+mfhi		YES		ASSUMED
+mflo		YES		ASSUMED
+mthi		YES		ASSUMED
+mtlo		YES		ASSUMED
+movn		YES		YES
+movz		YES		YES
 

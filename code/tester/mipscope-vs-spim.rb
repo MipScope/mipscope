@@ -10,15 +10,15 @@ endline = "End tests."
 def readUntilSync(fd, sync)
 	fd.each { |line|
 		break if line.include? sync;
-		puts line
+#		puts line
 	}
 
-#	if fd.eof?
-#		puts "Couldn't find sync line for SPIM input."
-#		exit
-#	else
-#		#puts "Found sync line."
-#	end
+	if fd.eof?
+		puts "Couldn't find sync line for SPIM input."
+		exit
+	else
+		#puts "Found sync line."
+	end
 end
 
 file = ARGV[0]
@@ -53,7 +53,7 @@ while !(spim_line = spim.gets).include? endline:
 	end
 	
 	if spim_line == (mips_line = mips.gets)
-		print  "."
+		#print  "."
 		lastmatch = spim_line
 		matches += 1
 	else

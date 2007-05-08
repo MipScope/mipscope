@@ -122,7 +122,7 @@ class Lw : public Instruction {
 };
 
 // ----------------------------------
-// Instruction ln $dest, addr
+// Instruction lbu $dest, addr
 // ----------------------------------
 class Lb : public Instruction {
    public:
@@ -138,16 +138,200 @@ class Lb : public Instruction {
       }
       
       virtual void execute(State *s, ParseList* parseList) const {
-         s->setRegister((*m_args)[0]->getRegister(), s->getMemoryByte((*m_args)[1]->getValue(s)));
+         s->setRegister((*m_args)[0]->getRegister(), (signed int) (signed char) s->getMemoryByte((*m_args)[1]->getValue(s)));
       }
       
       // @overridden from Statement
       virtual const char *getName() const { return "lb"; }
       virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
       virtual const char *getDescription() const {
-         return "Sets $dest to the value of the word stored at &lt;addr&gt;";
+         return "Sets $dest to the sign-extended value of the byte stored at &lt;addr&gt;";
       }
 };
+
+// ----------------------------------
+// Instruction lbu $dest, addr
+// ----------------------------------
+class Lbu : public Instruction {
+   public:
+      Lbu(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Lbu(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setRegister((*m_args)[0]->getRegister(), s->getMemoryByte((*m_args)[1]->getValue(s)));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "lbu"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Sets $dest to the non-sign-extended value of the byte stored at &lt;addr&gt;";
+      }
+};
+
+// ----------------------------------
+// Instruction lh $dest, addr
+// ----------------------------------
+class Lh : public Instruction {
+   public:
+      Lh(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Lh(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         
+         unsigned int value = s->getMemoryByte((*m_args)[1]->getValue(s) + 1) << 8 | s->getMemoryByte((*m_args)[1]->getValue(s));
+         
+         s->setRegister((*m_args)[0]->getRegister(), (signed int) (signed short) value);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "lh"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Sets $dest to the sign-extended value of the half-word stored at &lt;addr&gt;";
+      }
+};
+
+
+// ----------------------------------
+// Instruction lh $dest, addr
+// ----------------------------------
+class Lhu : public Instruction {
+   public:
+      Lhu(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Lhu(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         
+         unsigned int value = s->getMemoryByte((*m_args)[1]->getValue(s) + 1) << 8 | s->getMemoryByte((*m_args)[1]->getValue(s));
+         
+         s->setRegister((*m_args)[0]->getRegister(), value);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "lhu"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Sets $dest to the non-sign-extended value of the half-word stored at &lt;addr&gt;";
+      }
+};
+
+
+
+// ----------------------------------
+// Instruction lh $dest, addr
+// ----------------------------------
+class Lwl : public Instruction {
+   public:
+      Lwl(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE);
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Lwl(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         
+         unsigned int address = (*m_args)[1]->getValue(s);
+         unsigned int regValue = (*m_args)[0]->getValue(s);
+         
+         unsigned int baseAddress = address - (address % 4);
+         
+         cerr << "lwl: address: " << std::hex << address << ", regValue: " << regValue << ", baseAddress: " << baseAddress << "\n";
+                  
+         switch (address % 4) {
+            case 0:
+               cerr << "lwl: case 0\n";
+               regValue = (regValue & 0x00FFFFFF) | s->getMemoryByte(baseAddress) << 24;
+               break;
+            case 1:
+               cerr << "lwl: case 1\n";
+               regValue = (regValue & 0xFF00FFFF) | s->getMemoryByte(baseAddress) << 16;            
+               regValue = (regValue & 0x00FFFFFF) | s->getMemoryByte(baseAddress+1) << 24;
+               break;
+            case 2:
+               cerr << "lwl: case 2\n";
+               regValue = (regValue & 0xFFFF00FF) | s->getMemoryByte(baseAddress) << 8;
+               regValue = (regValue & 0xFF00FFFF) | s->getMemoryByte(baseAddress+1) << 16;            
+               regValue = (regValue & 0x00FFFFFF) | s->getMemoryByte(baseAddress+2) << 24;
+               break;
+            case 3:
+               cerr << "lwl: case 3\n";
+               regValue = s->getMemoryWord(baseAddress);
+               break;
+         }
+         
+         cerr << "lwl: newRegValue: " << std::hex << regValue << "\n";
+                                    
+         s->setRegister((*m_args)[0]->getRegister(), regValue);
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "lwl"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Loads the left bytes from the word at the possibly unalligned &lt;addr&gt; into $dest.";
+      }
+};
+
+
+// ----------------------------------
+// Instruction ld $dest, addr
+// ----------------------------------
+class Ld : public Instruction {
+   public:
+      Ld(StatementArgList *args = NULL) : Instruction(args) { }
+      
+      // @overridden from Instruction
+      virtual bool isSyntacticallyValid(StatementArgList *args) const {
+         return args->matchesSyntax(PLAIN_REGISTER, ADDRESS | IMMEDIATE) && (*args)[0]->getRegister() < ra;
+      }
+      
+      virtual Instruction *create(StatementArgList *args) const {
+         return new Ld(args);
+      }
+      
+      virtual void execute(State *s, ParseList* parseList) const {
+         s->setRegister((*m_args)[0]->getRegister(), s->getMemoryWord((*m_args)[1]->getValue(s)));
+         s->setRegister((*m_args)[0]->getRegister() + 1, s->getMemoryWord((*m_args)[1]->getValue(s) + 4));
+      }
+      
+      // @overridden from Statement
+      virtual const char *getName() const { return "ld"; }
+      virtual const char *getSyntax() const { return "$dest, &lt;addr&gt;"; }
+      virtual const char *getDescription() const {
+         return "Load the 64-bit quantity at &lt;addr&gt; into registers $dest and $dest+1";
+      }
+};
+
 
 // ----------------------------------
 // Instruction sw $src, addr

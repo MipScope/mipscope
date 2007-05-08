@@ -67,29 +67,29 @@ sne		YES		YES
 #########
 # Branch
 #########
-b
-beq
-bgez
-bgezal
-bgtz
-blez
-bltzal
-bltz
-bne
-beqz
-bge
-bgeu
-bgt
-bgtu
-ble
-bleu
-blt
-bltu
-bnez
-j
-jal
-jalr
-jr
+b		YES
+beq		YES
+bgez		YES
+bgezal		YES
+bgtz		YES
+blez		YES
+bltzal		YES
+bltz		YES
+bne		YES
+beqz		YES
+bge		YES
+bgeu		YES
+bgt		YES
+bgtu		YES
+ble		YES
+bleu		YES
+blt		YES
+bltu		YES
+bnez		YES
+j		YES
+jal		YES
+jalr		YES
+jr		YES
 
 
 
@@ -98,35 +98,35 @@ jr
 # Data Transfer
 ##########
 
-lui
-li
-la
-lb
-lbu
-lh
-lhu
-lw
-lwl
+lui		YES		YES		spim only takes 0..65k, we allow any immediate		
+li		YES		YES
+la		YES		whatever
+lb		YES		YES (possible bug with minus sign relative, see line 5174)
+lbu		YES		YES
+lh		YES		YES
+lhu		YES		YES
+lw		YES		YES
+lwl		
 lwr
-ld
+ld		YES
 ulh
 ulhu
 ulw
 ll
-sb
+sb		YES
 sh
-sw
+sw		YES
 swl
 swr
 sd
 ush
 usw
 sc
-move
-mfhi
-mflo
-mthi
-mtlo
+move		YES
+mfhi		YES
+mflo		YES
+mthi		YES
+mtlo		YES
 movn
 movz
 

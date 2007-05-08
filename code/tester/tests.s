@@ -5,7 +5,7 @@
 	endmessage:		.asciiz "\n\nEnd tests.\n"
 	testnum:		.asciiz "Test "
 	nwcharacter:	.asciiz "\n"
-
+	
 .text
 
 main:
@@ -5086,7 +5086,278 @@ main:
 	syscall	
 	jal printnewline	
 	
+####################################################################
+	# lui
+	lui $a0, 0
+	syscall
+	jal printnewline	
 	
+	lui $a0, 1
+	syscall
+	jal printnewline
+	
+	lui $a0, 4245
+	syscall
+	jal printnewline
+	
+	lui $a0, 65535
+	syscall
+	jal printnewline
+	
+	lui $a0, 65531
+	syscall
+	jal printnewline
+	
+	lui $a0, 23245
+	syscall
+	jal printnewline
+		
+	lui $a0, 7382
+	syscall
+	jal printnewline	
+	
+####################################################################
+	# li
+	li $a0, 0
+	syscall
+	jal printnewline	
+	
+	li $a0, 1
+	syscall
+	jal printnewline
+	
+	li $a0, -1
+	syscall
+	jal printnewline
+	
+	li $a0, 276325624
+	syscall
+	jal printnewline
+	
+	li $a0, -23423456
+	syscall
+	jal printnewline
+	
+	li $a0, 0xFFFFFFF
+	syscall
+	jal printnewline
+	
+	li $a0, -0xFFFFFF
+	syscall
+	jal printnewline
+	
+	li $a0, 73829
+	syscall
+	jal printnewline	
+	
+####################################################################
+	# lb
+	
+	.data
+	int1: .word 15
+	int2: .word -13
+	string1: .asciiz "abcdefghijklmnopqrstuvqxyz"	
+
+	.text
+	lb $a0, int1
+	syscall
+	jal printnewline
+	
+	lb $a0, int2
+	syscall
+	jal printnewline
+		
+	lb $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+#	lb $a0, int2 - 1
+#	syscall
+#	jal printnewline	
+	
+	la $a0, string1 + 5
+	li $v0, 4 # print_string
+	syscall
+	li $v0, 1
+	jal printnewline	
+	
+	lb $a0, string1 + 8
+	syscall
+	jal printnewline
+	
+####################################################################
+	# lbu	
+	
+	lbu $a0, int1
+	syscall
+	jal printnewline
+	
+	lbu $a0, int2
+	syscall
+	jal printnewline
+		
+	lbu $a0, int1 + 1
+	syscall
+	jal printnewline
+	
+#	lbu $a0, int2 - 1
+#	syscall
+#	jal printnewline	
+	
+	la $a0, string1 + 5
+	li $v0, 4 # print_string
+	syscall
+	li $v0, 1
+	jal printnewline	
+	
+	lbu $a0, string1 + 8
+	syscall
+	jal printnewline
+	
+
+####################################################################
+	# lh	
+	
+	lh $a0, int1
+	syscall
+	jal printnewline
+	
+	lh $a0, int2
+	syscall
+	jal printnewline
+		
+	lh $a0, int1 + 2
+	syscall
+	jal printnewline
+		
+	lh $a0, string1 + 8
+	syscall
+	jal printnewline	
+	
+####################################################################
+	# lhu	
+	
+	lhu $a0, int1
+	syscall
+	jal printnewline
+	
+	lhu $a0, int2
+	syscall
+	jal printnewline
+		
+	lhu $a0, int1 + 2
+	syscall
+	jal printnewline
+		
+	lhu $a0, string1 + 8
+	syscall
+	jal printnewline		
+
+####################################################################
+	# lw	
+	
+	lw $a0, int1
+	syscall
+	jal printnewline
+	
+	lw $a0, int2
+	syscall
+	jal printnewline
+	
+	lw $a0, int1 + 4
+	syscall
+	jal printnewline
+		
+	lw $a0, int1 + 8
+	syscall
+	jal printnewline
+		
+	lw $a0, string1 + 8
+	syscall
+	jal printnewline
+
+	la $s0, int1
+	lw $a0, ($s0)
+	syscall
+	jal printnewline
+	
+	la $s0, int1
+	lw $a0, 4($s0)
+	syscall
+	jal printnewline
+	
+####################################################################
+	# lwl	
+	
+	li $a0, 0
+	
+	lwl $a0, int1 + 2
+	syscall
+	jal printnewline
+	
+	lwl $a0, int2
+	syscall
+	jal printnewline
+	
+#	lwl $a0, int1 + 4
+#	syscall
+#	jal printnewline
+#		
+#	lwl $a0, int1 + 8
+#	syscall
+#	jal printnewline
+#		
+#	lwl $a0, string1 + 8
+#	syscall
+#	jal printnewline
+#
+#	la $s0, int1
+#	lwl $a0, ($s0)
+#	syscall
+#	jal printnewline
+#	
+#	la $s0, int1
+#	lwl $a0, 4($s0)
+#	syscall
+#	jal printnewline	
+#	
+#	lwl $a0, int1 + 1
+#	syscall
+#	jal printnewline
+#	
+#	lwl $a0, int2 + 1
+#	syscall
+#	jal printnewline
+#	
+#	lwl $a0, int1 + 3
+#	syscall
+#	jal printnewline
+#		
+#	lwl $a0, int1 + 7
+#	syscall
+#	jal printnewline
+#		
+#	lwl $a0, string1 + 7
+#	syscall
+#	jal printnewline
+#
+#	la $s0, int1
+#	lwl $a0, 2($s0)
+#	syscall
+#	jal printnewline
+#	
+#	la $s0, int1
+#	lwl $a0, 3($s0)
+#	syscall
+#	jal printnewline
+#	
+#	lwl $a0, string1 + 5
+#	syscall
+#	jal printnewline
+#	
+#	lwl $a0, string1 + 3
+#	syscall
+#	jal printnewline
 	
 	
 #############################################

@@ -152,10 +152,15 @@ void Instruction::InitializeInstructionMap() {
    insert(new Xori());
 
    // DataTransfer.H
+   insert(new Lui());
    insert(new Li());
    insert(new La());
    insert(new Lw());
+   insert(new Lwl());
    insert(new Lb());
+   insert(new Lbu());
+   insert(new Lh());
+   insert(new Lhu());
    insert(new Sw());
    insert(new Sb());
    insert(new Move());

@@ -268,11 +268,15 @@ TIMESTAMP State::getCurrentTimestamp(void) const {
    return m_currentTimestamp;
 }
 
+// TODO:  should be protected by a MUTEX!
 void State::reset() {
    ::memset(m_registers, 0, sizeof(int) * register_count);
    m_currentTimestamp = CLEAN_TIMESTAMP;
    m_pc = NULL;
    m_memory.clear();
+   
+   foreach(QList<TIMESTAMP> *list, m_memoryUseMap)
+      safeDelete(list);
    m_memoryUseMap.clear();
 
    foreach(StateAction *s, m_undoList) {
@@ -280,7 +284,7 @@ void State::reset() {
          delete s;
    }
    m_undoList.clear();
-
+   
    setUndoAvailability(false, true);
 }
 

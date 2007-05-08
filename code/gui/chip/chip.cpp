@@ -61,7 +61,7 @@ Chip::Chip(View *view, const QColor &color, int x, int y,
 
 QRectF Chip::boundingRect() const
 {
-   return QRectF(0, 0, 110, 70);
+   return QRectF(0, 0, 90, 60);
 }
 
 QPainterPath Chip::shape() const

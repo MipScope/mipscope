@@ -16,6 +16,7 @@
 #include "DirectoryListing.H"
 #include "SyscallHandler.H"
 #include "Program.H"
+#include "../simulator/Statement.H"
 #include <QtGui>
 
 Gui::Gui(QStringList args) : QMainWindow(), 
@@ -289,6 +290,7 @@ void Gui::ensureVisibility(QDockWidget *widget) {
       return; // possibly use etwas w/ widget's size?  if in a tab?
    
    setUpdatesEnabled(false);
+   widget->setUpdatesEnabled(false);
    Qt::DockWidgetArea a = dockWidgetArea(widget);
    removeDockWidget(widget);
    addDockWidget(a, widget);
@@ -299,6 +301,7 @@ void Gui::ensureVisibility(QDockWidget *widget) {
       tabifyDockWidget(widget, m_output);
    else tabifyDockWidget(widget, m_errors);
    
+   widget->setUpdatesEnabled(true);
    setUpdatesEnabled(true);
    //cerr << "out: " << widget->isVisible() << endl;
 }
@@ -341,8 +344,16 @@ void Gui::fileOpenAction() {
 void Gui::fileExitAction() {
    saveSettings();
    
-   if (m_editorPane->closeAllTabs())
+   if (m_editorPane->closeAllTabs()) {
+      foreach(Instruction *instr, instructionMap)
+         safeDelete(instr);
+      
+      foreach(Directive *dir, directiveMap)
+         safeDelete(dir);
+      
+      safeDelete(m_editorPane);
       qApp->quit();
+   }
 }
 
 void Gui::fileSaveAllAction() {
@@ -618,7 +629,6 @@ void Gui::debugBStepXAction() {
       stepBackward(noInstructions);
 }
 
-
 void Gui::debugRestartAction() {
    m_restarted = true;
    stop();
@@ -691,7 +701,7 @@ void Gui::programStatusChanged(int s) {
    m_mode = s;
    updateDebugActions();
    
-   if (s != RUNNING) {
+   if (s != RUNNING && !m_restarted) {
       m_registerView->updateDisplay();
       m_output->update();
    }
@@ -711,12 +721,12 @@ bool Gui::handleProgramTerminated(int reason) {
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
-   //cerr << "validityChanged: " << isValid << endl;
    
    if (m_debugStepXAction != NULL) {
       m_debugRunAction->setEnabled(isValid);
 
       if (m_mode == PAUSED) {
+         //cerr << "validityChanged: " << isValid << endl;
          m_debugStepAction->setEnabled(isValid);
          m_debugBStepAction->setEnabled(isValid);
          m_debugStepXAction->setEnabled(isValid);
@@ -751,8 +761,10 @@ void Gui::memoryChanged(unsigned int address, unsigned int value, ParseNode *pc)
 
 void Gui::programUndoAvailabilityChanged(bool isAvailable) {
    //cerr << "programUndoAvailabilityChanged: " << isAvailable << endl;
-   m_debugBStepAction->setEnabled(isAvailable);
-   m_debugBStepXAction->setEnabled(isAvailable);
+   if (m_mode == PAUSED) {
+      m_debugBStepAction->setEnabled(isAvailable);
+      m_debugBStepXAction->setEnabled(isAvailable);
+   }
 }
 
 void Gui::watchPointModified(unsigned int reg, bool watchPoint) {

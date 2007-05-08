@@ -1,4 +1,6 @@
 
+FIX Restart- lots segfault!
+
 Gui TODO: (stuff i'll forget, otherwise)
    * Test several of the on-the-fly editing issues;
    * Memory watchpoints!

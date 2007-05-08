@@ -320,6 +320,8 @@ void Program::loadProgram() {
    if (status == STOPPED) {
       // reparse program; ensure it was successful
       if (m_parseList == NULL || !m_parseList->isValid()) {
+         //safeDelete(m_parseList);
+         
          try {
             m_parseList = Parser::parseDocument(m_parent->document());
          } catch(SyntaxErrors &e) {

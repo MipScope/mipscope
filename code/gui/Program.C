@@ -67,6 +67,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(this, SIGNAL(programStatusChanged(int)), m_parent, SLOT(programStatusChanged(int)));
    connect(this, SIGNAL(registerChanged(unsigned int, unsigned int, int, ParseNode*)), m_gui, SLOT(registerChanged(unsigned int, unsigned int, int, ParseNode*)));
    connect(this, SIGNAL(memoryChanged(unsigned int, unsigned int, ParseNode*)), m_gui, SLOT(memoryChanged(unsigned int, unsigned int, ParseNode*)));
+   connect(this, SIGNAL(updateMemory(Program*,State*,int)), m_gui, SLOT(updateMemory(Program*,State*,int)));
 
    // Initialize relationship between EditorPane and Proxy
    connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(currentChanged(TextEditor*)));
@@ -151,8 +152,10 @@ void Program::pcChangeReceived(ParseNode *pc) {
    
    if (m_current && getStatus() == PAUSED && m_rollingBack != R_ROLLING && pc == getPC()) {
       pcChanged(pc, (m_rollingBack == R_JUST_ROLLED));
-      m_gui->getStackView()->updateDisplay(getState(), PAUSED);
-      m_gui->updateMemoryView(this);
+
+      updateMemory(this, getState(), PAUSED);
+//      m_gui->getStackView()->updateDisplay(getState(), PAUSED);
+//      m_gui->updateMemoryView(this);
    }
 }
 
@@ -178,9 +181,14 @@ void Program::programStatusChangeReceived(int s) {
       emit programStatusChanged(s);
       
       if (s != RUNNING) {
-         m_gui->getStackView()->updateDisplay(getState(), s);
+         //m_gui->getStackView()->updateDisplay(getState(), s);
          m_gui->getRegisterView()->updateDisplay(s);
-         m_gui->updateMemoryView(this);
+         
+         cerr << "3\n";
+         updateMemory(this, getState(), s);
+         cerr << "4\n";
+         
+         //m_gui->updateMemoryView(this);
       }
    }
 }
@@ -307,8 +315,13 @@ void Program::forceUpdateOfSyntaxErrors(bool noChange) {
       err->updateSyntaxErrors(m_syntaxErrors, m_parent);
 }
 
-// Parse the program and initialize the Debugger
+// cannot just have default paramaters (SLOTS get messed up w/ them sometimes)
 void Program::loadProgram() {
+   loadProgram(false);
+}
+
+// Parse the program and initialize the Debugger
+void Program::loadProgram(bool forceLoad) {
    int status = getStatus();
    
    // content changed during Pause textEditor->notifies Proxy
@@ -319,7 +332,7 @@ void Program::loadProgram() {
 //   cerr << "Loading\n\n";
    if (status == STOPPED) {
       // reparse program; ensure it was successful
-      if (m_parseList == NULL || !m_parseList->isValid()) {
+      if (m_parseList == NULL || forceLoad || !m_parseList->isValid()) {
          //safeDelete(m_parseList);
          
          try {
@@ -357,14 +370,16 @@ void Program::run() {
    int status = getStatus();
    if (status == STOPPED) {
       // reparse program; ensure it was successful
-      loadProgram();
+      loadProgram(true);
       if (m_parseList == NULL || !m_parseList->isValid())
          return; // errors remain
 
       m_debugger->setParseList(m_parseList);
       m_debugger->setWatchpoints(getWatchpoints());
       
-      m_gui->updateMemoryView(this);
+      cerr << "1\n";
+      updateMemory(this, getState(), RUNNING);//View(this);
+      cerr << "2\n";
       if (STATUS_BAR != NULL)
          STATUS_BAR->showMessage(QString("Running program %1...").arg(getName()));
       
@@ -435,7 +450,7 @@ bool *Program::getWatchpoints() const {
 
 void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
    if (m_parseList == NULL) {
-      loadProgram();
+      loadProgram(false);
       if (m_parseList == NULL)
          return;
    }

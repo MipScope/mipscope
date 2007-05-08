@@ -88,6 +88,7 @@ MemoryView::MemoryView(Gui *gui)
    setWidget(m_view);
    populateDefault();
 #else
+#error "don't use this"
    m_glMemoryPane = new GLMemoryPane(this, m_gui);
    setWidget(m_glMemoryPane);
 #endif
@@ -105,19 +106,22 @@ MemoryView::~MemoryView() {
 void MemoryView::gotoDeclaration(Chip *chip) {
    if (chip == NULL)
       return;
-
+   
    unsigned int address = chip->getAddress();
    m_gui->gotoDeclaration(address);
 }
 
+#ifndef USE_BIRDS_EYE
 unsigned char m_data[128 * 128 * 4];
+#endif
 
 void MemoryView::updateDisplay(Program *program) {
-#ifdef USE_BIRDS_EYE
+//#ifdef USE_BIRDS_EYE
    
    populateScene(program);
    
-#else
+//#else
+#if 0
    
    MemoryUseMap *memoryUseMap = program->getMemoryUseMap();
 //   unsigned int blockSize = (unsigned int)ceilf(sqrt(noAddresses));
@@ -275,6 +279,7 @@ void MemoryView::updateDisplay(Program *program) {
 void MemoryView::reset() {
    //populateDefault();
 #ifndef USE_BIRDS_EYE
+#error "don't use this"
    m_glMemoryPane->reset();
 #endif
 }
@@ -538,8 +543,8 @@ void MemoryView::populateScene(Program *program) {
       // data/heap section
       index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);
       
-      if (index > noAddresses)
-         index = noAddresses;
+      if (index >= noAddresses)
+         index = noAddresses - 1;
       
       occurrences[index]++;
       values[index] = val;
@@ -571,9 +576,9 @@ void MemoryView::populateDefault() {
 void MemoryView::createChips(float *values, unsigned int noAddresses, Program *program) {
    State *state = (program == NULL ? NULL : program->getState());
    QGraphicsScene *oldScene = m_scene;
-   m_scene = new QGraphicsScene;
+   m_scene = new QGraphicsScene();
    
-   QImage activityGradient(IMAGES"/activityGradient.png");
+   const QImage activityGradient(IMAGES"/activityGradient.png");
    int maxY = 500;//(noAddresses >> 3) * 60;
    //int maxY = (noAddresses >> 1) * 5;
    const unsigned int factor = (state == NULL ? 255 : 300);

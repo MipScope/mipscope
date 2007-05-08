@@ -71,6 +71,7 @@ class Program : public QObject {
       bool getLabelForAddress(unsigned int address, QString &label);
       
    protected:
+      void loadProgram(bool forceLoad);
       void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);
       void forceUpdateOfSyntaxErrors(bool noChange = false);
@@ -126,6 +127,8 @@ class Program : public QObject {
       void pcChanged(ParseNode *pc, bool justRolledBack);
       void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc);
       void memoryChanged(unsigned int address, unsigned int value, ParseNode *pc);
+      
+      void updateMemory(Program*, State *state, int status);
       
       // emitted upon run, pause, stop of Debugger
       void programStatusChanged(int s);

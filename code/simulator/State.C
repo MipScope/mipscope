@@ -274,9 +274,6 @@ void State::reset() {
    m_currentTimestamp = CLEAN_TIMESTAMP;
    m_pc = NULL;
    m_memory.clear();
-   
-   foreach(QList<TIMESTAMP> *list, m_memoryUseMap)
-      safeDelete(list);
    m_memoryUseMap.clear();
 
    foreach(StateAction *s, m_undoList) {

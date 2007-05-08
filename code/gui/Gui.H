@@ -32,6 +32,7 @@ class SyscallListener;
 class ParseNode;
 class QFont;
 class Program;
+class State;
 
 class Gui : public QMainWindow {
    
@@ -56,7 +57,6 @@ class Gui : public QMainWindow {
       void watchPointModified(unsigned int reg, bool watchPoint);
       bool *getWatchpoints() const;
       bool handleProgramTerminated(int reason);
-      void updateMemoryView(Program *active);
       
       void activeEditorChanged(TextEditor *current);
       void gotoDeclaration(unsigned int address);
@@ -74,8 +74,6 @@ class Gui : public QMainWindow {
       //void stepBackwardToTimestamp(TIMESTAMP stamp);
       //void jumpTo(const QTextBlock&);
       
-      void updateMemory(Program*);
-      
    public slots:
       // emitted upon run, pause, or stop of Debugger
       void programStatusChanged(int s);
@@ -89,6 +87,7 @@ class Gui : public QMainWindow {
       
       void programUndoAvailabilityChanged(bool isAvailable);
       
+      void updateMemory(Program*, State *state, int status);
       
       // Normal Gui/Menu Related
       // -----------------------
@@ -197,6 +196,8 @@ class Gui : public QMainWindow {
       void updateDebugActions();
       void saveSettings();
       void loadSettings();
+
+      void updateMemoryView(Program *active);
 };
 
 #endif // __QGUI_H__

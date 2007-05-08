@@ -144,7 +144,7 @@ genLoop:       blez $s2, endSimulation       # while(curGen--) {
                      move $a1, $s1
                      
                      bnez $s4, getNextState
-                     
+
                      # just printing out state (not changing state)
                      mul $t6, $a0, COLUMNS
                      add $t6, $t6, $a1          # $t6 = row * COLUMNS + col (offset into curGrid)

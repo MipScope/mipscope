@@ -345,13 +345,13 @@ void Gui::fileExitAction() {
    saveSettings();
    
    if (m_editorPane->closeAllTabs()) {
-      foreach(Instruction *instr, instructionMap)
+/*      foreach(Instruction *instr, instructionMap)
          safeDelete(instr);
       
       foreach(Directive *dir, directiveMap)
          safeDelete(dir);
       
-      safeDelete(m_editorPane);
+      safeDelete(m_editorPane);*/
       qApp->quit();
    }
 }
@@ -792,6 +792,13 @@ void Gui::activeEditorChanged(TextEditor *current) {
       m_runningEditor = current;
 
    updateDebugActions();
+}
+
+void Gui::updateMemory(Program *program, State *state, int status) {
+   if (status != RUNNING) {
+      m_stackView->updateDisplay(state, status);
+      updateMemoryView(program);
+   }
 }
 
 void Gui::updateMemoryView(Program *active) {

@@ -21,6 +21,10 @@
 #include <QtOpenGL>
 using namespace QGL;
 
+// Comment or uncomment to switch between 2d, bird's-eye view and a texture-mapped sphere
+//    I like the 2d version better, but the sphere was still a cool idea.
+#define USE_BIRDS_EYE
+
 #define SIZE    (128)
 
 class TempWidget : public QWidget {
@@ -79,13 +83,16 @@ MemoryView::MemoryView(Gui *gui)
    
    Q_INIT_RESOURCE(memoryImages);
    
+#ifdef USE_BIRDS_EYE
    m_view = new View(tr("Memory View"), this);
    setWidget(m_view);
    populateDefault();
-
-//   m_glMemoryPane = new GLMemoryPane(this, m_gui);
-//   setWidget(m_glMemoryPane);
+#else
+   m_glMemoryPane = new GLMemoryPane(this, m_gui);
+   setWidget(m_glMemoryPane);
+#endif
    
+   // For testing purposes
    //m_tempWidget = new TempWidget(this);
    //setWidget(m_tempWidget);
 }
@@ -103,15 +110,19 @@ void MemoryView::gotoDeclaration(Chip *chip) {
    m_gui->gotoDeclaration(address);
 }
 
-//unsigned char m_data[128 * 128 * 4];
+unsigned char m_data[128 * 128 * 4];
 
 void MemoryView::updateDisplay(Program *program) {
+#ifdef USE_BIRDS_EYE
+   
    populateScene(program);
-#if 0
+   
+#else
+   
    MemoryUseMap *memoryUseMap = program->getMemoryUseMap();
-   unsigned int noAddresses   = memoryUseMap->size();
 //   unsigned int blockSize = (unsigned int)ceilf(sqrt(noAddresses));
    unsigned int heapSize  = program->getHeapSize();
+   unsigned int noAddresses = heapSize >> 2;//memoryUseMap->size();
    unsigned int maxHeap = DATA_BASE_ADDRESS + heapSize;
 //   unsigned int noStackAddresses  = noAddresses - (heapSize >> 2);
 //   unsigned int noHeapAddresses = noAddresses - noStackAddresses;
@@ -119,8 +130,8 @@ void MemoryView::updateDisplay(Program *program) {
    TIMESTAMP current = program->getCurrentTimestamp();
    unsigned int earliest = 0;//current - 100; // earliest timestamp to consider
    
-   cerr << "UPDATEDISPLAY:  noAddr: " << noAddresses << /*", noHeap: " << noHeapAddresses << 
-      ", noStack: " << noStackAddresses << */ ", heapSize: " << heapSize << "\n";
+//   cerr << "UPDATEDISPLAY:  noAddr: " << noAddresses << /*", noHeap: " << noHeapAddresses << 
+//      ", noStack: " << noStackAddresses << */ ", heapSize: " << heapSize << "\n";
    
 //   memset(m_buffer, 0, sizeof(float) * 128 * 128);
 //   memset(m_norms, 0, sizeof(float) * 128 * 128);
@@ -130,19 +141,23 @@ void MemoryView::updateDisplay(Program *program) {
    
    QHash<unsigned int, unsigned int> addressesToAccesses;
    unsigned int lastValidAddr = DATA_BASE_ADDRESS;
-   
-   foreach(unsigned int address, memoryUseMap->keys()) {
+ 
+   for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
+      if (!memoryUseMap->contains(address)) {
+         addressesToAccesses.insert(address, 0);
+         continue;
+      }
       QList<TIMESTAMP> *list = memoryUseMap->value(address);
       
       if (list == NULL || address > maxHeap)
          continue;
       unsigned int accesseses = list->size();
-      /*foreach(TIMESTAMP stamp, *list) {
-         if (stamp < earliest)
-            accesseses--;
-         else break;
-      }*/
-      
+      foreach(TIMESTAMP stamp, *list) {
+        if (stamp < earliest)
+           accesseses--;
+        else break;
+      }
+
       if (accesseses > 0) {
          addressesToAccesses.insert(address, accesseses);
 
@@ -153,38 +168,43 @@ void MemoryView::updateDisplay(Program *program) {
       }
    }
 
-//   foreach(unsigned int address, toRemove)
-//      memoryUseMap->remove(address);
-   
    float mostAccesses = largestList;
 
-   cerr << "MostAccesses: " << mostAccesses << endl;
+//   cerr << "noA: " << noAddresses << ", mostAccessed: " << mostAccesses << endl;
    
-   noAddresses = (lastValidAddr - DATA_BASE_ADDRESS) >> 2;
+//   noAddresses = (lastValidAddr - DATA_BASE_ADDRESS) >> 2;
    float *values = (float*)malloc(sizeof(float) * noAddresses);
-   
    memset(values, 0, sizeof(float) * noAddresses);
-   
-   foreach(unsigned int address, addressesToAccesses.keys()) {
-      //QList<TIMESTAMP> *list = memoryUseMap->value(address);
+   int *occurrences = (int*)malloc(sizeof(int) * noAddresses);
+   memset(occurrences, 0, sizeof(int) * noAddresses);
+    
+   for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
+      if (!addressesToAccesses.contains(address))
+         continue;
+   //foreach(unsigned int address, addressesToAccesses.keys()) {
       unsigned int size = addressesToAccesses[address];
-      
-//      if (list == NULL || list->isEmpty() || address > maxHeap)
-//         continue;
-      
-//      unsigned int size = list->size();
+
       float val = ((float)size) / mostAccesses;
       unsigned int index;
-      
-     // data/heap section
-      index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);// ) / (float)(noHeapAddresses * 4);
+
+      // data/heap section
+      index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);
       
       if (index > noAddresses)
          index = noAddresses;
       
-//      assert(values[index] == 0);
+      occurrences[index]++;
       values[index] = val;
    }
+
+   for(unsigned int i = 0; i < noAddresses; i++) {
+      if (occurrences[i] != 0)
+         values[i] /= occurrences[i];
+   } // take average
+   
+   const int width = 128, height = width;
+   QImage *image = new QImage(width, height, QImage::Format_RGB32);
+   QImage activityGradient(IMAGES"/activityGradient.png");
    
    for(unsigned int i = 0; i < (128 * 128); i++) {
       float sum = 0;
@@ -227,34 +247,36 @@ void MemoryView::updateDisplay(Program *program) {
       if (sum < 1)
          scale = (unsigned char)(255 * sum);
       
-      m_data[i << 2] = scale;
+      /*m_data[i << 2] = scale;
       m_data[(i << 2) + 1] = scale;
       m_data[(i << 2) + 2] = scale;
-      m_data[(i << 2) + 3] = 0;
+      m_data[(i << 2) + 3] = 0;*/
       
+      QColor color = QColor(activityGradient.pixel(scale, 0));
+
+
 //      unsigned int rgb = scale | (scale << 8) | (scale << 16) | (0xff << 24);
-//      image.setPixel(i & 127, i / 128, qRgb(scale, scale, scale));
+      image->setPixel(i & 127, i / 128, color.rgb());//qRgb(scale, scale, scale));
    }
    
    //cerr << "last: " << last << ", (noAddr=" << noAddresses << ")\n";//endl;
 
-   const int width = 128, height = width;
-   QImage *image = new QImage(m_data, width, height, 128 * 4, QImage::Format_RGB32);
-   
    //memset(image.bits(), 0, image.numBytes() * sizeof(unsigned char));
    
-   m_tempWidget->render(image);
-   //m_glMemoryPane->render(image);
+   //m_tempWidget->render(image);
+   m_glMemoryPane->render(image);
    
    delete image;
    free(values);
+   free(occurrences);
 #endif
-
 }
 
 void MemoryView::reset() {
    //populateDefault();
-//   m_glMemoryPane->reset();
+#ifndef USE_BIRDS_EYE
+   m_glMemoryPane->reset();
+#endif
 }
 
 QSize MemoryView::minimumSizeHint() const {

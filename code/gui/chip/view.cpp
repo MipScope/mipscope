@@ -74,7 +74,7 @@ View::View(const QString &name, MemoryView *parent)
    zoomSlider = new QSlider;
    zoomSlider->setMinimum(0);
    zoomSlider->setMaximum(500);
-   zoomSlider->setValue(250);
+   zoomSlider->setValue(156);//250);
    zoomSlider->setTickPosition(QSlider::TicksRight);
    zoomSlider->setStyle(new QCleanlooksStyle());
 
@@ -173,12 +173,12 @@ void View::setScene(QGraphicsScene *scene) {
       return;
 
    m_timer.stop();
-/*   bool wasFocusing = (m_active != NULL);
+   bool wasFocusing = (m_active != NULL);
    QPointF location = (wasFocusing ? m_active->mapToScene(m_active->boundingRect().center()) : QPointF());
    m_active = NULL;
-   m_contextChip = NULL;*/
+   m_contextChip = NULL;
    graphicsView->setScene(scene);
-   /*
+   
    // attempt to keep zooming in on the same chip, even through scene changes
    if (wasFocusing) {
       QGraphicsItem *item = scene->itemAt(location);
@@ -190,7 +190,7 @@ void View::setScene(QGraphicsScene *scene) {
          if (m_active != NULL)
             m_timer.start(20, this);
       }
-   }*/
+   }
 }
 
 /*void View::resetView()
@@ -268,6 +268,7 @@ void View::zoomIn()
 
 void View::zoomOut()
 {
+//   cerr << zoomSlider->value() << endl;
    zoomSlider->setValue(zoomSlider->value() - 1);
 }
 

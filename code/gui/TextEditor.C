@@ -56,7 +56,7 @@ void TextEditor::setupEditor(QFont *font) {
    m_syntaxTip = new SyntaxTip(this);
    m_registerTip = new RegisterTip(this);
 
-//   m_commentLine = new QShortcut(QKeySequence(tr("CTRL+D")), this, SLOT(toggleComment()), SLOT(toggleComment()), Qt::WidgetShortcut);
+   QShortcut *jumpToPC = new QShortcut(QKeySequence(tr("CTRL+J")), this, SLOT(focusPC()), SLOT(focusPC()), Qt::WidgetShortcut);
    
    
    //setContextMenuPolicy(Qt::CustomContextMenu);
@@ -346,6 +346,17 @@ void TextEditor::pcChanged(ParseNode *pc, bool justRolledBack) {
    // just be sure to also change the fading factors in paintEvent.
    m_program->getLastXInstructions(2, m_lastInstructions);
    viewport()->update();
+}
+
+void TextEditor::focusPC() {
+   if (m_program->getStatus() == PAUSED && m_pc != NULL) {
+      QTextBlock *b = m_pc->getTextBlock();
+      
+      QTextCursor c = textCursor();
+      c.setPosition(b->position());
+      setTextCursor(c);
+      ensureCursorVisible();
+   }
 }
 
 void TextEditor::programStatusChanged(int status) {

@@ -88,7 +88,6 @@ MemoryView::MemoryView(Gui *gui)
    setWidget(m_view);
    populateDefault();
 #else
-#error "don't use this"
    m_glMemoryPane = new GLMemoryPane(this, m_gui);
    setWidget(m_glMemoryPane);
 #endif
@@ -194,8 +193,8 @@ void MemoryView::updateDisplay(Program *program) {
       // data/heap section
       index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);
       
-      if (index > noAddresses)
-         index = noAddresses;
+      if (index >= noAddresses)
+         index = noAddresses - 1;
       
       occurrences[index]++;
       values[index] = val;
@@ -279,7 +278,6 @@ void MemoryView::updateDisplay(Program *program) {
 void MemoryView::reset() {
    //populateDefault();
 #ifndef USE_BIRDS_EYE
-#error "don't use this"
    m_glMemoryPane->reset();
 #endif
 }
@@ -492,6 +490,7 @@ void MemoryView::populateScene(Program *program) {
 
    QHash<unsigned int, unsigned int> addressesToAccesses;
    unsigned int lastValidAddr = DATA_BASE_ADDRESS;
+   unsigned int averageAccesses = 0;
    
    for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
 //   foreach(unsigned int address, memoryUseMap->keys()) {
@@ -510,7 +509,7 @@ void MemoryView::populateScene(Program *program) {
            accesseses--;
         else break;
       }
-
+      
       if (accesseses > 0) {
          addressesToAccesses.insert(address, accesseses);
 
@@ -518,10 +517,24 @@ void MemoryView::populateScene(Program *program) {
             largestList = accesseses;
          if (address > lastValidAddr)
             lastValidAddr = address;
+
+         ++averageAccesses;
       }
    }
+   
+   float outlierFactor = 1;
+   // try to throw out outliers
+   if (addressesToAccesses.size() > 0) {
+      float average = ((float)averageAccesses) / ((float)addressesToAccesses.size());
 
-   float mostAccesses = largestList;
+      if (average * 100 < largestList && largestList > 0 && averageAccesses > 0) {
+//         cerr << "outliers: " << average << ", " << averageAccesses << " vs " << largestList << endl;
+
+         largestList  /= 2;
+         outlierFactor = 2.5f;
+      }
+   }
+   float mostAccesses  = largestList;
 
 //   cerr << "noA: " << noAddresses << ", mostAccessed: " << mostAccesses << endl;
    
@@ -539,7 +552,10 @@ void MemoryView::populateScene(Program *program) {
 
       float val = ((float)size) / mostAccesses;
       unsigned int index;
-
+      
+      if (size < largestList && outlierFactor > 1)
+         val *= outlierFactor;
+      
       // data/heap section
       index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);
       

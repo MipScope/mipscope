@@ -114,16 +114,26 @@ void State::ensureValidAlignment(unsigned int address, unsigned int align) const
       throw BusError(address, m_pc->getTextBlock());
 }
 
+// for initializing strings
 void State::memcpy(unsigned int destAddress, const void *src, unsigned int size) {
    char *ptr = (char*)src;
+   TIMESTAMP old = m_currentTimestamp;
+   m_currentTimestamp = CLEAN_TIMESTAMP;
    
    while(size-- > 0)
       setMemoryByte(destAddress++, *ptr++);
+
+   m_currentTimestamp = old;
 }
 
 void State::memset(unsigned int destAddress, const int value, unsigned int size) {
+   TIMESTAMP old = m_currentTimestamp;
+   m_currentTimestamp = CLEAN_TIMESTAMP;
+
    while(size-- > 0)
       setMemoryByte(destAddress++, value);
+
+   m_currentTimestamp = old;
 }
 
 QString State::getString(unsigned int address, bool affect) {

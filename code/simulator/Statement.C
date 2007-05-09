@@ -32,6 +32,9 @@ void Statement::initialize(ParseNode *p, State *s) { p = NULL; s = NULL; }
 void Statement::InitializeStatementMaps() {
    Instruction::InitializeInstructionMap();
    Directive::InitializeDirectiveMap();
+
+   // as of 5/8/2007,  122 instructions and 11 directives implemented
+//   cerr << instructionMap.size() << ", " << directiveMap.size() << endl;
 }
 
 bool Statement::isInstruction() {

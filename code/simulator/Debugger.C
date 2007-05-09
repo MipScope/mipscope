@@ -51,8 +51,10 @@ void Debugger::threadTerminated(void) {
    const unsigned long elapsed = m_time.elapsed();
    const QString &durString  = QString::number(elapsed / 1000); // seconds
    const QString &durString2 = QString::number(elapsed % 1000); // millisecs
+   const TIMESTAMP cycles = m_state->getCurrentTimestamp();
+   
       //.toString("h:mm:ss.zzz ");
-   m_duration = QString("Executed in %1 cycles (%2.%3s)").arg(QString::number(m_state->getCurrentTimestamp()), durString, durString2);
+   m_duration = QString("Executed in %1 cycle%2 (%3.%4s)").arg(QString::number(cycles), (cycles > 1 ? QString("s") : QString()), durString, durString2);
    
    if (VERBOSE) cerr << "Debugger::threadTerminated\n";
    

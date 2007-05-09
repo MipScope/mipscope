@@ -134,7 +134,8 @@ class TextEditor : public QTextEdit {
       // Related to Debugging
       void pcChanged(ParseNode*, bool justRolledBack);
       void programStatusChanged(int);
-      
+      void focusPC();
+
    protected:
       EditorPane *m_parent;
       

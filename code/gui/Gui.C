@@ -18,6 +18,7 @@
 #include "Program.H"
 #include "../simulator/Statement.H"
 #include <QtGui>
+#include <QProcess>
 
 Gui::Gui(QStringList args) : QMainWindow(), 
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
@@ -674,7 +675,7 @@ void Gui::debugRunXSpimAction() {
    if (fileName == "" || fileName.isEmpty())
       return;
    
-   const char *path = "/course/cs031/pro/spim/xspim";
+#ifndef TARGET_SYSTEM_WIN
    switch(fork()) {
       case 0: // child
          {
@@ -694,6 +695,7 @@ void Gui::debugRunXSpimAction() {
       default: // parent
          break;
    }
+#endif
 }
 
 // emitted upon run, pause, or stop of Debugger

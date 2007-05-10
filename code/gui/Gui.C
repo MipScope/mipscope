@@ -48,7 +48,7 @@ Gui::Gui(QStringList args) : QMainWindow(),
 Gui::~Gui(void) { }
 
 void Gui::setupGui() {
-   setWindowTitle(tr("Spim sucks"));
+   setWindowTitle(tr("MipScope Learning Environment"));
    setWindowIcon(QIcon(IMAGES"/logo.png"));
    setIconSize(QSize(ICON_SIZE, ICON_SIZE));
    

@@ -39,7 +39,7 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
       try {
          n = Parser::parseLine(actual, parseList);
       } catch(ParseError &e) {
-         cerr << "Error line  " << lineNo << ": " << e.toStdString() << endl;
+         cerr << "Error line  " << lineNo + 1 << ": " << e.toStdString() << endl;
          e.setTextBlock(actual);
          e.setLineNo(lineNo);
          errors.push_back(e);
@@ -288,7 +288,8 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    int registerNo = -1;
    // determine which $r register
    if (reg.at(1).isDigit()) {// == QChar('r') && reg.at(2) != QChar('a')) {
-      reg = Parser::substring(text, 1, reg.length() - 1);  //2, reg.length() - 2);  (old, for $r3 type syntax -- which doesn't exist)
+      reg = Parser::substring(reg, 1, reg.length() - 1);
+      //2, reg.length() - 2);  (old, for $r3 type syntax -- which doesn't exist)
       
       bool okay = false;
       registerNo = reg.toInt(&okay, 10);
@@ -322,18 +323,20 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    bool validParens = (parenStart >= 0);
    if (validParens) {
       int parenEnd = text.indexOf(')');
-
-      if (parenStart > regIndex || parenEnd <= parenStart + 3 || parenEnd < regIndex)
+      
+      //cerr << parenStart << ", " << regIndex << ", " << parenEnd << endl;
+      if (parenStart > regIndex || parenEnd <= parenStart + 2 || parenEnd < regIndex)
          PARSE_ERROR(QString("parenthesis mismatch."), text);
       
       validParens = true;
       
       
-      // TODO:  check to ensure characters inbetween (  $r0  )  parenthesis and $reg are all whitespace or empty
+      // TODO:  check to ensure characters inbetween (  $a0  )  parenthesis and $reg are all whitespace or empty
       
       
       if (parenEnd != len - 1) {
-         cerr << _tab << "text after right paren!\n";
+         if (VERBOSE)
+            cerr << _tab << "text after right paren!\n";
          PARSE_ERROR(QString("invalid characters following right parenthesis"), text);
       }
       

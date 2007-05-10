@@ -1,13 +1,14 @@
-   * Timer for how long program ran in.
-
-
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * Test several of the on-the-fly editing issues;
-   * Memory watchpoints!
-   
-   * Clear button on OutputConsole?
-   * Add 'last pc' to StackView?
+   * Optimize editing-on-the-fly algorithmically
+   * Cleanup last-minute Syscall architechure
+   * Memory watchpoints
+   * Integrate Maze into MipScope
+   * Ability to turn on/off implicit roll-back
+   * Lots of testing
+   * Have pc in regView be accurate address
+   * Options panel; documentation
+
 
 OLD:
    * Line numbers, breakpoints correction,

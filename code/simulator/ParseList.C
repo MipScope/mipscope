@@ -166,7 +166,7 @@ bool ParseList::isValid() const {
       ParseNode *p = ParseNode::Node(b);
       
       if (p == NULL || !p->isValid()) {
-         cerr << "error: line no: " << i << " is invalid  (" << p << ")\n";
+         cerr << "error: line no: " << i + 1 << " is invalid  (" << p << ")\n";
          return false;
       }
       ++i;
@@ -532,7 +532,7 @@ void ParseList::updateSyntacticValidity(State *currentState) {
             newNode = Parser::parseLine(actual, this);
          } catch(ParseError &e) {
             if (VERBOSE)
-               cerr << "Error line  " << lineNo << ": " << e.toStdString() << endl;
+               cerr << "Error line  " << lineNo + 1 << ": " << e.toStdString() << endl;
 
             e.setTextBlock(actual);
             e.setLineNo(lineNo);

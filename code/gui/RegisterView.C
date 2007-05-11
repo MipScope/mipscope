@@ -9,7 +9,7 @@
 #include "EditorPane.H"
 #include "Gui.H"
 #include "../simulator/ParseNode.H"
-#include "BackgroundWidget.H"
+//#include "BackgroundWidget.H"
 #include <QtGui>
 
 const char *const registerAliases[] = {
@@ -61,78 +61,51 @@ bool *RegisterPane::getWatchpoints() {
    return m_watchPoints;
 }
 
-// TODO:  Temporary!!!
-/*class BackgroundWidget : public QTabWidget {
+class CustomBackgroundWidget : public QWidget {
    public:
-      BackgroundWidget(QString path, QWidget *parent = NULL) : QTabWidget(parent) {
-         m_pixMap = new QPixmap(path);
-         
+      CustomBackgroundWidget(QString path, RegisterPane *pane, QWidget *parent = NULL) : QWidget(parent), m_registerPane(pane) {
+         setMouseTracking(true);
+         m_background = QImage(path);
+         m_pixMap = QPixmap::fromImage(m_background);
+
+         /*         QPalette p = palette();
+                    p.setBrush(QPalette::Window, *m_pixMap);
+                    setPalette(p);*/
          setAutoFillBackground(false);
-//         tabBar()->setAutoFillBackground(false);
+         setAttribute(Qt::WA_NoSystemBackground);
       }
 
    protected:
-      QPixmap *m_pixMap;
-      
+      QPixmap m_pixMap;
+      QImage m_background;
+      RegisterPane *m_registerPane;
+
       // @overridden
       void paintEvent(QPaintEvent *e) {
-         QTabWidget::paintEvent(e);
          QPainter p(this);
-         QRect r(QPoint(0, 0), m_pixMap->size());
+         QRect r(QPoint(0, 0), m_pixMap.size());
+         const QRect &bounds = rect();
+         bool resizeH = (bounds.width() > r.width());
+         bool resizeV = (bounds.height() > r.height());
+
+         // ensure background pic always takes up whole frame, scaling if necessary
+         if (resizeH || resizeV) {
+            m_pixMap = QPixmap::fromImage(m_background.scaled(resizeH ? bounds.width() : r.width(), resizeV ? bounds.height() : r.height()));
+
+            r.setSize(m_pixMap.size());
+         }
 
          r.moveCenter(rect().center());
-         p.drawPixmap(r, *m_pixMap);
+         p.drawPixmap(r, m_pixMap);
       }
-};*/
 
-// class BackgroundWidget : public QWidget {
-//    public:
-//       BackgroundWidget(QString path, RegisterPane *pane, QWidget *parent = NULL) : QWidget(parent), m_registerPane(pane) {
-//          setMouseTracking(true);
-//          m_background = QImage(path);
-//          m_pixMap = QPixmap::fromImage(m_background);
-//          
-// /*         QPalette p = palette();
-//          p.setBrush(QPalette::Window, *m_pixMap);
-//          setPalette(p);*/
-//          setAutoFillBackground(false);
-//          setAttribute(Qt::WA_NoSystemBackground);
-//       }
-// 
-//    protected:
-//       QPixmap m_pixMap;
-//       QImage m_background;
-//       RegisterPane *m_registerPane;
-//       
-//       // @overridden
-//       void paintEvent(QPaintEvent *e) {
-//          QPainter p(this);
-//          QRect r(QPoint(0, 0), m_pixMap.size());
-//          const QRect &bounds = rect();
-//          bool resizeH = (bounds.width() > r.width());
-//          bool resizeV = (bounds.height() > r.height());
-//          
-//          // ensure background pic always takes up whole frame, scaling if necessary
-//          if (resizeH || resizeV) {
-//             m_pixMap = QPixmap::fromImage(m_background.scaled(resizeH ? bounds.width() : r.width(), resizeV ? bounds.height() : r.height()));
-// 
-//             r.setSize(m_pixMap.size());
-//          }
-//          
-//          r.moveCenter(rect().center());
-//          p.drawPixmap(r, m_pixMap);
-//       }
-// 
-//       virtual void mousePressEvent(QMouseEvent *);
-//       virtual void mouseReleaseEvent(QMouseEvent *);
-//       virtual void mouseMoveEvent(QMouseEvent *);
-// //      void resizeEvent(QResizeEvent *e) {
-// //         QWidget::resizeEvent(e);
-// //      }
-// };
+      virtual void mousePressEvent(QMouseEvent *);
+      virtual void mouseReleaseEvent(QMouseEvent *);
+      virtual void mouseMoveEvent(QMouseEvent *);
+};
 
 RegisterPane::RegisterPane(RegisterView *regView) : QWidget(), 
-   m_parent(regView), m_widget(new BackgroundWidget(QString(IMAGES"/registerBackground.jpg"), this)) 
+   m_parent(regView), m_widget(new CustomBackgroundWidget(QString(IMAGES"/registerBackground.jpg"), this)) 
 {
    QGridLayout *l = new QGridLayout();
 
@@ -211,14 +184,14 @@ void RegisterPane::reset() {
    m_extended->hide();
 }
 
-// void BackgroundWidget::mousePressEvent(QMouseEvent *e) { e->ignore(); }
-// void BackgroundWidget::mouseReleaseEvent(QMouseEvent *e) {
-//    m_registerPane->testMousePress(e, e->pos());
-// }
-// 
-// void BackgroundWidget::mouseMoveEvent(QMouseEvent *e) {
-//    m_registerPane->testMouseMove(e, e->pos());
-// }
+void CustomBackgroundWidget::mousePressEvent(QMouseEvent *e) { e->ignore(); }
+void CustomBackgroundWidget::mouseReleaseEvent(QMouseEvent *e) {
+   m_registerPane->testMousePress(e, e->pos());
+}
+
+void CustomBackgroundWidget::mouseMoveEvent(QMouseEvent *e) {
+   m_registerPane->testMouseMove(e, e->pos());
+}
 
 void RegisterPane::leaveEvent(QEvent *e) {
    m_extended->hide();

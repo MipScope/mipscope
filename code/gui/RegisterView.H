@@ -29,7 +29,7 @@ class QPixmap;
 class ExtendedView;
 class ParseNode;
 class RegisterOptionsPane;
-class BackgroundWidget;
+class CustomBackgroundWidget;
 extern QString getNoInBase(unsigned int no, int base);
 extern QString getRegisterText(int register, int displayType);
 
@@ -99,7 +99,7 @@ class RegisterPane : public QWidget {
       // View tab contains a 9x12 QGridLayout of RegViewLabels (generic)
       IDLabel *m_registerLabels[NO_REGISTERS];
       QRect m_bounds;
-      BackgroundWidget *m_widget;
+      CustomBackgroundWidget *m_widget;
       ExtendedView *m_extended;
       
       bool m_watchPoints[register_count];

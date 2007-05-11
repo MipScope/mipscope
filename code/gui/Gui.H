@@ -110,7 +110,7 @@ class Gui : public QMainWindow {
       void debugStepXAction();
       void debugBStepXAction();
       void debugRestartAction();
-      //void debugRunXSpimAction();
+      void debugRunXSpimAction();
       
       
    protected:
@@ -145,7 +145,7 @@ class Gui : public QMainWindow {
               *m_debugStepXAction, // Step forwards x number of instructions
               *m_debugBStepXAction, // Step backwards x number of instructions
               *m_debugRestartAction, 
-              //*m_debugRunXSpimAction, 
+              *m_debugRunXSpimAction, 
               
               // View-Related
               *m_viewOutputAction, 

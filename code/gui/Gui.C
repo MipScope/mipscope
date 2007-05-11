@@ -216,7 +216,9 @@ void Gui::setupDebugActions() {
    menu->addSeparator();
    tb->addSeparator();
 
-   //m_debugRunXSpimAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRunXSpim.png"), tr("Open in xspim"), this), this, SLOT(debugRunXSpimAction()), QKeySequence(QString("CTRL+F9")));
+#ifndef TARGET_SYSTEM_WIN
+   m_debugRunXSpimAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRunXSpim.png"), tr("Open in xspim"), this), this, SLOT(debugRunXSpimAction()), QKeySequence(QString("CTRL+F9")));
+#endif
 }
 
 void Gui::setupOptionsMenu() {
@@ -634,7 +636,7 @@ void Gui::debugRestartAction() {
    m_restarted = true;
    stop();
 }
-/*
+
 // Allow user to load file into a separate process running in xspim (cs31-version)
 void Gui::debugRunXSpimAction() {
    QString fileName;
@@ -676,6 +678,8 @@ void Gui::debugRunXSpimAction() {
       return;
 
 #ifndef TARGET_SYSTEM_WIN
+   const char *const path = "/course/cs031/pro/spim/xspim";
+   
    switch(fork()) {
       case 0: // child
          {
@@ -697,7 +701,7 @@ void Gui::debugRunXSpimAction() {
    }
 #endif
 }
-*/
+
 // emitted upon run, pause, or stop of Debugger
 void Gui::programStatusChanged(int s) {
    m_mode = s;

@@ -87,6 +87,7 @@ void Gui::setupGui() {
    setupActions();
    setCentralWidget(m_lineNoPane);
    setupStatusBar();
+   setDockNestingEnabled(true);
    resize(800, 720);
    
 /*   QRect geom = m_output->geometry();

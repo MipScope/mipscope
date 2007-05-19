@@ -34,7 +34,7 @@
 #include "statements/Arithmetic.H"
 #include "statements/DataTransfer.H"
 #include "statements/Special.H"
-#include "statements/Assert.H"
+#include "statements/AssertInstr.H"
 #include "statements/ControlFlow.H"
 #include "statements/Comparison.H"
 
@@ -214,7 +214,7 @@ void Instruction::InitializeInstructionMap() {
    insert(new Syscall());
    insert(new Done());
    
-   // Assert.H
+   // AssertInstr.H
    insert(new AssertEquals());
    
    // ControlFlow.H

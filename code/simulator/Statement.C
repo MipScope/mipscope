@@ -29,6 +29,7 @@
 #include "ParseNode.H"
 #include "State.H"
 #include <exception>
+#include <assert.h>
 
 // Include all Statement Implementations
 #include "statements/Arithmetic.H"

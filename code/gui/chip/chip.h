@@ -47,7 +47,7 @@ class Chip : public QGraphicsItem
       QRectF boundingRect() const;
       QPainterPath shape() const;
       void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
-      unsigned int Chip::getAddress() const;
+      unsigned int getAddress() const;
 
    protected:
       void mousePressEvent(QGraphicsSceneMouseEvent *event);

@@ -36,6 +36,7 @@
 #include "Statement.H"
 #include "../gui/Utilities.H"
 #include "statements/Directives.H"
+#include <assert.h>
 
 #include <QTextDocument>
 #include <QTextBlock>

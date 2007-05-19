@@ -88,8 +88,8 @@ class ParseList : public QObject {
       // (static) Returns the closest executable ParseNode at or before the given ParseNode 
       static ParseNode *getClosestInstructionBefore(ParseNode *p);
       
-      static SEGMENT ParseList::getSegment(ParseNode *node);
-      static SEGMENT ParseList::getForwardSegment(ParseNode *node);
+      static SEGMENT getSegment(ParseNode *node);
+      static SEGMENT getForwardSegment(ParseNode *node);
 
       // Returns whether or not this ParseList contains a fully-valid, runnable program (free of Syntactic and Semantic errors)
       bool isValid() const;

@@ -140,7 +140,7 @@ class Debugger : public QThread {
       // status passed in.
       int waitOnStatus(int status);
       void runAnotherStep(void);
-      void Debugger::executionInit(void);
+      void executionInit(void);
       
       // set when user rolls program back past program entry point
       //    (ex. by deleting the main: label...)

@@ -33,6 +33,7 @@
 #include <iostream>
 #include <exception>
 #include <QString>
+#include <assert.h>
 using namespace std;
 
 Identifier::Identifier(const QString &id) : m_id(id) { }

@@ -2,7 +2,7 @@ make clean;
 rm -f *.pro Makefile Makefile.*;
 rm -rfd objects/;
 
-/course/cs036_projects/mipscope/bin/qmake -project && \
+qmake -project && \
 sed -i "s/simulator\/main.C//g" code.pro && \
 sed -i 's/INCLUDEPATH \+=.*/INCLUDEPATH += $(DEPENDPATH)/g' code.pro && \
 echo "
@@ -12,7 +12,7 @@ echo "
    OBJECTS_DIR = objects/release
    MOC_DIR     = objects/release
 " >> code.pro && \
-/course/cs036_projects/mipscope/bin/qmake && \
+qmake && \
 make all && \
 echo "" && echo "Project generation successful!"
 

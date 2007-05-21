@@ -24,7 +24,7 @@
 
 #include "Shape.H"
 
-#include <QtOpenGL>
+#include <Qt/QtOpenGL>
 #include <QtGui>
 using namespace QGL;
 

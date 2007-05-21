@@ -25,7 +25,7 @@
 #include "Sphere.H"
 
 #include <QtGui>
-#include <QtOpenGL>
+#include <Qt/QtOpenGL>
 using namespace QGL;
 
 #include <iostream>

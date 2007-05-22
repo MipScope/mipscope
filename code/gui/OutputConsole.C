@@ -42,8 +42,9 @@ OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
      SyscallHandler(gui->getSyscallListener(), S_PRINT), 
      m_outputHelper(new OutputHelper(this)), m_noUpdates(0)
 {
-   m_display->setPlainText("Welcome to "PROJECT_NAME"\nCopyright (C) 2007 Travis Fischer and Tim O'Donnell\n"
-	"MipScope comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome "
+   m_display->setPlainText("Welcome to "PROJECT_NAME" version "PROJECT_VERSION"\n"
+	"Copyright (C) 2007 Travis Fischer and Tim O'Donnell\n"
+	PROJECT_NAME" comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome "
 	"to redistribute it under certain conditions.\nSee the file GPL.txt in the source package for details.");
 }
 
@@ -156,7 +157,7 @@ void OutputConsole::setStrings(QVector<QString> *strings) {
 TextOutputConsole::TextOutputConsole(SyscallListener* listener) :
      SyscallHandler(listener, S_PRINT, false) // false=we don't handle undo
 {
-	cout << PROJECT_NAME"\nCopyright (C) 2007 Travis Fischer and Tim O'Donnell\n\r\n";
+	cout << PROJECT_NAME" version "PROJECT_VERSION"\nCopyright (C) 2007 Travis Fischer and Tim O'Donnell\n\r\n";
 
 }
 

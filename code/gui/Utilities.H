@@ -35,7 +35,8 @@
 #include <QStatusBar>
 using namespace std;
 
-#define PROJECT_NAME       "MipScope version PRE-RELEASE-MAY-2007"
+#define PROJECT_NAME       "MipScope"
+#define PROJECT_VERSION    "PRE-RELEASE-MAY-2007"
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a *.mal);;All Files (*)")
 #define STATUS_DELAY       (12000)

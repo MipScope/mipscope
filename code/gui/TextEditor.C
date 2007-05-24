@@ -180,26 +180,28 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       int pos = c.position();
       c.movePosition(QTextCursor::Up);
       c.select(QTextCursor::LineUnderCursor);
-      const QString text = c.selectedText();
+      const QString text = c.selectedText().trimmed();
       
       // auto-insert comment
-      if (text.trimmed().at(0) == QChar('#')) { // previous line is a comment
-         int commentIndex = text.indexOf(QChar('#'));
-         if (commentIndex >= 0) {
-            const QString &whitespace = text.left(commentIndex + 1) + QString(" ");
-            c.setPosition(pos);
-            c.insertText(whitespace);
-         }
-      } else {
-         int nonWhiteSpaceInd = text.indexOf(QRegExp("[^ \t]"));
-         if (nonWhiteSpaceInd == -1)
-            nonWhiteSpaceInd = text.length();
+      if (!text.isEmpty()) {
+         if (text.at(0) == QChar('#')) { // previous line is a comment
+            int commentIndex = text.indexOf(QChar('#'));
+            if (commentIndex >= 0) {
+               const QString &whitespace = text.left(commentIndex + 1) + QString(" ");
+               c.setPosition(pos);
+               c.insertText(whitespace);
+            }
+         } else {
+            int nonWhiteSpaceInd = text.indexOf(QRegExp("[^ \t]"));
+            if (nonWhiteSpaceInd == -1)
+               nonWhiteSpaceInd = text.length();
 
-         if (nonWhiteSpaceInd >= 0) {
-            const QString &whitespace = text.left(nonWhiteSpaceInd);
+            if (nonWhiteSpaceInd >= 0) {
+               const QString &whitespace = text.left(nonWhiteSpaceInd);
 
-            c.setPosition(pos);
-            c.insertText(whitespace);
+               c.setPosition(pos);
+               c.insertText(whitespace);
+            }
          }
       }
    } else if (key == Qt::Key_Escape) {

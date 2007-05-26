@@ -33,6 +33,7 @@
 #include <QMainWindow>
 #include <QStatusBar>
 #include <QKeySequence>
+#include <QHash>
 #include "Utilities.H"
 
 #define SETTINGS_FILE      "."PROJECT_NAME".cfg"
@@ -79,7 +80,8 @@ class Gui : public QMainWindow {
       TextEditor *getActiveProgram() const;
    
       void watchPointModified(unsigned int reg, bool watchPoint);
-      bool *getWatchpoints() const;
+      bool *getWatchpoints() const; // register watchpoints
+      QHash<unsigned int, bool> *getMemoryWatchpoints() const;
       bool handleProgramTerminated(int reason);
       
       void activeEditorChanged(TextEditor *current);

@@ -303,18 +303,32 @@ void View::timerEvent(QTimerEvent *event) {
 
 void View::showContextMenu(const QPoint &pos, Chip *active) {
    m_contextChip = active;
-
+   
+   if (m_parent->hasWatchpoint(active))
+      m_toggleWatchpointAction->setText("Disable watchpoint");
+   else m_toggleWatchpointAction->setText("Enable watchpoint");
+   
    m_contextMenu->popup(pos);
 }
 
 void View::setupContextMenu() {
    QMenu *menu = new QMenu(this);
    QAction *gotoAction = new QAction(QIcon(ICONS"/editGotoDeclaration.png"), "Goto .data Declaration", this);
+   m_toggleWatchpointAction = new QAction(QIcon(ICONS"/editMemoryWatchpoint.png"), "Enable watchpoint", this);
    
    connect(gotoAction, SIGNAL(triggered()), this, SLOT(gotoDeclarationAction()));
+   connect(m_toggleWatchpointAction, SIGNAL(triggered()), this, SLOT(toggleWatchpointAction()));
    
    menu->addAction(gotoAction);
+   menu->addAction(m_toggleWatchpointAction);
    m_contextMenu = menu;
+}
+
+void View::toggleWatchpointAction() {
+   if (m_contextChip == NULL)
+      return;
+
+   m_parent->toggleWatchpoint(m_contextChip);
 }
 
 void View::gotoDeclarationAction() {

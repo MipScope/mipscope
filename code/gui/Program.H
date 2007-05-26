@@ -118,7 +118,7 @@ class Program : public QObject {
       void undoAvailabilityChangeReceived(bool isAvailable);
       
       // Display a message notifying user of reason for pause in program execution in the status bar
-      void notifyPause(const QString &reason) const;
+      void notifyPause(const QString &reason);
       
       // only when debugger is paused
       void pcChangeReceived(ParseNode *pc);

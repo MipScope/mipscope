@@ -38,6 +38,8 @@
 #include <QWaitCondition>
 #include <QString>
 #include <QTime>
+#include <QHash>
+#include <QString>
 
 #include "typedefs.H"
 
@@ -98,6 +100,10 @@ class Debugger : public QThread {
       
       const StateException &getException() const;
       
+      void setMemoryWatchpoints(QHash<unsigned int, bool> *w);
+      
+//      QString getReasonforPause() const;
+
    signals:
       // uses enum Status from typedefs.H
       void programStatusChanged(int s);
@@ -113,6 +119,7 @@ class Debugger : public QThread {
       // for observing register watchpoints;
       // this must be executed right away, as opposed to being in another thread
       void registerChanged(unsigned int register, unsigned int value, ParseNode *pc);
+      void memoryChanged(unsigned int address, unsigned int value, ParseNode *pc);
       
    protected:
       bool checkProgramCompleted();
@@ -129,6 +136,7 @@ class Debugger : public QThread {
       
       // flags denoting which registers are protected by memory watchpoints
       bool m_registerWatchpoints[register_count];
+      QHash<unsigned int, bool> *m_memoryWatchpoints;
       StateException m_exception;
       
       // for keeping track of how long programs ran for
@@ -146,6 +154,7 @@ class Debugger : public QThread {
       //    (ex. by deleting the main: label...)
       bool m_forceStopped;
       SyscallListener *m_syscallListener;
+//      QString m_pauseReason;
 };
 
 /*

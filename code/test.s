@@ -10,6 +10,7 @@ unusedSpace: .asciiz "Unused Space\n"
 main:
    li $v0, 4
    la $a0, label
+	sw $v0, label
 #   li $a0, CONST
 #   sw $1, 20($sp)
    

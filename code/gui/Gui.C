@@ -808,6 +808,10 @@ bool *Gui::getWatchpoints() const {
    return m_registerView->getWatchpoints();
 }
 
+QHash<unsigned int, bool> *Gui::getMemoryWatchpoints() const {
+   return m_memoryView->getWatchpoints();
+}
+
 void Gui::activeEditorChanged(TextEditor *current) {
    if (current == NULL)
       return;

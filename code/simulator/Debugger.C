@@ -41,8 +41,8 @@
 
 Debugger::Debugger(SyscallListener *listener, ParseList* parseList) 
    : m_state(new State(listener, this)), m_parseList(parseList), m_status(STOPPED), 
-     m_terminationReason(T_ABNORMAL), m_forceStopped(false), 
-     m_syscallListener(listener)
+     m_terminationReason(T_ABNORMAL), m_memoryWatchpoints(NULL), 
+     m_forceStopped(false), m_syscallListener(listener)
 {
    memset(m_registerWatchpoints, 0, sizeof(bool) * register_count);
    connect(this, SIGNAL(finished()), this, SLOT(threadTerminated()));
@@ -242,8 +242,9 @@ void Debugger::programStepForward(int noInstructions) {
 
    //cerr << "End " << noInstructions << " instrs; pc = '" << m_state->getPC() << "'\n";
    
-   if (m_status == RUNNING)
+   if (m_status == RUNNING) {
       setStatus(PAUSED);
+   }
 }
 
 void Debugger::programStepBackward(int noInstructions) {
@@ -290,6 +291,7 @@ void Debugger::run(void) {
       if (m_state->getPC()->containsBreakPoint()) {
          if (VERBOSE) cerr << ">>> BREAKPOINT\n";
 
+         //m_pauseReason = QString("Execution paused:  Breakpoint encountered");
          setStatus(PAUSED);
          Program *program = m_parseList->getProgram();
          notifyPause(QString("Execution Paused:  Breakpoint encountered on line %1").arg(program == NULL ? "" : QString::number(program->lineNumber(m_state->getPC()))));
@@ -344,12 +346,36 @@ int Debugger::waitOnStatus(int status) {
    return st;
 }
 
+void Debugger::setMemoryWatchpoints(QHash<unsigned int, bool> *w) {
+   m_memoryWatchpoints = w;
+}
+
+/*QString Debugger::getReasonforPause() const {
+   return m_pauseReason;
+}*/
+
+// check for watchpoints on memory addresses
+void Debugger::memoryChanged(unsigned int address, unsigned int value, ParseNode *pc) {
+   if (m_memoryWatchpoints != NULL && m_memoryWatchpoints->contains(address) && m_memoryWatchpoints->value(address)) {
+      int oldStatus = m_status;
+
+      setStatus(PAUSED); // modified a user-protected memory address
+      
+      // notifyPause
+      notifyPause(QString("%1Protected memory address '%2' modified").arg(
+            (oldStatus == RUNNING ? 
+             QString("Execution Paused:  ") : 
+             QString("")), QString::number(address, 16)));
+   }
+}
+
 void Debugger::registerChanged(unsigned int reg, unsigned int value, ParseNode *pc) {
 //   cerr << "reg changed " << registerAliases[reg] << " protected: " << m_registerWatchpoints[reg] << endl;
    if (m_registerWatchpoints[reg]) {
       int oldStatus = m_status;
+
       setStatus(PAUSED); // modified a user-protected register
-      
+ 
       notifyPause(QString("%1Protected register '%2' modified").arg(
                (oldStatus == RUNNING ? 
                QString("Execution Paused:  ") : 

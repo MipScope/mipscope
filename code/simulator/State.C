@@ -65,6 +65,11 @@ void State::setMemoryWord(unsigned int address, unsigned int value) {
    }
 
    m_memory[address] = value;
+ 
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) {
+      // has to be direct
+      m_debugger->memoryChanged(address, value, m_pc);
+   }
 
    memoryChanged(address, value, m_pc);
 }
@@ -88,6 +93,11 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
    }
    
    memoryChanged(aligned, result, m_pc);
+   
+   if (m_currentTimestamp != CLEAN_TIMESTAMP) {
+      // has to be direct
+      m_debugger->memoryChanged(aligned, value, m_pc);
+   }
 }
 
 unsigned int State::getMemoryWord(unsigned int address) {

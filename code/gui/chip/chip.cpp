@@ -37,9 +37,9 @@
 
 Chip::Chip(View *view, const QColor &color, int x, int y, 
       unsigned int address, unsigned int value, 
-      const QString &label, ParseNode *setBy)
+      const QString &label, bool watchpoint, ParseNode *setBy)
 : m_view(view), m_address(address), m_value(value), 
-   m_setBy(setBy), m_label(label)
+   m_setBy(setBy), m_label(label), m_watchpoint(watchpoint)
 {
    this->x = x;
    this->y = y;
@@ -76,6 +76,9 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
    Q_UNUSED(widget);
 
    QColor fillColor = (option->state & QStyle::State_Selected) ? color.dark(150) : color;
+   if (m_watchpoint)
+      fillColor = QColor(206, 21, 2);
+
    if (option->state & QStyle::State_MouseOver)
       fillColor = fillColor.light(125);
 
@@ -124,7 +127,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
          painter->drawText(85, 140, QString("Within label '%1'").arg(m_label));
       else if (m_setBy != NULL)
          painter->drawText(85, 140, QString("(Set by '%1')").arg(m_setBy->getTextBlock()->text()));
-
+     
       painter->restore();
    }
 
@@ -157,6 +160,9 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
    }
    painter->drawLines(lines.data(), lines.size());
 
+   if (m_watchpoint)
+      painter->drawPixmap(18, 35, *WATCHPOINT);
+   
 /* // Draw red ink
    if (stuff.size() > 1) {
       painter->setPen(QPen(Qt::red, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -204,5 +210,10 @@ void Chip::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 
 unsigned int Chip::getAddress() const {
    return m_address;
+}
+
+void Chip::setWatchpointEnabled(bool enabled) {
+   m_watchpoint = enabled;
+   update();
 }
 

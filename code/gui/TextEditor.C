@@ -180,11 +180,11 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
       int pos = c.position();
       c.movePosition(QTextCursor::Up);
       c.select(QTextCursor::LineUnderCursor);
-      const QString text = c.selectedText().trimmed();
+      const QString text = c.selectedText();
       
       // auto-insert comment
-      if (!text.isEmpty()) {
-         if (text.at(0) == QChar('#')) { // previous line is a comment
+      if (!text.trimmed().isEmpty()) {
+         if (text.trimmed().at(0) == QChar('#')) { // previous line is a comment
             int commentIndex = text.indexOf(QChar('#'));
             if (commentIndex >= 0) {
                const QString &whitespace = text.left(commentIndex + 1) + QString(" ");

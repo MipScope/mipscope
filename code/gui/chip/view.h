@@ -46,6 +46,7 @@ class QGraphicsSceneMouseEvent;
 class QPoint;
 class MemoryView;
 class QGraphicsScene;
+class QAction;
 
 class View : public QFrame
 {
@@ -79,6 +80,7 @@ class View : public QFrame
 //      void rotateRight();
 
       void gotoDeclarationAction();
+      void toggleWatchpointAction();
 
    private:
       QGraphicsView *graphicsView;
@@ -89,6 +91,7 @@ class View : public QFrame
 //      QToolButton *resetButton;
       QSlider *zoomSlider;
  //     QSlider *rotateSlider;
+      QAction *m_toggleWatchpointAction;
 
       Chip *m_active, *m_contextChip;
       QBasicTimer m_timer;

@@ -204,7 +204,7 @@ bool EditorPane::closeAllTabs(TextEditor *ignore) {
 }
 
 void EditorPane::showContextMenu(QContextMenuEvent *e) {
-   cerr << "Showing context menu\n";
+//   cerr << "Showing context menu\n";
    m_parent->getEditMenu()->exec(e->globalPos());
 }
 

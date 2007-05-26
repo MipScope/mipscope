@@ -37,17 +37,21 @@
 
 class ParseNode;
 class View;
+class QPixmap;
+
+extern QPixmap *WATCHPOINT;
 
 class Chip : public QGraphicsItem
 {
    public:
       Chip(View *view, const QColor &color, int x, int y, unsigned int address, 
-            unsigned int value, const QString &label, ParseNode *setBy = NULL);
+            unsigned int value, const QString &label, bool, ParseNode *setBy = NULL);
 
       QRectF boundingRect() const;
       QPainterPath shape() const;
       void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
       unsigned int getAddress() const;
+      void setWatchpointEnabled(bool);
 
    protected:
       void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -65,6 +69,7 @@ class Chip : public QGraphicsItem
       unsigned int m_value;
       ParseNode *m_setBy;
       QString m_label;
+      bool m_watchpoint;
 };
 
 #endif

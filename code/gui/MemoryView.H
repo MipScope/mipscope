@@ -33,6 +33,7 @@
 
 #include <QDockWidget>
 #include <Qt/QtOpenGL>
+#include <QHash>
 
 class QGraphicsScene;
 class QGraphicsView;
@@ -60,6 +61,13 @@ class MemoryView : public QDockWidget {
       void updateDisplay(Program *program);
       
       void gotoDeclaration(Chip *chip);
+
+      void toggleWatchpoint(Chip *chip);
+      bool hasWatchpoint(Chip *chip) const;
+      bool hasWatchpoint(unsigned int addr) const;
+
+      QHash<unsigned int, bool> *getWatchpoints();
+
       // Returns largest list after removing early accesses
       //unsigned int MemoryUseMap::removeEarlyAccesses(MemoryUseMap *memoryUseMap, TIMESTAMP earliest) const;
 
@@ -76,6 +84,9 @@ class MemoryView : public QDockWidget {
       void populateDefault();
       void createChips(float *values, unsigned int heapSize, Program *program = NULL);
       QGraphicsScene *m_scene;
+      
+      // holds whether or not each memory address contains a watchpoint
+      QHash<unsigned int, bool> m_watchpoints;
 };
 
 class GLMemoryPane : public QGLWidget {

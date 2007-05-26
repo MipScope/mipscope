@@ -54,7 +54,7 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    : QObject(parent), m_current(true), m_runnable(false), m_rollingBack(R_NORMAL), m_gui(gui), m_editorPane(editorPane), m_parent(parent), m_syntaxErrors(NULL), m_parseList(NULL), m_debugger(new Debugger(gui->getSyscallListener()))
 {
    State *s = m_debugger->getState();
-
+   
    // Initialize relationship between Proxy and State
    //connect(s, SIGNAL(syscall(int,int)), this, SLOT(syscallReceived(int,int)));
 //   connect(s, SIGNAL(undoSyscall(int)), this, SLOT(undoSyscallReceived(int)));
@@ -209,6 +209,9 @@ void Program::programStatusChangeReceived(int s) {
          m_gui->getRegisterView()->updateDisplay(s);
          
          updateMemory(this, getState(), s);
+//         if (s == PAUSED && !m_debugger->getReasonforPause().isEmpty())
+//            notifyPause(m_debugger->getReasonforPause());
+
          //m_gui->updateMemoryView(this);
       }
    }
@@ -260,7 +263,7 @@ void Program::programTerminated(int reason) {
 }
 
 // Display a message notifying user of reason for pause in program execution in the status bar
-void Program::notifyPause(const QString &reason) const {
+void Program::notifyPause(const QString &reason) {
    if (STATUS_BAR != NULL)
       STATUS_BAR->showMessage(reason, STATUS_DELAY + 3500);
 }
@@ -397,7 +400,8 @@ void Program::run() {
 
       m_debugger->setParseList(m_parseList);
       m_debugger->setWatchpoints(getWatchpoints());
-      
+      m_debugger->setMemoryWatchpoints(m_gui->getMemoryWatchpoints());
+
       updateMemory(this, getState(), RUNNING);//View(this);
       if (STATUS_BAR != NULL)
          STATUS_BAR->showMessage(QString("Running program %1...").arg(getName()));

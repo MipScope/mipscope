@@ -106,7 +106,6 @@ MemoryView::MemoryView(Gui *gui)
    QDockWidget::setObjectName(tr("Memory View"));
    
    Q_INIT_RESOURCE(memoryImages);
-   
 #ifdef USE_BIRDS_EYE
    m_view = new View(tr("Memory View"), this);
    setWidget(m_view);
@@ -299,7 +298,13 @@ void MemoryView::updateDisplay(Program *program) {
 #endif
 }
 
+QHash<unsigned int, bool> *MemoryView::getWatchpoints() {
+   return &m_watchpoints;
+}
+
 void MemoryView::reset() {
+//   m_watchpoints.clear();
+
    //populateDefault();
 #ifndef USE_BIRDS_EYE
    m_glMemoryPane->reset();
@@ -645,8 +650,8 @@ void MemoryView::createChips(float *values, unsigned int noAddresses, Program *p
       QString label;
       if (program != NULL)
          program->getLabelForAddress(address, label);
-         
-      QGraphicsItem *item = new Chip(m_view, QColor(color), x, y, address, value, label, NULL);
+      
+      QGraphicsItem *item = new Chip(m_view, QColor(color), x, y, address, value, label, hasWatchpoint(address), NULL);
       item->setPos(QPointF(x, y));
       m_scene->addItem(item);
    }
@@ -656,6 +661,29 @@ void MemoryView::createChips(float *values, unsigned int noAddresses, Program *p
       delete oldScene;
    
    free(values);
+}
+
+void MemoryView::toggleWatchpoint(Chip *chip) {
+   unsigned int addr = chip->getAddress();
+   bool enabled = !hasWatchpoint(addr);
+
+   //cerr << "setting wpnt: " << addr << " to " << enabled << endl;
+
+   m_watchpoints[addr] = enabled;
+   chip->setWatchpointEnabled(enabled);
+}
+
+bool MemoryView::hasWatchpoint(Chip *chip) const {
+   unsigned int addr = chip->getAddress();
+
+   return hasWatchpoint(addr);
+}
+
+bool MemoryView::hasWatchpoint(unsigned int addr) const {
+   if (!m_watchpoints.contains(addr))
+      return false;
+
+   return m_watchpoints[addr];
 }
 
 //    QImage image(":/test.png");

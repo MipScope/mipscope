@@ -54,6 +54,8 @@ const char *const registerAliases[] = {
    "LO",             // 34
 };
 
+QPixmap *WATCHPOINT = NULL;
+
 // Pseudo-Output terminal, capable of undoing/redoing output
 // ---------------------------------------------------------
 RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
@@ -64,8 +66,10 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
    // Default display types (unsigned base 10, and register aliases)
    m_displayType = D_HEX;
    m_registerDisplayType = D_ALIAS;
-   watchPoint = new QPixmap(IMAGES"/watchPoint.png");
    
+   WATCHPOINT = new QPixmap(IMAGES"/watchPoint.png");
+   watchPoint = WATCHPOINT;
+
    // create a new qtabbedwidget holding View/Options, respectively
    m_tabWidget = new QTabWidget(this);
    m_registerPane = new RegisterPane(this);

@@ -34,6 +34,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include "../MemoryView.H"
 #include "../Utilities.H"
+#include <assert.h>
 
 #include <QtGui>
 #ifndef QT_NO_OPENGL
@@ -51,7 +52,7 @@ View::View(const QString &name, MemoryView *parent)
    graphicsView = new QGraphicsView;
    graphicsView->setRenderHint(QPainter::Antialiasing, true);
    graphicsView->setRenderHint(QPainter::TextAntialiasing, true);
-   graphicsView->setDragMode(QGraphicsView::NoDrag);//RubberBandDrag);
+   graphicsView->setDragMode(QGraphicsView::RubberBandDrag);//NoDrag
    graphicsView->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
    
 //   graphicsView->setBackgroundBrush(QPixmap(":/stackBackground.jpg"));
@@ -159,6 +160,8 @@ View::View(const QString &name, MemoryView *parent)
    connect(zoomOutIcon, SIGNAL(clicked()), this, SLOT(zoomOut()));
    connect(printButton, SIGNAL(clicked()), this, SLOT(print()));
    
+   m_selectionTime.start();
+   //setContextMenuPolicy(Qt::CustomContextMenu);
    setupContextMenu();
    setupMatrix();
 }
@@ -178,11 +181,12 @@ void View::setScene(QGraphicsScene *scene) {
    m_active = NULL;
    m_contextChip = NULL;
    graphicsView->setScene(scene);
-   
+   connect(scene, SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
+
    // attempt to keep zooming in on the same chip, even through scene changes
    if (wasFocusing) {
       QGraphicsItem *item = scene->itemAt(location);
-      cerr << "WAS_FOCUSING: " << item << endl;
+      //cerr << "WAS_FOCUSING: " << item << endl;
       
       if (item != NULL) {
          m_active = dynamic_cast<Chip*>(item);
@@ -255,7 +259,7 @@ void View::zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event) {
    if (event->button() & Qt::LeftButton) {
       m_timer.start(20, this);
    } else {
-      cerr << "else\n";
+      //cerr << "else\n";
       m_timer.stop();
       setZoom(TARGET_ZOOM);
    }
@@ -301,13 +305,51 @@ void View::timerEvent(QTimerEvent *event) {
    }
 }
 
+void View::showContextMenu(QGraphicsSceneContextMenuEvent *event) {
+   QGraphicsItem *item = graphicsView->itemAt(graphicsView->mapFromScene(event->scenePos()));
+
+   //cerr << m_selectionTime.elapsed() << ", items: " << m_oldSelectedItems.size() << "  (item = " << item << endl;
+   bool shortTime = (m_selectionTime.elapsed() <= 50);
+
+   if (item == NULL && m_selectedItems.isEmpty() && (!shortTime || m_oldSelectedItems.isEmpty())) {
+      event->ignore();
+      return;
+   }
+
+   if (shortTime) {
+      if (item == NULL)
+         item = m_oldSelectedItems.front();
+
+      foreach(QGraphicsItem *item, m_oldSelectedItems)
+         item->setSelected(true);
+   }
+   
+   event->accept();
+   showContextMenu(event->screenPos(), (Chip*) item);
+}
+
 void View::showContextMenu(const QPoint &pos, Chip *active) {
    m_contextChip = active;
+   int no = 0;
    
-   if (m_parent->hasWatchpoint(active))
-      m_toggleWatchpointAction->setText("Disable watchpoint");
-   else m_toggleWatchpointAction->setText("Enable watchpoint");
+//   m_selectedItems = graphicsView->scene()->selectedItems();
+   no = m_selectedItems.size();
+/*   foreach(QGraphicsItem *item, graphicsView->scene()->selectedItems()) {
+//      Chip *chip = (Chip*)item;
+      
+      ++no;
+   }*/
    
+   if (no <= 1) {
+      if (m_parent->hasWatchpoint(active))
+         m_toggleWatchpointAction->setText("Disable watchpoint");
+      else m_toggleWatchpointAction->setText("Enable watchpoint");
+   } else {
+      if (m_contextChip == NULL)
+         m_contextChip = (Chip*)m_selectedItems.front();
+      m_toggleWatchpointAction->setText("Toggle watchpoints");
+   }
+
    m_contextMenu->popup(pos);
 }
 
@@ -327,8 +369,18 @@ void View::setupContextMenu() {
 void View::toggleWatchpointAction() {
    if (m_contextChip == NULL)
       return;
+   
+   bool found = false;
+   foreach(QGraphicsItem *item, m_selectedItems) {
+      Chip *chip = (Chip*)item;
+      
+      m_parent->toggleWatchpoint(chip);
+      if (chip == m_contextChip)
+         found = true;
+   }
 
-   m_parent->toggleWatchpoint(m_contextChip);
+   if (!found)
+      m_parent->toggleWatchpoint(m_contextChip);
 }
 
 void View::gotoDeclarationAction() {
@@ -337,4 +389,16 @@ void View::gotoDeclarationAction() {
 
    m_parent->gotoDeclaration(m_contextChip);
 }
+
+void View::selectionChanged() {
+   m_oldSelectedItems = m_selectedItems;
+   m_selectedItems = graphicsView->scene()->selectedItems();
+   m_selectionTime.restart();
+
+   //cerr << m_selectedItems.size() << endl;
+}
+
+/*void View::contextMenuEvent(QContextMenuEvent *event) {
+   cerr << m_selectedItems.size() << endl;
+}*/
 

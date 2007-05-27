@@ -40,6 +40,7 @@
 
 #include "chip/view.h"
 #include "chip/chip.h"
+#include "chip/scene.h"
 
 #include <QtGui>
 #include <Qt/QtOpenGL>
@@ -623,7 +624,7 @@ void MemoryView::populateDefault() {
 void MemoryView::createChips(float *values, unsigned int noAddresses, Program *program) {
    State *state = (program == NULL ? NULL : program->getState());
    QGraphicsScene *oldScene = m_scene;
-   m_scene = new QGraphicsScene();
+   m_scene = new Scene(m_view);//QGraphicsScene();
    
    const QImage activityGradient(IMAGES"/activityGradient.png");
    int maxY = 500;//(noAddresses >> 3) * 60;

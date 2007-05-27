@@ -313,6 +313,8 @@ void Program::updateSyntaxErrors(SyntaxErrors *newS) {
    if (m_syntaxErrors == NULL) {
       //cerr << "NO Syntax Errors: forcing update!\n";
       forceUpdateOfSyntaxErrors(false);
+      if (!noChange)
+         STATUS_BAR->clearMessage();
    } else {
       m_syntaxErrorStack.push(noChange);
       QTimer::singleShot(250, this, SLOT(singleShotSyntaxErrors()));

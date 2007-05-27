@@ -470,12 +470,19 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
    unsigned int address = SENTINEL_ADDRESS;
 
    if (s == NULL && newNode->getLabel() != NULL) {
-
+      
       // TODO:  Hack;  when to use text, and when to use data?!
-      if (m_nextTextAddress & 3)
-         m_nextTextAddress += 4 - (m_nextTextAddress & 3);
-
-      address = m_nextTextAddress;
+      if (getSegment(newNode) == S_TEXT) {
+         if (m_nextTextAddress & 3)
+            m_nextTextAddress += 4 - (m_nextTextAddress & 3);
+         
+         address = m_nextTextAddress;
+      } else { // S_DATA
+         if (m_nextDataAddress & 3)
+            m_nextDataAddress += 4 - (m_nextDataAddress & 3);
+         
+         address = m_nextDataAddress;
+      }
    } else if (s != NULL) {
       unsigned int *addr = NULL;
       

@@ -205,6 +205,11 @@ class TextEditor : public QTextEdit {
       int attemptRegisterParse(QString &text);
       
       void highlightLine(QPainter &p, ParseNode *parseNode, const QColor &color, const int width, const int height);
+
+      void fillInTemplate();
+
+      static unsigned int m_untitledNo;
+      unsigned int m_myUntitledNo;
 };
 
 class SyntaxTip : public QLabel {

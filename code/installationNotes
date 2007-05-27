@@ -1,0 +1,3 @@
+Qt 4.3 x11-version on Ubuntu:
+   Packages required: libx11-dev, libXext-dev, misc opengl libs
+

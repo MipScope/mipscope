@@ -2,7 +2,7 @@
 Gui TODO: (stuff i'll forget, otherwise)
    * Optimize editing-on-the-fly algorithmically
    * Cleanup last-minute Syscall architechure
-   * Memory watchpoints
+//   * Memory watchpoints; selection & setting of multiple
    * Integrate Maze into MipScope
    * Ability to turn on/off implicit roll-back
    * Lots of testing

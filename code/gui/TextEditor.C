@@ -45,6 +45,8 @@
 #include <QtGui>
 #include <QtCore>
 
+unsigned int TextEditor::m_untitledNo = 0;
+
 TextEditor::TextEditor(EditorPane *parent, QFont *font, QFile *file, TextEditor *prev)
    : QTextEdit(), m_parent(parent), m_prev(prev), m_next(NULL), m_file(NULL), 
    m_loaded(false), m_modified(false), m_undoAvailable(false), 
@@ -464,10 +466,16 @@ bool TextEditor::openFile(QFile *file) {
    m_hasControlSelection = false;
    
    if (file == NULL) { // open a template file
+      m_myUntitledNo = m_untitledNo++;
+
       if (!QFile::exists(TEMPLATE))
          return false;
       
-      file = new QFile(TEMPLATE);
+      QString fileName = TEMPLATE;
+      //if (m_untitledNo > 0)
+      //   fileName += QString::number(m_untitledNo++);
+      
+      file = new QFile(fileName);
       templateFile = true;
    }
    
@@ -484,7 +492,7 @@ bool TextEditor::openFile(QFile *file) {
       if (!templateFile) {
          m_file = file;
          m_loaded = true;
-      }
+      } else fillInTemplate();
       
       resetTabText();
       
@@ -504,10 +512,30 @@ bool TextEditor::openFile(QFile *file) {
    return true;
 }
 
+// attempt to auto-insert the date into the built-in template
+//   TODO:  fill-in login and name on unix; OS-specific or cs31-specific?
+void TextEditor::fillInTemplate() {
+   QRegExp r("\\bDATE:\\s+");
+
+   QTextCursor cursor = document()->find(r);
+   
+   //cerr << cursor.isNull() << endl;
+   if (!cursor.isNull()) {
+      cursor.setPosition(cursor.selectionEnd());
+      cursor.insertText(QDate::currentDate().toString());
+   }
+}
+
 // returns actual filename of open file
 QString TextEditor::fileName() const {
-   if (m_file == NULL)
-      return QString(UNTITLED);
+   if (m_file == NULL) {
+      QString name = UNTITLED;
+
+      if (m_myUntitledNo > 1)
+         name += QString(" %1").arg(m_myUntitledNo);
+
+      return name;
+   }
 
    QString path = m_file->fileName();
    

@@ -299,45 +299,51 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
    QString reg;
    QRegExp endOfReg("\\$[a-z0-9]+\\b");
    int endIndex = text.indexOf(endOfReg, regIndex);
-   
-   if (endIndex + endOfReg.matchedLength() > regIndex + 3)
-      PARSE_ERRORL(QString("invalid register '%1'.").arg(text), copy, copy.length());
-
-   if (regIndex + 2 >= len || (endIndex > 0 && endIndex + endOfReg.matchedLength() == regIndex + 2 && endIndex == regIndex))
-      reg = Parser::substring(text, regIndex + 0, 2);
-   else reg = Parser::substring(text, regIndex + 0, 3);
-   
-   if (VERBOSE) cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
-   if (VERBOSE) cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
-   
    int registerNo = -1;
-   // determine which $r register
-   if (reg.at(1).isDigit()) {// == QChar('r') && reg.at(2) != QChar('a')) {
-      reg = Parser::substring(reg, 1, reg.length() - 1);
-      //2, reg.length() - 2);  (old, for $r3 type syntax -- which doesn't exist)
-      
-      bool okay = false;
-      registerNo = reg.toInt(&okay, 10);
-      if (!okay || registerNo < zero || registerNo >= pc)
-         PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
-
-   } else { // determine between aliases
-      bool found = false;
-
-      for(int i = 0; i < pc ; i++) {
-         QRegExp r(QString("\\$") + QString(registerAliases[i]));
-
-         if (r.exactMatch(reg)) {
-            found = true;
-            registerNo = i;
-            break;
-         }
-      }
-      
-      if (!found)
-         PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
-   }
    
+   if (text == QString("$zero"))
+      registerNo = 0;
+   else {
+      if (endIndex + endOfReg.matchedLength() > regIndex + 3)
+         PARSE_ERRORL(QString("invalid register '%1'.").arg(text), copy, copy.length());
+   
+      if (regIndex + 2 >= len || (endIndex > 0 && endIndex + endOfReg.matchedLength() == regIndex + 2 && endIndex == regIndex))
+         reg = Parser::substring(text, regIndex + 0, 2);
+      else reg = Parser::substring(text, regIndex + 0, 3);
+
+      if (VERBOSE) cerr << _tab << "Len: " << len << ", regIndex = " << regIndex << ", endIndex = " << endIndex << ", matched = " << endOfReg.matchedLength() << endl;
+      if (VERBOSE) cerr << _tab << "Parsing register: '" << text.toStdString() << "'  reg: " << reg.toStdString() << endl;
+
+      // determine which $r register
+      if (reg.at(1).isDigit()) {// == QChar('r') && reg.at(2) != QChar('a')) {
+         reg = Parser::substring(reg, 1, reg.length() - 1);
+         //2, reg.length() - 2);  (old, for $r3 type syntax -- which doesn't exist)
+
+         bool okay = false;
+         registerNo = reg.toInt(&okay, 10);
+         if (!okay || registerNo < zero || registerNo >= pc)
+            PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
+
+      } else { // attempt to determine between aliases
+         bool found = false;
+         
+         reg = reg.right(reg.length() - 1);
+         for(int i = 0; i < pc ; i++) {
+//            QRegExp r(QString("\\$") + QString(registerAliases[i]));
+            
+            if (reg == QString(registerAliases[i])) {
+//            if (r.exactMatch(reg)) {
+               found = true;
+               registerNo = i;
+               break;
+            }
+         }
+
+         if (!found)
+            PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
+      }
+   }
+
    // at this point, should know register number
    if (VERBOSE) cerr << _tab << "Register: " << registerNo << " \t $" << registerAliases[registerNo] << "\n";
    
@@ -885,7 +891,9 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                   }
                   int value = imm->getValue(), size = 0;
                   QString sizeStr = text.right(text.length() - sizeInd - 1).simplified();
-                  if ((imm = parseImmediate(sizeStr, list)) == NULL || ((size = imm->getValue()) <= 0)) {
+
+                  // ensure size is valid; allow zero-length arrays like .data x:0
+                  if ((imm = parseImmediate(sizeStr, list)) == NULL || ((size = imm->getValue()) < 0)) {
                      PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
                                  "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]),
                                  directives[type]), sizeStr, sizeStr.length());

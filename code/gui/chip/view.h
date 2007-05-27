@@ -34,7 +34,10 @@
 
 #include <QFrame>
 #include <QBasicTimer>
+#include <QList>
+#include <QTime>
 
+class QContextMenuEvent;
 class QMenu;
 class QGraphicsView;
 class QLabel;
@@ -43,10 +46,12 @@ class QToolButton;
 class QTimerEvent;
 class Chip;
 class QGraphicsSceneMouseEvent;
+class QGraphicsSceneContextMenuEvent;
 class QPoint;
 class MemoryView;
 class QGraphicsScene;
 class QAction;
+class QGraphicsItem;
 
 class View : public QFrame
 {
@@ -61,10 +66,12 @@ class View : public QFrame
       void zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event);
 
       void showContextMenu(const QPoint &pos, Chip *active);
+      void showContextMenu(QGraphicsSceneContextMenuEvent *event);
       
    protected:
       void timerEvent(QTimerEvent *event);
       void setupContextMenu();
+    //  void contextMenuEvent(QContextMenuEvent *event);
       
    private slots:
 //      void resetView();
@@ -81,6 +88,7 @@ class View : public QFrame
 
       void gotoDeclarationAction();
       void toggleWatchpointAction();
+      void selectionChanged();
 
    private:
       QGraphicsView *graphicsView;
@@ -97,6 +105,9 @@ class View : public QFrame
       QBasicTimer m_timer;
       MemoryView *m_parent;
       QMenu *m_contextMenu;
+//      QList<QGraphicsItem*> m_oldSelectedItems;
+      QList<QGraphicsItem*> m_selectedItems, m_oldSelectedItems;
+      QTime m_selectionTime;
 };
 
 #endif

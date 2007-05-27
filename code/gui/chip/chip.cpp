@@ -55,7 +55,7 @@ Chip::Chip(View *view, const QColor &color, int x, int y,
    
    setToolTip(toolTip);
    
-//   setFlags(ItemIsSelectable);// | ItemIsMovable);
+   setFlags(ItemIsSelectable);// | ItemIsMovable);
    setAcceptsHoverEvents(true);
 }
 
@@ -74,10 +74,9 @@ QPainterPath Chip::shape() const
 void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
    Q_UNUSED(widget);
-
-   QColor fillColor = (option->state & QStyle::State_Selected) ? color.dark(150) : color;
-   if (m_watchpoint)
-      fillColor = QColor(206, 21, 2);
+   
+   QColor c2 = (m_watchpoint ? QColor(206, 21, 2) : color);
+   QColor fillColor = (option->state & QStyle::State_Selected) ? c2.dark(180)/*QColor(250, 251, 187)*/ : c2;
 
    if (option->state & QStyle::State_MouseOver)
       fillColor = fillColor.light(125);

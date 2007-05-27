@@ -92,7 +92,7 @@ void ErrorConsole::updateSyntaxErrors(SyntaxErrors *s, TextEditor *editor, bool 
       m_display->setHtml(m_text);
 
       if (STATUS_BAR != NULL)
-         STATUS_BAR->showMessage(QString("Error: Program %1 contains %2 errors.").arg(m_editorPane->m_activeEditor->fileName(), QString::number(s->size())));
+         STATUS_BAR->showMessage(QString("Error: Program %1 contains %2 error%3.").arg(m_editorPane->m_activeEditor->fileName(), QString::number(s->size()), (s->size() > 1 ? "s" : "")));
 
       //   m_display->setHtml(QString("<span style=\"font:10pt courier;\"><a href=\"test\">This is a test link.</a></span>"));
       //   updateDisplay();

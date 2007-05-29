@@ -523,6 +523,7 @@ void TextEditor::fillInTemplate() {
    if (!cursor.isNull()) {
       cursor.setPosition(cursor.selectionEnd());
       cursor.insertText(QDate::currentDate().toString());
+      document()->setModified(false); // no user-made changes to be saved
    }
 }
 

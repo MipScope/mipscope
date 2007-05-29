@@ -49,7 +49,8 @@ Gui::Gui(QStringList args) : QMainWindow(),
    m_fileSaveAllAction(NULL), m_debugRunAction(NULL), m_debugStepAction(NULL), 
    m_errors(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
-   m_runningEditor(NULL), m_restarted(false)
+   m_runningEditor(NULL), m_restarted(false), 
+   m_inputSyscallHandler(new InputSyscallHandler(m_syscallListener))
 {
    QApplication::setStyle(new QPlastiqueStyle());
    
@@ -93,7 +94,7 @@ void Gui::setupGui() {
 /*   QRect geom = m_output->geometry();
    geom.setSize(m_output->minimumSize());
    m_output->setGeometry(geom);*/
-
+   
    loadSettings();
 }
 

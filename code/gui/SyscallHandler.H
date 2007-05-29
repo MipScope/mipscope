@@ -40,6 +40,7 @@ class EditorPane;
 class OutputConsole;
 class State;
 class SyscallHandler;
+class ExitHandler;
 
 /* SyscallListener:
  * ---------------
@@ -69,6 +70,7 @@ class SyscallListener : public QObject {
    protected:
       Gui *m_gui;
       QHash<int, SyscallHandler*> m_syscallMap;
+      ExitHandler *m_exitHandler;
 };
 
 /* SyscallHandler:
@@ -104,6 +106,18 @@ class SyscallHandler {
       int m_syscallNo;
       bool m_handlesUndo;
 };
+
+class ExitHandler : public SyscallHandler {
+
+   public:
+      ExitHandler(SyscallListener *listener);
+      
+      void syscall(State *s, int status, int syscallNo, int valueOfa0);
+
+      void undoSyscall(int syscallNo);
+      void reset();
+};
+
 
 #endif // __SYSCALL_HANDLER_H__
 

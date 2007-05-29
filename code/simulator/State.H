@@ -97,6 +97,7 @@ class State : public QObject {
       MemoryUseMap *getMemoryUseMap();
       
       void setSyscallListener(SyscallListener *listener);
+      void exit(); // syscall 10
       
    signals:
       //void syscall(int, int);

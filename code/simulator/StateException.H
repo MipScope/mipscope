@@ -33,15 +33,14 @@
 class InvalidAddress : public StateException {
 	public:
 		InvalidAddress(unsigned int attemptedAddress, QTextBlock *b) : 
-			StateException(QString("Attempt to access invalid address: %1").arg(attemptedAddress), b), m_attemptedAddress(attemptedAddress) {}
+			StateException(QString("Attempt to access invalid address: %1").arg(QString::number(attemptedAddress, 16)), b), m_attemptedAddress(attemptedAddress) {}
 		unsigned int m_attemptedAddress;
 };
 
 class BusError : public StateException {
 	public:
 		BusError(unsigned int attemptedAddress, QTextBlock *b) : 
-			StateException("Attempt to read/write a word from an address not divisible by 4", b),
-			m_attemptedAddress(attemptedAddress) {}
+			StateException("Attempt to read/write a word from an address not divisible by 4", b),m_attemptedAddress(attemptedAddress) {}
 		unsigned int m_attemptedAddress;
 };
 
@@ -71,7 +70,11 @@ class ArithmeticOverflow : public StateException {
       ArithmeticOverflow(QTextBlock *pc) : StateException("Overflow Exception", pc) { }
 };
 
-
+class ExitSyscallHandlerCauseIAMTooLazyToWriteThisProperly : public StateException {
+   public:
+      ExitSyscallHandlerCauseIAMTooLazyToWriteThisProperly(QTextBlock *pc)
+         : StateException("", pc) { }
+};
 
 #endif // STATEEXCEPTION_H_
 

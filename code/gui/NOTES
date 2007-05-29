@@ -6,8 +6,9 @@ Gui TODO: (stuff i'll forget, otherwise)
    * Integrate Maze into MipScope
    * Ability to turn on/off implicit roll-back
    * Lots of testing
-   * Have pc in regView be accurate address
+//   * Have pc in regView be accurate address
    * Options panel; documentation in-program
+//   * Exceptions pause; don't break; added read-only memory protection
 
 
 Checked off during Summer:

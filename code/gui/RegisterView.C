@@ -321,6 +321,10 @@ void RegisterView::registerChanged(unsigned int reg, unsigned int value, int sta
       m_registerPane->m_registerLabels[reg]->updateDisplay();
 }
 
+void RegisterView::pcChanged(ParseNode *curPC, bool justRolledBack) {
+   registerChanged(pc, curPC->getAddress(), PAUSED, curPC);
+}
+
 void RegisterView::updateDisplay(int state) {
    if (state == STOPPED)
       reset();

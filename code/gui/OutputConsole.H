@@ -36,8 +36,6 @@
 #include "Console.H"
 #include "SyscallHandler.H"
 
-
-
 class Gui;
 class EditorPane;
 class OutputAction;
@@ -129,6 +127,15 @@ class TextOutputConsole : public SyscallHandler
       virtual void reset(void);
 };
 
+class InputSyscallHandler : public SyscallHandler {
+   public:
+      InputSyscallHandler(SyscallListener *listener);
+      
+      void syscall(State *s, int status, int syscallNo, int valueOfa0);
+
+      void undoSyscall(int syscallNo);
+      void reset();
+};
 
 #endif // __OUTPUT_CONSOLE_H__
 

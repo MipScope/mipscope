@@ -79,6 +79,7 @@ class Debugger : public QThread {
       int getStatus();
       State *getState();
       void setParseList(ParseList *list);
+      ParseList *getParseList() const;
       
       QString getDuration() const;
       

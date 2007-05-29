@@ -38,14 +38,16 @@
 // -------------------------------------------
 SyscallListener::SyscallListener(Gui *gui) 
    : QObject(gui), m_gui(gui)
-{ }
+{
+   m_exitHandler = new ExitHandler(this);
+}
 
 void SyscallListener::registerHandler(SyscallHandler *handler) {
    if (handler == NULL)
       return;
    
    int syscallNo = handler->getSyscallNo();
-
+   
    if (syscallNo == S_PRINT) { // convenience for OutputConsole
       m_syscallMap[S_PRINT_INT]    = handler;
       m_syscallMap[S_PRINT_FLOAT]  = handler;
@@ -86,4 +88,18 @@ int SyscallHandler::getSyscallNo() const {
 bool SyscallHandler::handlesUndo() const {
    return m_handlesUndo;
 }
+
+ExitHandler::ExitHandler(SyscallListener *listener) : SyscallHandler(listener, S_EXIT, FALSE) { }
+
+void ExitHandler::syscall(State *s, int status, int syscallNo, int valueOfa0) {
+   Q_UNUSED(s);
+   Q_UNUSED(status);
+   Q_UNUSED(syscallNo);
+   Q_UNUSED(valueOfa0);
+
+   s->exit();
+}
+
+void ExitHandler::undoSyscall(int syscallNo) { Q_UNUSED(syscallNo); }
+void ExitHandler::reset() { }
 

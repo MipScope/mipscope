@@ -129,9 +129,15 @@ void Debugger::runAnotherStep(void) {
       m_state->getPC()->execute(m_state, m_parseList, m_status);
    } catch (StateException e) {
       m_exception = e; // propogate exception up to gui
-      m_terminationReason = T_UNCAUGHT_EXCEPTION;
-      setStatus(STOPPED);
-      std::cerr << "EXCEPTION:  " << e.toStdString() << endl << endl;
+
+      if (e.isEmpty()) { // syscall 10  -> exit
+         m_terminationReason = T_COMPLETED;
+         setStatus(STOPPED);
+      } else {
+         notifyPause(e);
+         setStatus(PAUSED);
+         std::cerr << "EXCEPTION:  " << e.toStdString() << endl << endl;
+      }
    }
    
    // We run this below as well, so we stop the program immediately
@@ -266,6 +272,10 @@ void Debugger::setParseList(ParseList *list) {
    m_parseList = list;
 }
 
+ParseList *Debugger::getParseList() const {
+   return m_parseList;
+}
+
 void Debugger::run(void) {
    
    executionInit();
@@ -294,7 +304,7 @@ void Debugger::run(void) {
          //m_pauseReason = QString("Execution paused:  Breakpoint encountered");
          setStatus(PAUSED);
          Program *program = m_parseList->getProgram();
-         notifyPause(QString("Execution Paused:  Breakpoint encountered on line %1").arg(program == NULL ? "" : QString::number(program->lineNumber(m_state->getPC()))));
+         notifyPause(QString("Execution Paused:  Breakpoint encountered on line %1").arg(program == NULL ? "" : QString::number(1 + program->lineNumber(m_state->getPC()))));
          waitOnStatus(PAUSED);
          if (getStatus() == STOPPED)
             break; // check if waitOnStatus was interrupted

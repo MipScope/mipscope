@@ -143,6 +143,13 @@ void State::ensureValidAlignment(unsigned int address, unsigned int align) const
       
       throw InvalidAddress(address, m_pc->getTextBlock());
    }
+
+   if (address > DATA_BASE_ADDRESS + m_debugger->getParseList()->getHeapSize() 
+       && address + align < m_registers[sp]) {
+      cerr << address << ", " << align << ", " << endl;
+
+      throw InvalidAddress(address, m_pc->getTextBlock());
+   }
    
    if (address & align)
       throw BusError(address, m_pc->getTextBlock());
@@ -430,3 +437,6 @@ void State::setSyscallListener(SyscallListener *listener) {
    m_syscallListener = listener;
 }
 
+void State::exit() { // syscall 10
+   throw new ExitSyscallHandlerCauseIAMTooLazyToWriteThisProperly(m_pc->getTextBlock());
+}

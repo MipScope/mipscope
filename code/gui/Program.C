@@ -178,6 +178,8 @@ void Program::pcChangeReceived(ParseNode *pc) {
       pcChanged(pc, (m_rollingBack == R_JUST_ROLLED));
 
       updateMemory(this, getState(), PAUSED);
+      m_gui->getRegisterView()->pcChanged(pc, false);
+
 //      m_gui->getStackView()->updateDisplay(getState(), PAUSED);
 //      m_gui->updateMemoryView(this);
    }
@@ -206,7 +208,9 @@ void Program::programStatusChangeReceived(int s) {
       
       if (s != RUNNING) {
          //m_gui->getStackView()->updateDisplay(getState(), s);
-         m_gui->getRegisterView()->updateDisplay(s);
+         RegisterView *regView = m_gui->getRegisterView();
+         regView->updateDisplay(s);
+         regView->pcChanged(getPC(), false);
          
          updateMemory(this, getState(), s);
 //         if (s == PAUSED && !m_debugger->getReasonforPause().isEmpty())

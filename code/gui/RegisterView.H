@@ -83,6 +83,8 @@ class RegisterView : public QDockWidget {
       
       // Updates display of modified register
       void registerChanged(unsigned int reg, unsigned int value, int status, ParseNode *pc);
+
+      void pcChanged(ParseNode *pc, bool justRolledBack);
       
    protected:
       Gui *m_gui;

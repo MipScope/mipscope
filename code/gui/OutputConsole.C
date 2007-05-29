@@ -33,7 +33,7 @@
 #include "EditorPane.H"
 #include "Gui.H"
 #include "../simulator/State.H"
-#include <QTextCursor>
+#include <QtGui>
 
 // Pseudo-Output terminal, capable of printing/undoing output
 // ----------------------------------------------------------
@@ -233,4 +233,78 @@ void OutputHelper::updateBatch() {
    m_output->updateBatch();
 }
 
+
+
+InputSyscallHandler::InputSyscallHandler(SyscallListener *listener)
+   : SyscallHandler(listener, S_READ_INT)
+{
+   m_syscallNo = S_READ_CHAR;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_STRING;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_FLOAT;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_DOUBLE;
+   listener->registerHandler(this);
+}
+
+void InputSyscallHandler::syscall(State *s, int status, int syscallNo, int valueOfa0) {
+   bool okay = false;
+   int max   = 2147483647; // max signed int as defined by Qt
+   int min   = -max;
+   
+   QString input;
+   
+   switch(syscallNo) {
+      case S_READ_INT:
+         input = "Input integer:";
+         break;
+      case S_READ_FLOAT:
+         input = "Input float:";
+         break;
+      case S_READ_DOUBLE:
+         input = "Input double:";
+         break;
+      case S_READ_CHAR:
+         input = "Input character:";
+         max = 256;
+         min = -127;
+         break;
+      case S_READ_STRING:
+         input = "Input string:";
+         break;
+      default:
+         break;
+   }
+   
+   if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR) {
+      int result = QInputDialog::getInteger(NULL, "Syscall", input, 0, min, max, 1, &okay);
+
+      if (!okay)
+         result = 0;
+
+      s->setRegister((syscallNo == S_READ_CHAR ? a0 : v0), result);
+   } else if (syscallNo == S_READ_FLOAT || syscallNo == S_READ_DOUBLE) {
+      double result = QInputDialog::getDouble(NULL, "Syscall", input, 0, min, max, 1, &okay);
+
+      if (!okay)
+         result = 0;
+
+//      s->setRegister(, result);
+   } else { // syscallNo == S_READ_STRING
+      QString result = QInputDialog::getText(NULL, "Syscall", input);
+      
+      // a0 holds address of buffer
+      // a1 holds maximum length
+      
+      if (s->getRegister(a1) <= (unsigned)result.length())
+         result = result.left(s->getRegister(a1) - 1);
+      
+      const QByteArray &data = result.toAscii();
+      s->memcpy(valueOfa0, data.constData(), data.size());
+   }
+}
+
+void InputSyscallHandler::undoSyscall(int syscallNo) { Q_UNUSED(syscallNo); }
+void InputSyscallHandler::reset() { }
 

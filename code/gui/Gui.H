@@ -54,6 +54,7 @@ class MemoryView;
 class TextEditor;
 class DirectoryListing;
 class SyscallListener;
+class InputSyscallHandler;
 class ParseNode;
 class QFont;
 class Program;
@@ -207,6 +208,8 @@ class Gui : public QMainWindow {
       TextEditor *m_runningEditor;
       bool m_restarted;
       
+      InputSyscallHandler *m_inputSyscallHandler;
+
    private:  // methods
       void setupGui();
       void setupStatusBar();

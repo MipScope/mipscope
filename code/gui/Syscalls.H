@@ -54,10 +54,10 @@ enum SYSCALL {
    S_CLOSE = 15, 
    S_EXIT2 = 16, 
 
-   S_PRINT = 17,           // combination of all print functionality
-
    // Additions
    // ---------
+   S_PRINT = 17,           // combination of all print functionality
+   
    S_CLEAR_OUTPUT = 18
 };
 

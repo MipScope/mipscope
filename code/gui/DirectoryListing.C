@@ -25,7 +25,7 @@
 /* ---------------------------------------------- *\
    file: DirectoryListing.C
    auth: Travis Fischer, Tim O'Donnell
-   acGuict: tfiseher, tim
+   acct: tfischer, tim
    date: 4/26/2007
 \* ---------------------------------------------- */
 #include "DirectoryListing.H"

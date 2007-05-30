@@ -58,6 +58,8 @@ class Lui : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the upper half-word of the register $dest to the lower half-word of &lt;immediate&gt;, filling in 0s for the lower bits.";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -87,6 +89,8 @@ class Li : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to &lt;immediate&gt;.";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -115,6 +119,8 @@ class La : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to the memory address &lt;label&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -143,6 +149,8 @@ class Lw : public Instruction {
       virtual const char *getDescription() const {
          return "Sets $dest to the value of the word stored at &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -171,6 +179,8 @@ class Lb : public Instruction {
       virtual const char *getDescription() const {
          return "Sets $dest to the sign-extended value of the byte stored at &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -199,6 +209,8 @@ class Lbu : public Instruction {
       virtual const char *getDescription() const {
          return "Sets $dest to the non-sign-extended value of the byte stored at &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -230,6 +242,8 @@ class Lh : public Instruction {
       virtual const char *getDescription() const {
          return "Sets $dest to the sign-extended value of the half-word stored at &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -262,6 +276,8 @@ class Lhu : public Instruction {
       virtual const char *getDescription() const {
          return "Sets $dest to the non-sign-extended value of the half-word stored at &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -324,6 +340,8 @@ class Lwl : public Instruction {
       virtual const char *getDescription() const {
          return "Loads the left (most significant) bytes from the word at the possibly unalligned &lt;addr&gt; into $dest.";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -386,6 +404,8 @@ class Lwr : public Instruction {
       virtual const char *getDescription() const {
          return "Loads the right (least signficant) bytes from the word at the possibly unalligned &lt;addr&gt; into $dest.";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -420,6 +440,8 @@ class Ld : public Instruction {
       virtual const char *getDescription() const {
          return "Load the 64-bit quantity at &lt;addr&gt; into registers $dest and $dest+1";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -451,6 +473,8 @@ class Ulh : public Instruction {
       virtual const char *getDescription() const {
          return "Load (sign extending) the 16-bit half-word at the possibly unaligned address &lt;addr&gt; into register $dest";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -483,6 +507,8 @@ class Ulhu : public Instruction {
       virtual const char *getDescription() const {
          return "Load (not sign extending) the 16-bit half-word at the possibly unaligned address &lt;addr&gt; into register $dest";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -518,6 +544,8 @@ class Ulw : public Instruction {
       virtual const char *getDescription() const {
          return "Load the 32-bit word at the possibly unaligned address &lt;addr&gt; into register $dest";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -547,6 +575,8 @@ class Sh : public Instruction {
       virtual const char *getDescription() const {
          return "Stores the least-significant half-word of register $src into &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -565,6 +595,8 @@ class Ush : public Sh {
       virtual const char *getDescription() const {
          return "Stores the least-significant half-word of register $src into &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -594,6 +626,8 @@ class Sw : public Instruction {
       virtual const char *getDescription() const {
          return "Stores the word in register $src into &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -620,6 +654,8 @@ class Usw : public Sw {
       virtual const char *getDescription() const {
          return "Stores the word in register $src into the possibly-unaligned address &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -682,6 +718,8 @@ class Swl : public Instruction {
       virtual const char *getDescription() const {
          return "Stores the left (most significant) bytes from the word in $dest into the possibly unalligned &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -728,8 +766,6 @@ class Swr : public Instruction {
                s->setMemoryWord(baseAddress, regValue);
                break;
          }
-         
-         
       }
       
       // @overridden from Statement
@@ -738,6 +774,8 @@ class Swr : public Instruction {
       virtual const char *getDescription() const {
          return "Stores the right (least significant) bytes from the word in $dest into the possibly unalligned &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -767,6 +805,8 @@ class Sd : public Instruction {
       virtual const char *getDescription() const {
          return "Stores the 64-bit quantity in registers $src and $src + 1 at &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -797,6 +837,8 @@ class Sb : public Instruction {
       virtual const char *getDescription() const {
          return "Stores the least-significant byte of register $src into &lt;addr&gt;";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -826,6 +868,8 @@ class Move : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to the value in register $src";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -855,6 +899,8 @@ class Movn : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to the value in register $src if and only if the value in the register $condition is NOT zero";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -884,6 +930,8 @@ class Movz : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to the value in register $src if and only if the value in the register $condition is zero";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -912,6 +960,8 @@ class Mflo : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to the value in the special register LO";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -940,6 +990,8 @@ class Mfhi : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the register $dest to the value in the special register HI";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 // ----------------------------------
@@ -968,6 +1020,8 @@ class Mtlo : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the special LO register to the value in the register (or immediate value) $src";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 
@@ -997,6 +1051,8 @@ class Mthi : public Instruction {
       virtual const char *getDescription() const {
          return "Sets the special HI register to the value in the register (or immediate value) $src";
       }
+
+      virtual int getType() const { return DATA_TRANSFER; }
 };
 
 #endif // __DATATRANSFER_H__

@@ -67,6 +67,8 @@ class Slt : public Instruction {
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if signed register $src1 is less than $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -90,12 +92,13 @@ class Sltu : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sltu"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if unsigned register $src1 is less than $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -119,12 +122,13 @@ class Slti : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "slti"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;immediate&gt;"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if signed register $src1 is less than &lt;immediate&gt;, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -148,12 +152,13 @@ class Sltiu : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sltiu"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;immediate&gt;"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if unsigned register $src1 is less than &lt;immediate&gt;, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -177,12 +182,13 @@ class Seq : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "seq"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if register $src1 equals register $src2 and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -206,12 +212,13 @@ class Sge : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sge"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if signed register $src1 is greater than or equal to $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -235,12 +242,13 @@ class Sgeu : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sgeu"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if unsigned register $src1 is greater than or equal to $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -264,12 +272,13 @@ class Sgt : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sgt"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if signed register $src1 is greater than $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -293,12 +302,13 @@ class Sgtu : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sgtu"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if unsigned register $src1 is greater than $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 
@@ -323,12 +333,13 @@ class Sle : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sle"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if signed register $src1 is less than or equal to $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -352,12 +363,13 @@ class Sleu : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sleu"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if unsigned register $src1 is less than or equal to $src2, and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
 // ----------------------------------
@@ -381,15 +393,14 @@ class Sne : public Instruction {
       }
       
       // @overridden from Statement
-      
       virtual const char *getName() const { return "sne"; }
       virtual const char *getSyntax() const { return "$dest, $src1, $src2"; }
       virtual const char *getDescription() const {
          return "Set register $dest to 1 if register $src1 does not equal register $src2 and 0 otherwise.";
       }
+
+      virtual int getType() const { return COMPARISON; }
 };
 
-
-
-
 #endif /*COMPARISON_H_*/
+

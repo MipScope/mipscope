@@ -32,6 +32,7 @@
     <file>viewOutput.png</file>
     <file>viewRegisters.png</file>
     <file>viewStack.png</file>
+    <file>viewStatementListing.png</file>
 
 </qresource>
 </RCC>

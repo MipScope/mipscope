@@ -38,6 +38,7 @@
 #include "MemoryView.H"
 #include "FindDialog.H"
 #include "DirectoryListing.H"
+#include "StatementListing.H"
 #include "SyscallHandler.H"
 #include "Program.H"
 #include "../simulator/Statement.H"
@@ -299,6 +300,11 @@ void Gui::setupDockWidgets() {
    m_viewDirectoryListingAction->setIcon(QIcon(ICONS"/viewDirectoryListing.png"));
    menu->addAction(m_viewDirectoryListingAction);
 
+   m_statementListing = new StatementListing(this, m_editorPane);
+   m_viewStatementListingAction = m_statementListing->toggleViewAction();
+   m_viewStatementListingAction->setIcon(QIcon(ICONS"/viewStatementListing.png"));
+   menu->addAction(m_viewStatementListingAction);
+
    addDockWidget(Qt::BottomDockWidgetArea, m_output);
    addDockWidget(Qt::BottomDockWidgetArea, m_errors);
    addDockWidget(Qt::RightDockWidgetArea, m_stackView);
@@ -311,6 +317,9 @@ void Gui::setupDockWidgets() {
 
    if (m_memoryView != NULL)
       tabifyDockWidget(m_directorylisting, m_memoryView);
+   
+   addDockWidget(Qt::LeftDockWidgetArea, m_statementListing);
+   //tabifyDockWidget(m_directorylisting, m_statementListing);
 }
 
 void Gui::ensureVisibility(QDockWidget *widget) {

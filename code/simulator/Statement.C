@@ -128,6 +128,10 @@ void Instruction::link(State *s, unsigned int registerNo) const {
    else s->setRegister(registerNo, next->getAddress()); // accurate
 }
 
+int Instruction::getType() const {
+   return ARITHMETIC; // overridden in subclasses
+}
+
 void Instruction::insert(Instruction *instr) {
    // try to ensure we didn't mess up w/ names of instructions..
    assert(!instructionMap.contains(instr->getName()));

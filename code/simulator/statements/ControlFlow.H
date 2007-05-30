@@ -66,6 +66,8 @@ class J : public Instruction {
       virtual const char *getDescription() const {
          return "Unconditionally jumps to &lt;address&gt;";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // ----------------------------------
@@ -97,6 +99,8 @@ class Jal : public Instruction {
       virtual const char *getDescription() const {
          return "Unconditionally jumps to &lt;address&gt;."LINK_DESCRIPTION;
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // ----------------------------------
@@ -128,6 +132,8 @@ class Jalr : public Instruction {
       virtual const char *getDescription() const {
          return "Unconditionally jumps to the address stored in register $dest. Save the address of the next instruction in register $instr.";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // ----------------------------------
@@ -161,6 +167,8 @@ class Jr : public Instruction {
       virtual const char *getDescription() const {
          return "Unconditionally jumps to the address stored in register $dest";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 
@@ -209,6 +217,8 @@ class Bgez : public Instruction {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to zero";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -237,6 +247,8 @@ class Bgezal : public Bgez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to zero."LINK_DESCRIPTION;
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -263,6 +275,8 @@ class Bgtz : public Bgez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than zero";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -289,6 +303,8 @@ class Blez : public Bgez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to zero";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -317,6 +333,8 @@ class Bltzal : public Blez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than zero."LINK_DESCRIPTION;
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -343,6 +361,8 @@ class Bltz : public Blez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than zero.";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -377,6 +397,8 @@ class Bne : public Instruction {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is not equal to src2";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -405,6 +427,8 @@ class Beq : public Bne {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is equal to src2";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 
@@ -432,6 +456,8 @@ class Beqz : public Blez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 equal to zero.";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -459,6 +485,8 @@ class Bge : public Bne {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to src2";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -485,6 +513,8 @@ class Bgeu : public Bge {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than or equal to src2 (unsigned)";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -511,6 +541,8 @@ class Bgt : public Bne {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than src2";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -537,6 +569,8 @@ class Bgtu : public Bgt {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is greater than src2 (unsigned)";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -563,6 +597,8 @@ class Ble : public Bne {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to src2";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -589,6 +625,8 @@ class Bleu : public Ble {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than or equal to src2 (unsigned)";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -615,6 +653,8 @@ class Blt : public Bne {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than src2";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -641,6 +681,8 @@ class Bltu : public Blt {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is less than src2 (unsigned)";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 // -------------------------------------
@@ -667,6 +709,8 @@ class Bnez : public Bgez {
       virtual const char *getDescription() const {
          return "Conditionally branch to &lt;address&gt; if $src1 is not equal to zero";
       }
+
+      virtual int getType() const { return CONTROL_FLOW; }
 };
 
 #endif // CONTROLFLOW_H_

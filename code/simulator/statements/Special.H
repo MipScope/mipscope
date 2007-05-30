@@ -51,6 +51,8 @@ class Nop : public Instruction {
       virtual const char *getDescription() const {
          return "Does nothing.";
       }
+
+      virtual int getType() const { return SPECIAL; }
 };
 
 
@@ -77,6 +79,8 @@ class Syscall : public Instruction {
       virtual const char *getDescription() const {
          return "System call to the operating system; $v0 holds syscall number.";
       }
+
+      virtual int getType() const { return SPECIAL; }
 };
 
 // ----------------------------------
@@ -100,6 +104,8 @@ const char *Done::getSyntax() const { return ""; }
 const char *Done::getDescription() const {
    return "Terminates the program.";
 }
+
+int Done::getType() const { return SPECIAL; }
 
 #endif // SPECIAL_H_
 

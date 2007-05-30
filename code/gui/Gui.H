@@ -53,6 +53,7 @@ class StackView;
 class MemoryView;
 class TextEditor;
 class DirectoryListing;
+class StatementListing;
 class SyscallListener;
 class InputSyscallHandler;
 class ParseNode;
@@ -180,7 +181,8 @@ class Gui : public QMainWindow {
               *m_viewRegistersAction, 
               *m_viewStackAction, 
               *m_viewMemoryAction, 
-              *m_viewDirectoryListingAction;
+              *m_viewDirectoryListingAction, 
+              *m_viewStatementListingAction;
       
       // Central EditorPane and Dockable Widgets
       ErrorConsole *m_errors;
@@ -192,6 +194,7 @@ class Gui : public QMainWindow {
       StackView *m_stackView;
       MemoryView *m_memoryView; // requires OpenGL support to be enabled
       DirectoryListing *m_directorylisting;
+      StatementListing *m_statementListing;
       
       QFont m_guiFont;
       QFont m_originalFont;

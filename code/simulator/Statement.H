@@ -33,6 +33,10 @@ class ConstStatement;
 class AddressIdentifier;
 class ImmediateIdentifier;
 
+enum StatementType {
+   ARITHMETIC, COMPARISON, CONTROL_FLOW, DATA_TRANSFER, SPECIAL, DIRECTIVE
+};
+
 class Statement {
    public:
       Statement(unsigned int requiredSizeInBytes);
@@ -88,6 +92,7 @@ class Instruction : public Statement {
       virtual const char *getName() const = 0;
       virtual const char *getSyntax() const = 0;
       virtual const char *getDescription() const = 0;
+      virtual int getType() const;
       
    protected:
       // Store the address of the next instruction in registerNo
@@ -140,6 +145,7 @@ class Done : public Instruction {
       virtual const char *getName() const;
       virtual const char *getSyntax() const;
       virtual const char *getDescription() const;
+      virtual int getType() const;
 };
 
 class ConstStatement : public Statement {
@@ -156,7 +162,7 @@ class ConstStatement : public Statement {
       virtual const char *getName() const;
       virtual const char *getSyntax() const;
       virtual const char *getDescription() const;
-
+      
    protected:
       AddressIdentifier *m_id;
       ImmediateIdentifier *m_value;

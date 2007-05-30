@@ -54,6 +54,9 @@ class AssertEquals : public Instruction {
       virtual const char *getDescription() const {
          return "Asserts that the value in register $reg is equal to the immediate value given, terminating the program if the assertion fails";
       }
+
+      virtual int getType() const { return SPECIAL; }
 };
 
 #endif /*ASSER_H_*/
+

@@ -58,6 +58,7 @@ class EditorPane : public QTabWidget {
       friend class LineNo;
       friend class ErrorConsole;
       friend class FindDialog;
+      friend class StatementListing;
       
       EditorPane(Gui *parent, const char *fileName = NULL);
 	   virtual ~EditorPane(void);

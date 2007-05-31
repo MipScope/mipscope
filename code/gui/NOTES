@@ -7,7 +7,12 @@ Gui TODO: (stuff i'll forget, otherwise)
    * Ability to turn on/off implicit roll-back
    * Lots of testing
 //   * Have pc in regView be accurate address
-   * Options panel; documentation in-program
+   * Options dialog
+   * documentation in-program
+   * Recently-used files list;  use Qt demo
+   * Fix multiple-programs running concurrently
+   * Allow implicit rollBack to be toggled on/off
+//   * In-Doc MIPS Reference
 //   * Exceptions pause; don't break; added read-only memory protection
 
 

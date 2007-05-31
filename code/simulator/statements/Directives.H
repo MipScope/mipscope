@@ -110,7 +110,7 @@ class DataDirective : public Directive {
       virtual const char *getName() const { return ".data"; }
       virtual const char *getSyntax() const { return " &lt;address&gt;"; }
       virtual const char *getDescription() const {
-         return "Declares the beginning of a data segment, optionally beginning at &lt;<address&gt;";
+         return "Declares the beginning of a data segment, optionally beginning at &lt;address&gt;";
       }
 
    protected:

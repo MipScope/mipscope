@@ -129,7 +129,7 @@ bool StatementListing::isHeading(const QModelIndex &index) {
       }
    }
    
-   return !statement; // heading
+   return (!statement); // heading
 }
 
 void StatementListing::clicked(const QModelIndex &index) {

@@ -73,7 +73,7 @@ TextEditor::~TextEditor(void) { }
 
 void TextEditor::setupEditor(QFont *font) {
    setFont(*font);
-   setTabStopWidth(4 * QFontMetrics(*font).width(' '));
+   setTabStopWidth(Options::tabWidth() * QFontMetrics(*font).width(' '));
    
    // strip formatting when pasting rich-text
    setAcceptRichText(false);
@@ -105,6 +105,7 @@ void TextEditor::setupEditor(QFont *font) {
 //   connect(m_parent, SIGNAL(isModifiable(bool)), this, SLOT(modifiabilityChanged(bool)));
    connect(this, SIGNAL(updateModifiability(bool)), m_parent, SLOT(modifiabilityChanged(bool)));
    connect(m_parent, SIGNAL(fontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)));
+   connect(Options::m_options, SIGNAL(errorHighlightingEnabledChanged(bool)), this, SLOT(errorHighlightingEnabledChanged(bool)));
    
    //modifiabilityChanged(m_parent->isModifiable());
    m_syntaxHighligher = new SyntaxHighlighter(this);
@@ -127,7 +128,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
    
    // check if previously typed word was an instruction, immediately after the 
    // user completes it by typing the space bar (for syntax-help)
-   if (key == Qt::Key_Space && !textCursor().hasSelection()) {
+   if (key == Qt::Key_Space && !textCursor().hasSelection() && Options::syntaxPopupsEnabled()) {
       QTextCursor c = textCursor();
       c.movePosition(QTextCursor::StartOfLine/*PreviousWord*/, QTextCursor::KeepAnchor);
       QString selectedText = c.selectedText().trimmed();
@@ -193,7 +194,7 @@ void TextEditor::keyReleaseEvent(QKeyEvent *e) {
                c.setPosition(pos);
                c.insertText(whitespace);
             }
-         } else {
+         } else if (Options::autoIndentationEnabled()) { // auto-indent
             int nonWhiteSpaceInd = text.indexOf(QRegExp("[^ \t]"));
             if (nonWhiteSpaceInd == -1)
                nonWhiteSpaceInd = text.length();
@@ -372,7 +373,7 @@ void TextEditor::pcChanged(ParseNode *pc, bool justRolledBack) {
    m_parent->updateLineNumbers(0);
    // the 2 can be changed according to preferences later
    // just be sure to also change the fading factors in paintEvent.
-   m_program->getLastXInstructions(2, m_lastInstructions);
+   m_program->getLastXInstructions(Options::noPreviousXInstructions(), m_lastInstructions);
    viewport()->update();
 }
 
@@ -432,7 +433,7 @@ void TextEditor::paintEvent(QPaintEvent *e) {
    }
    
    p.end();
-   //setTabStopWidth(4 * QFontMetrics(f).width(' '));
+   //setTabStopWidth(Options::tabWidth() * QFontMetrics(f).width(' '));
    
    QTextEdit::paintEvent(e);
 }
@@ -468,10 +469,10 @@ bool TextEditor::openFile(QFile *file) {
    if (file == NULL) { // open a template file
       m_myUntitledNo = m_untitledNo++;
 
-      if (!QFile::exists(TEMPLATE))
+      if (!QFile::exists(Options::getTemplatePath()))
          return false;
       
-      QString fileName = TEMPLATE;
+      QString fileName = Options::getTemplatePath();
       //if (m_untitledNo > 0)
       //   fileName += QString::number(m_untitledNo++);
       
@@ -1213,17 +1214,28 @@ QTextDocument *TextEditor::getTextDocument() const {
 }*/
 
 void TextEditor::fontChanged(const QFont &f) {
+   QTextCharFormat format;
+   format.setFont(f);
+   QTextCursor c = textCursor();
+   c.select(QTextCursor::Document);
+   c.setCharFormat(format);
    setCurrentFont(f);
 
-   setTabStopWidth(4 * QFontMetrics(f).width(' '));
+   setTabStopWidth(Options::tabWidth() * QFontMetrics(f).width(' '));
 }
 
 Program *TextEditor::getProgram() const {
    return m_program;
 }
 
+void TextEditor::errorHighlightingEnabledChanged(bool enabled) {
+   if (!enabled)
+      updateSyntaxErrors(NULL);
+   else updateSyntaxErrors(m_program->getSyntaxErrors());
+}
+
 void TextEditor::updateSyntaxErrors(SyntaxErrors *errors) {
-   if (errors == NULL) { // program is free of errors
+   if (errors == NULL || !Options::errorHighlightingEnabled()) { // program is free of errors
       if (!m_selections.isEmpty()) {
          m_selections.clear();
          setExtraSelections(m_selections);

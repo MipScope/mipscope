@@ -145,6 +145,8 @@ const char *const SpecialSyntax[] = {
    "\\b__start\\s?:", 
    "\\bmain\\s?:", 
 
+   "\\bassertequals\\b", 
+
    NULL
 };
 

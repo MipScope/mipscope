@@ -154,6 +154,7 @@ class TextEditor : public QTextEdit {
       void toggleComment();
       void updateCursorPosition();
       void fontChanged(const QFont&);
+      void errorHighlightingEnabledChanged(bool enabled);
       
       // Related to Debugging
       void pcChanged(ParseNode*, bool justRolledBack);

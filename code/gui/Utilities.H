@@ -34,6 +34,7 @@
 #include <iostream>
 #include <QStatusBar>
 using namespace std;
+#include "Options.H"
 
 #define PROJECT_NAME       "MipScope"
 #define PROJECT_VERSION    "PRE-RELEASE-MAY-2007"
@@ -80,6 +81,7 @@ enum BlockState { B_DEFAULT = -1, B_NORMAL = 0, B_BREAKPOINT = 1,
 #include "../simulator/typedefs.H"
 #if 0
 #endif // guard to ensure errors in utilities.H don't show up in weird places
+extern bool VERBOSE;
 
 #endif // __UTILITIES_H__
 

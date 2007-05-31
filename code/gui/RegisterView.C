@@ -64,21 +64,21 @@ RegisterView::RegisterView(Gui *gui, EditorPane *editorPane)
    setObjectName(tr("Register View"));
    
    // Default display types (unsigned base 10, and register aliases)
-   m_displayType = D_HEX;
-   m_registerDisplayType = D_ALIAS;
+//   m_displayType = D_HEX;
+//   m_registerDisplayType = D_ALIAS;
    
    WATCHPOINT = new QPixmap(IMAGES"/watchPoint.png");
    watchPoint = WATCHPOINT;
 
    // create a new qtabbedwidget holding View/Options, respectively
-   m_tabWidget = new QTabWidget(this);
+//   m_tabWidget = new QTabWidget(this);
    m_registerPane = new RegisterPane(this);
-   m_optionsPane  = new RegisterOptionsPane(this);
+//   m_optionsPane  = new RegisterOptionsPane(this);
 
-   m_tabWidget->addTab(m_registerPane, "View");
-   m_tabWidget->addTab(m_optionsPane, "Options");
+//   m_tabWidget->addTab(m_registerPane, "View");
+//   m_tabWidget->addTab(m_optionsPane, "Options");
    
-   setWidget(m_tabWidget);
+   setWidget(m_registerPane);//tabWidget);
 }
 
 bool *RegisterView::getWatchpoints() {
@@ -200,6 +200,17 @@ QSize RegisterPane::sizeHint() const {
 // Clears all registers
 void RegisterView::reset() {
    m_registerPane->reset();
+}
+
+void RegisterView::updateDisplay(bool registerAliases) {
+   //m_displayType = (registerAliases ? D_ALIAS : D_REGISTER);
+   Q_UNUSED(registerAliases);
+   updateDisplay();
+}
+
+void RegisterView::updateBase(unsigned int base) {
+   Q_UNUSED(base);
+   updateDisplay();
 }
 
 // Clears all registers
@@ -437,8 +448,8 @@ void IDLabel::setValue(unsigned int value, ParseNode *pc) {
 }
 
 void IDLabel::updateDisplay() {
-   QString text = getRegisterText(m_register, m_registerDisplayType);
-   if (m_register == 9 && m_registerDisplayType != D_ALIAS)
+   QString text = getRegisterText(m_register, Options::registerAliases());
+   if (m_register == 9 && !Options::registerAliases())//m_registerDisplayType != D_ALIAS)
       text += QString(": ");
    else text += QString(":");
 
@@ -449,8 +460,8 @@ void IDLabel::updateDisplay() {
    m_valueLabel->setValue(m_value);
 }
 
-QString getRegisterText(int reg, int displayType) {
-   if (displayType == D_ALIAS || reg >= 32)
+QString getRegisterText(int reg, bool displayType) {
+   if (displayType || reg >= 32)
       return QString(registerAliases[reg]);
    
    return QString("r%1").arg(reg);
@@ -509,7 +520,7 @@ QString RegisterView::getRegisterText(int registerNo) const {
 QString RegisterPane::getRegisterText(int registerNo) {
    unsigned int value = m_registerLabels[registerNo]->getValue();
    
-   QString alias = ::getRegisterText(registerNo, D_ALIAS);
+   QString alias = ::getRegisterText(registerNo, true);
    QString regName = ((registerNo >= 32) ? 
       QString("<b>%1</b>").arg(alias) : 
       QString("<b>r%1</b> (%2)").arg(QString::number(registerNo), alias));
@@ -521,10 +532,10 @@ QString RegisterPane::getRegisterText(int registerNo) {
    if (value == 0)
       mText += QString("Value = 0");
    else {
-      QString one = getNoInBase(value, D_HEX), 
-//              two = getNoInBase(value, D_BINARY), 
-              three = getNoInBase(value, D_SIGNED_DECIMAL), 
-              four = getNoInBase(value, D_UNSIGNED_DECIMAL);
+      QString one = getNoInBase(value, 16), 
+//              two = getNoInBase(value, 2), 
+              three = getNoInBase((signed)value, -10),//D_SIGNED_DECIMAL), 
+              four = getNoInBase(value, 10);
       
       mText += QString(
          "Hex:      %1<br>"
@@ -563,7 +574,7 @@ void IDLabel::showExtended(const QPoint &p) {//, bool alreadyAdjusted, RegisterL
       return;
    }*/
 
-   QString alias = getRegisterText(m_register, D_ALIAS);
+   QString alias = getRegisterText(m_register, true);
    QString regName = ((m_register >= 32) ? 
       QString("<b>%1</b>").arg(alias) : 
       QString("<b>r%1</b> (%2)").arg(QString::number(m_register), alias));
@@ -575,10 +586,10 @@ void IDLabel::showExtended(const QPoint &p) {//, bool alreadyAdjusted, RegisterL
    if (m_value == 0)
       mText += QString("Value = 0");
    else {
-      QString one = getNoInBase(m_value, D_HEX), 
-//              two = getNoInBase(m_value, D_BINARY), 
-              three = getNoInBase(m_value, D_SIGNED_DECIMAL), 
-              four = getNoInBase(m_value, D_UNSIGNED_DECIMAL);
+      QString one = getNoInBase(m_value, 16), 
+//              two = getNoInBase(m_value, 2), 
+              three = getNoInBase(m_value, -10), 
+              four = getNoInBase(m_value, 10);
       
       mText += QString(
          "Hex:      %1<br>"
@@ -615,7 +626,7 @@ ValueLabel *IDLabel::getValueLabel() {
    return m_valueLabel;
 }
 
-ValueDisplay m_displayType;
+//ValueDisplay m_displayType;
 ValueLabel::ValueLabel(RegisterPane *regPane, IDLabel *idLabel) 
    : RegisterLabel(regPane), m_idLabel(idLabel)
 {
@@ -631,17 +642,17 @@ void ValueLabel::showExtended(const QPoint &p) {
 }
 
 void ValueLabel::setValue(unsigned int newValue) {
-   setText(getNoInBase(newValue, m_displayType));
+   setText(getNoInBase(newValue, Options::registerAliases()));//m_displayType));
 }
 
 QString getNoInBase(unsigned int no, int base) {
-   const int bases[] = { 16, /*2, */10, 10 };
-   int base2 = bases[base];
+//   const int bases[] = { 16, /*2, */10, 10 };
+//   int base2 = bases[base];
    
-   if (base == D_SIGNED_DECIMAL)
-      return QString::number((signed int)no, base2);
+   if (base < 0)
+      return QString::number((signed int)no, -base);
    
-   return QString::number(no, base2);
+   return QString::number(no, base);//2);
 }
 
 
@@ -808,8 +819,8 @@ void ExtendedView::paintEvent(QPaintEvent *e) {
    QLabel::paintEvent(e);
 }
 
-IDDisplay m_registerDisplayType;
-RegisterOptionsPane::RegisterOptionsPane(RegisterView *parent) 
+//IDDisplay m_registerDisplayType;
+/*RegisterOptionsPane::RegisterOptionsPane(RegisterView *parent) 
    : QWidget(), m_parent(parent)
 {
    QWidget *p = new QWidget();
@@ -862,5 +873,5 @@ void RegisterOptionsPane::defaultBaseChanged(int val) {
    m_displayType = (ValueDisplay)val;
 
    m_parent->m_registerPane->displayTypeChanged();
-}
+}*/
 

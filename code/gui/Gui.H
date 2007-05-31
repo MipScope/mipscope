@@ -60,6 +60,8 @@ class ParseNode;
 class QFont;
 class Program;
 class State;
+class OptionsDialog;
+class Options;
 
 class Gui : public QMainWindow {
    
@@ -140,8 +142,11 @@ class Gui : public QMainWindow {
       void debugRestartAction();
       void debugRunXSpimAction();
       
+      void showOptionsDialog();
       
    protected:
+      Options *m_options;
+
       // Global listener for syscalls
       SyscallListener *m_syscallListener;
 
@@ -182,7 +187,10 @@ class Gui : public QMainWindow {
               *m_viewStackAction, 
               *m_viewMemoryAction, 
               *m_viewDirectoryListingAction, 
-              *m_viewStatementListingAction;
+              *m_viewStatementListingAction, 
+              
+              // Options-Related
+              *m_optionsAction;
       
       // Central EditorPane and Dockable Widgets
       ErrorConsole *m_errors;
@@ -195,6 +203,7 @@ class Gui : public QMainWindow {
       MemoryView *m_memoryView; // requires OpenGL support to be enabled
       DirectoryListing *m_directorylisting;
       StatementListing *m_statementListing;
+      OptionsDialog *m_optionsDialog;
       
       QFont m_guiFont;
       QFont m_originalFont;

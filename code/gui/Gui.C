@@ -40,12 +40,14 @@
 #include "DirectoryListing.H"
 #include "StatementListing.H"
 #include "SyscallHandler.H"
+#include "OptionsDialog.H"
 #include "Program.H"
+#include "Options.H"
 #include "../simulator/Statement.H"
 #include <QtGui>
 #include <QProcess>
 
-Gui::Gui(QStringList args) : QMainWindow(), 
+Gui::Gui(QStringList args) : QMainWindow(), m_options(new Options(this)), 
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_debugRunAction(NULL), m_debugStepAction(NULL), 
    m_errors(NULL), m_editorPane(new EditorPane(this)), 
@@ -97,6 +99,7 @@ void Gui::setupGui() {
    m_output->setGeometry(geom);*/
    
    loadSettings();
+   m_options->setupConnections(m_editorPane);
 }
 
 void Gui::setupActions() {
@@ -251,8 +254,14 @@ void Gui::setupDebugActions() {
 void Gui::setupOptionsMenu() {
    QMenu *menu = menuBar()->addMenu(tr("&Options"));
    
-   // TODO
-   menu->addAction(new QAction(tr("&TODO"), this));
+   m_optionsDialog = new OptionsDialog(this, m_editorPane);
+   
+   //menu->addAction(new QAction(tr("&TODO"), this));
+   m_optionsAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/options.png"), tr("Options"), this), this, SLOT(showOptionsDialog()), QKeySequence(), true);
+}
+
+void Gui::showOptionsDialog() {
+   m_optionsDialog->show();
 }
 
 QStatusBar *STATUS_BAR;
@@ -570,7 +579,6 @@ void Gui::updateDebugActions() {
          m_debugBStepXAction->setEnabled(false);
          if (m_runningEditor != NULL)
             m_runningEditor->setModifiable(false);
-//         m_editorPane->setModifiable(false);
          
          break;
       case PAUSED:
@@ -588,7 +596,7 @@ void Gui::updateDebugActions() {
 
          // Allow for on-the-fly editing!
          if (m_runningEditor != NULL) {
-            m_runningEditor->setModifiable(true);
+            m_runningEditor->setModifiable(!Options::readOnlyDebuggingEnabled());
             
             Program *program = m_runningEditor->getProgram();
             if (program != NULL) {
@@ -610,7 +618,6 @@ void Gui::updateDebugActions() {
          m_debugBStepAction->setEnabled(false);
          m_debugStepXAction->setEnabled(false);
          m_debugBStepXAction->setEnabled(false);
-         //m_editorPane->setModifiable(true);
          if (m_runningEditor != NULL)
             m_runningEditor->setModifiable(true);
          
@@ -711,8 +718,10 @@ void Gui::debugRunXSpimAction() {
       return;
 
 #ifndef TARGET_SYSTEM_WIN
-   const char *const path = "/course/cs031/pro/spim/xspim";
+   char *path = Options::getXSpimPath().toAscii().data();
+      //"/course/cs031/pro/spim/xspim";
    
+   // TODO:  better error message if cannot find xspim
    switch(fork()) {
       case 0: // child
          {

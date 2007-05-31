@@ -52,10 +52,10 @@ class QTime;
 class QPixmap;
 class ExtendedView;
 class ParseNode;
-class RegisterOptionsPane;
+//class RegisterOptionsPane;
 class CustomBackgroundWidget;
 extern QString getNoInBase(unsigned int no, int base);
-extern QString getRegisterText(int register, int displayType);
+extern QString getRegisterText(int register, bool displayType);
 
 class RegisterView : public QDockWidget {
    
@@ -63,7 +63,7 @@ class RegisterView : public QDockWidget {
    
    public:  // this is a horribly designed set of classes.. sorry
       friend class RegisterPane;
-      friend class RegisterOptionsPane;
+//      friend class RegisterOptionsPane;
       friend class IDLabel;
       
       RegisterView(Gui *parent, EditorPane *editorPane);
@@ -78,6 +78,9 @@ class RegisterView : public QDockWidget {
       // Clears all registers
       void reset();
       
+      void updateDisplay(bool);
+      void updateBase(unsigned int);
+
       // Redisplays all register values
       void updateDisplay();
       
@@ -93,7 +96,7 @@ class RegisterView : public QDockWidget {
       // tabbed widget w/ View/Options tabs
       QTabWidget *m_tabWidget;
       RegisterPane *m_registerPane;
-      RegisterOptionsPane *m_optionsPane;
+//      RegisterOptionsPane *m_optionsPane;
 };
 
 class RegisterPane : public QWidget {
@@ -201,12 +204,12 @@ class IDLabel : public RegisterLabel {
       ParseNode *m_lastModified;
 };
 
-enum IDDisplay { D_REGISTER, D_ALIAS };
+//enum IDDisplay { D_REGISTER, D_ALIAS };
 
 // Different ways values in registers may be viewed
-enum ValueDisplay { D_HEX, /*D_BINARY, */D_SIGNED_DECIMAL, D_UNSIGNED_DECIMAL };
-extern ValueDisplay m_displayType;
-extern IDDisplay m_registerDisplayType;
+//enum ValueDisplay { D_HEX, /*D_BINARY, */D_SIGNED_DECIMAL, D_UNSIGNED_DECIMAL };
+//extern ValueDisplay m_displayType;
+//extern IDDisplay m_registerDisplayType;
 
 class ValueLabel : public RegisterLabel {
    
@@ -254,7 +257,7 @@ class ExtendedView : public QLabel {
       void paintEvent(QPaintEvent *e);
 };
 
-class RegisterOptionsPane : public QWidget {
+/*class RegisterOptionsPane : public QWidget {
    
    Q_OBJECT
    
@@ -267,7 +270,7 @@ class RegisterOptionsPane : public QWidget {
       
    protected:
       RegisterView *m_parent;
-};
+};*/
 
 
 

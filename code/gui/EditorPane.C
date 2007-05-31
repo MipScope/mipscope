@@ -40,7 +40,7 @@
 
 #include <iostream>
 
-EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_parent(parent), m_font(new QFont("Courier", 11)), m_findDialog(new FindDialog(this)), m_modifiable(true)
+EditorPane::EditorPane(Gui *parent, const char *fileName) : QTabWidget(), m_parent(parent), m_font(new QFont(Options::getFont())), m_findDialog(new FindDialog(this)), m_modifiable(true)
 {
    m_font->setFixedPitch(true);
    m_activeEditor = new TextEditor(this, m_font);
@@ -330,6 +330,12 @@ void EditorPane::closeAction() {
       m_activeEditor = new TextEditor(this, m_font);
       addTab(m_activeEditor, "");
    }
+}
+
+void EditorPane::currentFontChanged(const QFont &f) {
+   m_font = new QFont(f);
+   
+   fontChanged(f);
 }
 
 // Proxy slots for active TextEditor

@@ -100,6 +100,8 @@ class EditorPane : public QTabWidget {
       // called whenever the modifiability of a texteditor is changed
       void modifiabilityChanged(bool isModifiable);
       
+      void currentFontChanged(const QFont&);
+
       // Proxy slots for active TextEditor
       void cut();
       void copy();

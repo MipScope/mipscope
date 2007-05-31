@@ -47,7 +47,8 @@
 
 string _tab;
 
-extern bool VERBOSE;
+//extern bool VERBOSE;
+
 
 ParseList *Parser::parseDocument(QTextDocument *document) {
    ParseList *parseList = new ParseList(document);

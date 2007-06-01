@@ -333,7 +333,12 @@ void RegisterView::registerChanged(unsigned int reg, unsigned int value, int sta
 }
 
 void RegisterView::pcChanged(ParseNode *curPC, bool justRolledBack) {
-   registerChanged(pc, curPC->getAddress(), PAUSED, curPC);
+   unsigned int addr = 0;
+
+   if (curPC != NULL)
+      addr = curPC->getAddress();
+
+   registerChanged(pc, addr, PAUSED, curPC);
 }
 
 void RegisterView::updateDisplay(int state) {
@@ -642,13 +647,13 @@ void ValueLabel::showExtended(const QPoint &p) {
 }
 
 void ValueLabel::setValue(unsigned int newValue) {
-   setText(getNoInBase(newValue, Options::registerAliases()));//m_displayType));
+   setText(getNoInBase(newValue, Options::dislayBase()));//m_displayType));
 }
 
 QString getNoInBase(unsigned int no, int base) {
 //   const int bases[] = { 16, /*2, */10, 10 };
 //   int base2 = bases[base];
-   
+
    if (base < 0)
       return QString::number((signed int)no, -base);
    

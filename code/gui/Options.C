@@ -84,7 +84,8 @@ bool Options::registerAliases() {
    return m_options->m_registerAliases;
 }
 
-unsigned int Options::dislayBase() {
+int Options::dislayBase() {
+//   cerr << "displayBase: " << m_options->m_displayBase << endl;
    return m_options->m_displayBase;
 }
 

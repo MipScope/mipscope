@@ -52,14 +52,14 @@ class Options : public QObject
       // General
       static bool verbosity();
       static bool registerAliases();
-      static unsigned int dislayBase();
+      static int dislayBase();
       static bool showAllInstructions();
       static QString getTemplatePath();
       static QString getXSpimPath();
       
       bool m_verbosity;
       bool m_registerAliases;
-      unsigned int m_displayBase;
+      int m_displayBase;
       bool m_showAllInstructions;
 
       QString m_templatePath;
@@ -68,7 +68,7 @@ class Options : public QObject
    signals:
       void verbosityChanged(bool);
       void registerAliasesChanged(bool);
-      void displayBaseChanged(unsigned int);
+      void displayBaseChanged(int);
       void showAllInstructionschanged(bool);
       void templatePathChanged(const QString&);
       void xspimPathChanged(const QString&);

@@ -65,13 +65,14 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    ch->setToolTip(tr("Enable/Disable the display of internal debugging information to stderr"));
    ch->setStyle(style);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(verbosityChanged(int)));
+   ch->setCheckState(Options::verbosity() ? Qt::Checked : Qt::Unchecked);
 
    l->addWidget(ch);
    ch = new QCheckBox(tr("Use register aliases ($a0, $t1,..)"));
    ch->setToolTip(tr("Display registers via their aliases or as $r1, $r2,.."));
    ch->setStyle(style);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(registerAliasesChanged(int)));
-
+   ch->setCheckState(Options::registerAliases() ? Qt::Checked : Qt::Unchecked);
    l->addWidget(ch);
 
    QLabel *label = new QLabel(tr("Default Display Base:"));
@@ -83,6 +84,25 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    combo->addItem(tr("Hex (16)"));
    connect(combo, SIGNAL(currentIndexChanged(int)), 
          this, SLOT(displayBaseChanged(int)));
+
+   int index = 0;
+   switch(Options::dislayBase()) {
+      case 8:
+         index = 1;
+         break;
+      case 10:
+         index = 2;
+         break;
+      case -10:
+         index = 3;
+         break;
+      case 16:
+         index = 4;
+         break;
+      default:
+         break;
+   }
+   combo->setCurrentIndex(index);
   
    QHBoxLayout *lH = new QHBoxLayout;
    lH->addWidget(label);
@@ -99,8 +119,10 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    QRadioButton *b = new QRadioButton(tr("Show all MIPS r3000/MIPS32 instructions"));
    b->setStyle(style);
    l->addWidget(b);
+   b->setChecked(Options::showAllInstructions());
    b = new QRadioButton(tr("Show only the most common instructions"));
    b->setStyle(style);
+   b->setChecked(!Options::showAllInstructions());
    l->addWidget(b);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(showAllInstructionsChanged(int)));
    
@@ -115,6 +137,7 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    QString toolTip = tr("Enter full path to template file used for new source files.");
    label = new QLabel(tr("Template File:"));
    QLineEdit *edit = new QLineEdit;
+   edit->setText(Options::getTemplatePath());
    connect(edit, SIGNAL(textEdited(const QString&)), this, SLOT(templatePathChanged(const QString&)));
    label->setToolTip(toolTip);
    edit->setToolTip(toolTip);
@@ -126,6 +149,7 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    l2 = new QHBoxLayout;
    label = new QLabel(tr("xspim:"));
    edit  = new QLineEdit;
+   edit->setText(Options::getXSpimPath());
    connect(edit, SIGNAL(textEdited(const QString&)), this, SLOT(xspimPathChanged(const QString&)));
    label->setToolTip(toolTip);
    edit->setToolTip(toolTip);
@@ -180,18 +204,21 @@ EditingOptionsPage::EditingOptionsPage(QWidget *parent) : QWidget(parent)
    ch->setToolTip(tr("Enable/Disable the display of syntax popups during editing."));
    ch->setStyle(style);
    l->addWidget(ch);
+   ch->setCheckState(Options::syntaxPopupsEnabled() ? Qt::Checked : Qt::Unchecked);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(syntaxPopupsChanged(int)));
 
    ch = new QCheckBox(tr("Toggle error highlighting"));
    ch->setToolTip(tr("Enable/Disable on-the-fly error highlighting"));
    ch->setStyle(style);
    l->addWidget(ch);
+   ch->setCheckState(Options::errorHighlightingEnabled() ? Qt::Checked : Qt::Unchecked);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(errorHighlightingChanged(int)));
 
    ch = new QCheckBox(tr("Toggle auto-indentation"));
    ch->setToolTip(tr("Enable/Disable attempted auto-indentation on pressing Enter."));
    ch->setStyle(style);
    l->addWidget(ch);
+   ch->setCheckState(Options::autoIndentationEnabled() ? Qt::Checked : Qt::Unchecked);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(autoIndentationChanged(int)));
    
    QLabel *label  = new QLabel(tr("Set Tabwidth:"));
@@ -200,6 +227,7 @@ EditingOptionsPage::EditingOptionsPage(QWidget *parent) : QWidget(parent)
    tabs->setValue(4); // TODO
    tabs->setSuffix(tr(" spaces"));
    tabs->setSpecialValueText(tr("Disable Tabs"));
+   tabs->setValue(Options::tabWidth());
    connect(tabs, SIGNAL(valueChanged(int)), this, SLOT(tabWidthChanged(int)));
    
    QHBoxLayout *lH = new QHBoxLayout;
@@ -217,6 +245,7 @@ EditingOptionsPage::EditingOptionsPage(QWidget *parent) : QWidget(parent)
    m_fontButton = b;
    m_fontButton->setToolTip(tr("Change the font used for the main code editor."));
 
+   m_fontButton->setFont(Options::getFont());
    connect(b, SIGNAL(clicked()), this, SLOT(changeFont()));
 
    mainLayout->addWidget(b);
@@ -265,6 +294,7 @@ void EditingOptionsPage::tabWidthChanged(int index) {
 }
 
 void EditingOptionsPage::changeFont() {
+   m_font = Options::getFont();
    m_font = QFontDialog::getFont(0, m_font);
    m_fontButton->setFont(m_font);
    

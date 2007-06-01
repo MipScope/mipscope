@@ -33,6 +33,7 @@
 #include "Gui.H"
 #include "OutputConsole.H"
 #include "../simulator/State.H"
+#include "SyncSyscall.H"
 
 // Handles all syscalls outputted by a Program
 // -------------------------------------------
@@ -40,6 +41,7 @@ SyscallListener::SyscallListener(Gui *gui)
    : QObject(gui), m_gui(gui)
 {
    m_exitHandler = new ExitHandler(this);
+   m_mainProxy = new MainSyscallProxy();
 }
 
 void SyscallListener::registerHandler(SyscallHandler *handler) {
@@ -59,22 +61,58 @@ void SyscallListener::registerHandler(SyscallHandler *handler) {
 
 void SyscallListener::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    if (m_syscallMap.contains(syscallNo))
-      m_syscallMap[syscallNo]->syscall(s, status, syscallNo, valueOfa0);
+   {
+       SyscallHandler *handler = m_syscallMap[syscallNo];
+       
+       if (handler->isSynchronous())
+       {
+           LocalSyscallProxy(handler, m_mainProxy).syscall(s, status, syscallNo, valueOfa0);
+       }
+       else
+       {
+           handler->syscall(s, status, syscallNo, valueOfa0);
+       }
+   }
+       
 }
 
 void SyscallListener::undoSyscall(int syscallNo) {
    if (m_syscallMap.contains(syscallNo))
-      m_syscallMap[syscallNo]->undoSyscall(syscallNo);
+   {
+       SyscallHandler *handler = m_syscallMap[syscallNo];
+       
+       if (handler->isSynchronous())
+       {           
+           LocalSyscallProxy(m_syscallMap[syscallNo], m_mainProxy).undoSyscall(syscallNo);
+       }
+       else
+       {
+           handler->undoSyscall(syscallNo);
+       }
+   }
+      
 }
 
 void SyscallListener::reset() {
    foreach(SyscallHandler *sh, m_syscallMap.values())
-      sh->reset();
-   
+   {
+       if (sh->isSynchronous())
+       {
+           LocalSyscallProxy(sh, m_mainProxy).reset();
+       }
+       else
+       {
+           sh->reset();
+       }
+       
+   }
    //m_syscallMap.clear();
 }
 
-SyscallHandler::SyscallHandler(SyscallListener *listener, int mySyscallNo, bool handlesUndo) : m_syscallNo(mySyscallNo), m_handlesUndo(handlesUndo)
+SyscallHandler::SyscallHandler(SyscallListener *listener, int mySyscallNo, bool handlesUndo, bool synchronous) : 
+m_syscallNo(mySyscallNo), 
+m_handlesUndo(handlesUndo),
+m_synch(synchronous)
 {
    listener->registerHandler(this);
 }
@@ -87,6 +125,11 @@ int SyscallHandler::getSyscallNo() const {
 
 bool SyscallHandler::handlesUndo() const {
    return m_handlesUndo;
+}
+
+bool SyscallHandler::isSynchronous() const
+{
+    return m_synch;
 }
 
 ExitHandler::ExitHandler(SyscallListener *listener) : SyscallHandler(listener, S_EXIT, FALSE) { }

@@ -236,7 +236,7 @@ void OutputHelper::updateBatch() {
 
 
 InputSyscallHandler::InputSyscallHandler(SyscallListener *listener)
-   : SyscallHandler(listener, S_READ_INT)
+   : SyscallHandler(listener, S_READ_INT, true, true)
 {
    m_syscallNo = S_READ_CHAR;
    listener->registerHandler(this);

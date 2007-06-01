@@ -41,6 +41,7 @@ class OutputConsole;
 class State;
 class SyscallHandler;
 class ExitHandler;
+class MainSyscallProxy;
 
 /* SyscallListener:
  * ---------------
@@ -71,6 +72,7 @@ class SyscallListener : public QObject {
       Gui *m_gui;
       QHash<int, SyscallHandler*> m_syscallMap;
       ExitHandler *m_exitHandler;
+      MainSyscallProxy *m_mainProxy;
 };
 
 /* SyscallHandler:
@@ -86,11 +88,12 @@ class SyscallHandler {
    
    public:
       // Initializes and registers this SyscallHandler with the given SyscallListener
-      SyscallHandler(SyscallListener *listener, int mySyscallNo, bool handlesUndo = true);
+      SyscallHandler(SyscallListener *listener, int mySyscallNo, bool handlesUndo = true, bool synchronous=false);
       virtual ~SyscallHandler();
       
       int getSyscallNo() const;
       bool handlesUndo() const;
+      bool isSynchronous() const;
       
       // Core functionality:
       
@@ -105,6 +108,7 @@ class SyscallHandler {
    protected:
       int m_syscallNo;
       bool m_handlesUndo;
+      bool m_synch;
 };
 
 class ExitHandler : public SyscallHandler {

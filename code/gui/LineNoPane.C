@@ -237,6 +237,8 @@ void LineNoDisplay::contentChanged(TextEditor *active) {
 
 void LineNoDisplay::updateLineNumbers() {
    const TextEditor *active = m_editorPane->m_activeEditor;
+   if (active == NULL)
+      return;  // always remember to bring a towel ;)
    QRect rect = active->visibleRegion().boundingRect();
    int bottom = rect.bottom();
    rect.adjust(2, 0, 0, -2);

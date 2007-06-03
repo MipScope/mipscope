@@ -82,8 +82,7 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    combo->addItem(tr("Decimal (10)"));
    combo->addItem(tr("Signed Decimal (10)"));
    combo->addItem(tr("Hex (16)"));
-   connect(combo, SIGNAL(currentIndexChanged(int)), 
-         this, SLOT(displayBaseChanged(int)));
+   connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(displayBaseChanged(int)));
 
    int index = 0;
    switch(Options::dislayBase()) {
@@ -240,7 +239,7 @@ EditingOptionsPage::EditingOptionsPage(QWidget *parent) : QWidget(parent)
    mainLayout->addSpacing(12);
    
    // ----------------------------------------------------------
-   QPushButton *b = new QPushButton("Change Font");
+   QPushButton *b = new QPushButton(QString("Change Font"));// (%1)").arg(m_font.toString()));
    b->setFont(m_font);
    m_fontButton = b;
    m_fontButton->setToolTip(tr("Change the font used for the main code editor."));
@@ -297,7 +296,8 @@ void EditingOptionsPage::changeFont() {
    m_font = Options::getFont();
    m_font = QFontDialog::getFont(0, m_font);
    m_fontButton->setFont(m_font);
-   
+   m_fontButton->setText(QString("Change Font"));// (%1)").arg(m_font.toString()));
+
    Options::m_options->setFont(m_font);
    fontChanged(m_font);
 }

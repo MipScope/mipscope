@@ -35,6 +35,7 @@
 
 class Gui;
 class EditorPane;
+class QSettings;
 
 class Options : public QObject
 {
@@ -45,6 +46,7 @@ class Options : public QObject
       virtual ~Options();
       
       static Options *m_options;
+      static QSettings *m_settings; // stored by Qt, huzzah!
 
       void resetDefaults();
       void setupConnections(EditorPane *pane);
@@ -130,7 +132,7 @@ class Options : public QObject
    public slots:
       void setReadOnlyDebuggingEnabled(bool);
       void setImplicitRollbackEnabled(bool);
-      void setNoPreviousXInstructions(unsigned int);
+      void setNoPreviousXInstructions(int);
 
    protected:
       Gui *m_gui;

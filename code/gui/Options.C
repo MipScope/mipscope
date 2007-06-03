@@ -33,11 +33,13 @@
 #include "RegisterView.H"
 #include <QtGui>
 
-Options *Options::m_options = NULL;
+Options   *Options::m_options  = NULL;
+QSettings *Options::m_settings = NULL;
 
 Options::Options(Gui *gui) : m_gui(gui)
 {
-   m_options = this;
+   m_options  = this;
+   m_settings = new QSettings("Brown University", PROJECT_NAME);
 
    resetDefaults();
 }
@@ -46,31 +48,35 @@ Options::~Options() { }
 
 void Options::resetDefaults() {
    // General
-   m_verbosity = false;
-   m_registerAliases = true;
-   m_displayBase = 16;
+   if (!VERBOSE)
+      m_verbosity = m_settings->value("verbosity", false).toBool();
+   else m_verbosity = VERBOSE;
+   VERBOSE = m_verbosity;
+   m_registerAliases = m_settings->value("registerAliases", true).toBool();
+   m_displayBase = m_settings->value("displayBase", 16).toInt();
 
-   m_showAllInstructions = true;
-   m_templatePath = TEMPLATE;
-   m_xspimPath = "/course/cs031/pro/spim/xspim";
+   m_showAllInstructions = m_settings->value("showAllInstructions", true).toBool();
+   m_templatePath = m_settings->value("templatePath", QString(TEMPLATE)).toString();
+   m_xspimPath = m_settings->value("xspimPath", QString("/course/cs031/pro/spim/xspim")).toString();
 
    // Editing
-   m_syntaxPopupsEnabled = true;
-   m_errorHighlightingEnabled = true;
-   m_autoIndentationEnabled   = true;
-   m_tabWidth = 4;
-   m_font = QFont("Courier", 11);
+   m_syntaxPopupsEnabled = m_settings->value("syntaxPopupsEnabled", true).toBool();
+   m_errorHighlightingEnabled = m_settings->value("errorHighlightingEnabled", true).toBool();
+   m_autoIndentationEnabled   = m_settings->value("autoIndentationEnabled", true).toBool();
+   m_tabWidth = m_settings->value("tabWidth", 4).toInt();
+   m_font = QFont();
+   m_font.fromString(m_settings->value("font", QFont("Courier", 11).toString()).toString());
 
    // Debugging
-   m_readOnlyDebuggingEnabled = false;
-   m_implicitRollbackEnabled  = true;
-   m_noPreviousXInstructions  = 2;
+   m_readOnlyDebuggingEnabled = m_settings->value("readOnlyDebuggingEnabled", false).toBool();
+   m_implicitRollbackEnabled  = m_settings->value("implicitRollbackEnabled", true).toBool();
+   m_noPreviousXInstructions  = m_settings->value("noPreviousXInstructions", 2).toInt();
 }
 
 void Options::setupConnections(EditorPane *editorPane) {
    connect(this, SIGNAL(fontChanged(const QFont&)), editorPane, SLOT(currentFontChanged(const QFont&)));
    connect(this, SIGNAL(registerAliasesChanged(bool)), m_gui->getRegisterView(), SLOT(updateDisplay(bool)));
-   connect(this, SIGNAL(displayBaseChanged(unsigned int)), m_gui->getRegisterView(), SLOT(updateBase(unsigned int)));
+   connect(this, SIGNAL(displayBaseChanged(int)), m_gui->getRegisterView(), SLOT(updateBase(int)));
 }
 
 // -----------------------------------------------
@@ -105,31 +111,37 @@ QString Options::getXSpimPath() {
 void Options::setVerbosity(bool v) {
    m_options->m_verbosity = v;
    VERBOSE = v;
+   m_settings->setValue("verbosity", v);
    m_options->verbosityChanged(v);
 }
 
 void Options::setRegisterAliases(bool a) {
    m_options->m_registerAliases = a;
+   m_settings->setValue("registerAliases", a);
    m_options->registerAliasesChanged(a);
 }
 
 void Options::setDislayBase(unsigned int d) {
    m_options->m_displayBase = d;
+   m_settings->setValue("displayBase", d);
    m_options->displayBaseChanged(d);
 }
 
 void Options::setShowAllInstructions(bool s) {
    m_options->m_showAllInstructions = s;
+   m_settings->setValue("showAllInstructions", s);
    m_options->showAllInstructionschanged(s);
 }
 
 void Options::setTemplatePath(const QString &s) {
    m_options->m_templatePath = s;
+   m_settings->setValue("templatePath", s);
    m_options->templatePathChanged(s);
 }
 
 void Options::setXSpimPath(const QString &s) {
    m_options->m_xspimPath = s;
+   m_settings->setValue("xspimPath", s);
    m_options->xspimPathChanged(s);
 }
 
@@ -159,26 +171,31 @@ QFont Options::getFont() {
 
 void Options::setSyntaxPopupsEnabled(bool b) {
    m_options->m_syntaxPopupsEnabled = b;
+   m_settings->setValue("syntaxPopupsEnabled", b);
    m_options->syntaxPopupsEnabledChanged(b);
 }
 
 void Options::setErrorHighlightingEnabled(bool b) {
    m_options->m_errorHighlightingEnabled = b;
+   m_settings->setValue("errorHighlightingEnabled", b);
    m_options->errorHighlightingEnabledChanged(b);
 }
 
 void Options::setAutoIndentationEnabled(bool b) {
    m_options->m_autoIndentationEnabled = b;
+   m_settings->setValue("autoIndentationEnabled", b);
    m_options->autoIndentationEnabledChanged(b);
 }
 
 void Options::setTabWidth(unsigned int w) {
    m_options->m_tabWidth = w;
+   m_settings->setValue("tabWidth", w);
    m_options->tabWidthChanged(w);
 }
 
 void Options::setFont(const QFont &f) {
    m_options->m_font = f;
+   m_settings->setValue("font", f.toString());
    m_options->fontChanged(f);
 }
 
@@ -200,16 +217,19 @@ unsigned int Options::noPreviousXInstructions() {
 
 void Options::setReadOnlyDebuggingEnabled(bool b) {
    m_options->m_readOnlyDebuggingEnabled = b;
+   m_settings->setValue("readOnlyDebuggingEnabled", b);
    m_options->readOnlyDebuggingEnabledChanged(b);
 }
 
 void Options::setImplicitRollbackEnabled(bool b) {
    m_options->m_implicitRollbackEnabled = b;
+   m_settings->setValue("implicitRollbackEnabled", b);
    m_options->implicitRollbackEnabledChanged(b);
 }
 
-void Options::setNoPreviousXInstructions(unsigned int no) {
+void Options::setNoPreviousXInstructions(int no) {
    m_options->m_noPreviousXInstructions = no;
+   m_settings->setValue("noPreviousXInstructions", no);
    m_options->noPreviousXInstructionsChanged(no);
 }
 

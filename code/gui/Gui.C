@@ -51,12 +51,12 @@ Gui::Gui(QStringList args) : QMainWindow(), m_options(new Options(this)),
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_debugRunAction(NULL), m_debugStepAction(NULL), 
    m_errors(NULL), m_editorPane(new EditorPane(this)), 
-   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_mode(STOPPED), 
-   m_runningEditor(NULL), m_restarted(false), 
+   m_lineNoPane(new LineNoPane(this, m_editorPane)), m_separatorAct(NULL), 
+   m_mode(STOPPED), m_runningEditor(NULL), m_restarted(false), 
    m_inputSyscallHandler(new InputSyscallHandler(m_syscallListener))
 {
    QApplication::setStyle(new QPlastiqueStyle());
-   
+
    // load files
    args.removeFirst(); // first element is argv[0]
    foreach (QString fileName, args) {
@@ -156,6 +156,17 @@ void Gui::setupFileActions() {
 
    addAction(tb, menu, new QAction(QIcon(ICONS"/filePrint.png"), tr("&Print.."), this), this, SLOT(filePrintAction()), QKeySequence(QKeySequence::Print));
    
+   m_separatorAct = menu->addSeparator();
+   
+   // Recently used file list
+   for(int i = 0; i < MAX_RECENT_FILES; i++) {
+      m_recentFileActs[i] = new QAction(this);
+      m_recentFileActs[i]->setVisible(false);
+      connect(m_recentFileActs[i], SIGNAL(triggered()), this, SLOT(fileOpenRecentFile()));
+      menu->addAction(m_recentFileActs[i]);
+   }
+   updateRecentFileActions();
+
    menu->addSeparator();
    tb->addSeparator();
 
@@ -868,5 +879,53 @@ void Gui::gotoDeclaration(unsigned int address) {
 
    if (active != NULL)
       active->getProgram()->gotoDeclaration(address);
+}
+
+void Gui::addRecentFile(const QString &fileName) {
+   QStringList files = Options::m_settings->value("recentFiles").toStringList();
+   files.removeAll(fileName);
+   files.prepend(fileName);
+   while (files.size() > MAX_RECENT_FILES)
+      files.removeLast();
+   
+   Options::m_settings->setValue("recentFiles", files);
+   
+   updateRecentFileActions();
+   foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+      Gui *mainWin = qobject_cast<Gui *>(widget);
+      if (mainWin && mainWin != this)
+         mainWin->updateRecentFileActions();
+   }
+}
+
+void Gui::updateRecentFileActions() {
+   if (m_separatorAct == NULL)
+      return; // haven't setup Gui yet
+
+   QStringList files = Options::m_settings->value("recentFiles").toStringList();
+
+   int numRecentFiles = qMin(files.size(), MAX_RECENT_FILES);
+
+   for (int i = 0; i < numRecentFiles; ++i) {
+      QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
+      m_recentFileActs[i]->setText(text);
+      m_recentFileActs[i]->setData(files[i]);
+      m_recentFileActs[i]->setVisible(true);
+   }
+
+   for (int j = numRecentFiles; j < MAX_RECENT_FILES; ++j)
+      m_recentFileActs[j]->setVisible(false);
+   
+   m_separatorAct->setVisible(numRecentFiles > 0);
+}
+
+QString Gui::strippedName(const QString &fullFileName) {
+   return QFileInfo(fullFileName).fileName();
+}
+
+void Gui::fileOpenRecentFile() {
+   QAction *action = qobject_cast<QAction *>(sender());
+   if (action)
+      m_editorPane->openFile(action->data().toString());
 }
 

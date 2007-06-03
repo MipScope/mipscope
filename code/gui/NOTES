@@ -1,6 +1,6 @@
 
 Gui TODO: (stuff i'll forget, otherwise)
-   * Optimize editing-on-the-fly algorithmically
+   * Optimize editing-on-the-fly algorithmically; reduce number of linear for loops
    * Cleanup last-minute Syscall architechure
 //   * Memory watchpoints; selection & setting of multiple
    * Integrate Maze into MipScope

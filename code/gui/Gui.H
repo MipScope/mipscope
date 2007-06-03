@@ -37,6 +37,7 @@
 #include "Utilities.H"
 
 #define SETTINGS_FILE      "."PROJECT_NAME".cfg"
+#define MAX_RECENT_FILES   (5)
 
 class QMenu;
 class QAction;
@@ -90,6 +91,10 @@ class Gui : public QMainWindow {
       
       void activeEditorChanged(TextEditor *current);
       void gotoDeclaration(unsigned int address);
+
+      void addRecentFile(const QString &fileName);
+      void updateRecentFileActions();
+      QString strippedName(const QString &fullFileName);
       
       // Proxy-DEBUGGER Related
       // ----------------------
@@ -129,6 +134,7 @@ class Gui : public QMainWindow {
       void fileExitAction();
       void aboutMipScope();
       void clipboardModified();
+      void fileOpenRecentFile();
       
       // Debugger-Related
       void debugRunAction();
@@ -207,7 +213,10 @@ class Gui : public QMainWindow {
       
       QFont m_guiFont;
       QFont m_originalFont;
-      
+      //QStringList m_recentFiles;
+      QAction *m_recentFileActs[MAX_RECENT_FILES];
+      QAction *m_separatorAct;
+
       //@overridden
       void closeEvent(QCloseEvent *event);
       

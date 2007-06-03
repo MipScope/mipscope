@@ -208,7 +208,7 @@ void RegisterView::updateDisplay(bool registerAliases) {
    updateDisplay();
 }
 
-void RegisterView::updateBase(unsigned int base) {
+void RegisterView::updateBase(int base) {
    Q_UNUSED(base);
    updateDisplay();
 }

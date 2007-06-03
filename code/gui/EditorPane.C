@@ -35,6 +35,8 @@
 #include "TextEditor.H"
 #include "FindDialog.H"
 #include "Gui.H"
+#include "Program.H"
+#include "ErrorConsole.H"
 #include "Utilities.H"
 #include <QtGui>
 
@@ -66,6 +68,7 @@ void EditorPane::openFile(const QString &fileName) {
    if (!QFile::exists(fileName))
       return;
    
+   m_parent->addRecentFile(fileName);
    QFile *file = new QFile(fileName);
    
    if (m_activeEditor != NULL && !m_activeEditor->document()->isModified() && !m_activeEditor->m_loaded) {
@@ -328,7 +331,11 @@ void EditorPane::closeAction() {
 
    if (m_activeEditor == NULL) {
       m_activeEditor = new TextEditor(this, m_font);
-      addTab(m_activeEditor, "");
+      addTab(m_activeEditor, m_activeEditor->fileName());
+
+      ErrorConsole *err = m_parent->getErrorConsole();
+      if (err != NULL)
+         err->updateSyntaxErrors(m_activeEditor->m_program->getSyntaxErrors(), m_activeEditor);
    }
 }
 

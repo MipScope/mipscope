@@ -79,7 +79,7 @@ class RegisterView : public QDockWidget {
       void reset();
       
       void updateDisplay(bool);
-      void updateBase(unsigned int);
+      void updateBase(int);
 
       // Redisplays all register values
       void updateDisplay();

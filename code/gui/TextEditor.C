@@ -675,6 +675,7 @@ QMessageBox::StandardButton TextEditor::saveAs() {
    if (filename == "")
       return QMessageBox::Cancel; // user selected cancel
 
+   m_parent->m_parent->addRecentFile(filename);
    m_file = new QFile(filename);
    return save(true); // force save even if document is unmodified
 }

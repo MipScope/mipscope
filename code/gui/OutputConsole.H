@@ -129,12 +129,15 @@ class TextOutputConsole : public SyscallHandler
 
 class InputSyscallHandler : public SyscallHandler {
    public:
-      InputSyscallHandler(SyscallListener *listener);
+      InputSyscallHandler(Gui *gui, SyscallListener *listener);
       
       void syscall(State *s, int status, int syscallNo, int valueOfa0);
 
       void undoSyscall(int syscallNo);
       void reset();
+
+   protected:
+      Gui *m_gui;
 };
 
 #endif // __OUTPUT_CONSOLE_H__

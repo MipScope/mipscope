@@ -82,6 +82,7 @@ class Gui : public QMainWindow {
       RegisterView *getRegisterView() const;
       StackView *getStackView() const;
       ErrorConsole *getErrorConsole() const;
+      OutputConsole *getOutputConsole() const;
       TextEditor *getActiveProgram() const;
    
       void watchPointModified(unsigned int reg, bool watchPoint);

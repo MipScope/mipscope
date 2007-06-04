@@ -234,9 +234,8 @@ void OutputHelper::updateBatch() {
 }
 
 
-
-InputSyscallHandler::InputSyscallHandler(SyscallListener *listener)
-   : SyscallHandler(listener, S_READ_INT, true, true)
+InputSyscallHandler::InputSyscallHandler(Gui *gui, SyscallListener *listener)
+   : SyscallHandler(listener, S_READ_INT, true, true), m_gui(gui)
 {
    m_syscallNo = S_READ_CHAR;
    listener->registerHandler(this);
@@ -277,6 +276,8 @@ void InputSyscallHandler::syscall(State *s, int status, int syscallNo, int value
          break;
    }
    
+   m_gui->getOutputConsole()->update();
+
    if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR) {
       int result = QInputDialog::getInteger(NULL, "Syscall", input, 0, min, max, 1, &okay);
 

@@ -53,7 +53,7 @@ Gui::Gui(QStringList args) : QMainWindow(), m_options(new Options(this)),
    m_errors(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_separatorAct(NULL), 
    m_mode(STOPPED), m_runningEditor(NULL), m_restarted(false), 
-   m_inputSyscallHandler(new InputSyscallHandler(m_syscallListener))
+   m_inputSyscallHandler(new InputSyscallHandler(this, m_syscallListener))
 {
    QApplication::setStyle(new QPlastiqueStyle());
 
@@ -378,6 +378,10 @@ StackView *Gui::getStackView() const {
 
 ErrorConsole *Gui::getErrorConsole() const {
    return m_errors;
+}
+
+OutputConsole *Gui::getOutputConsole() const {
+   return m_output;
 }
 
 // Returns the currently active (running) programing for debugging purposes

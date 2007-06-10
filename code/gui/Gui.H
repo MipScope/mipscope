@@ -52,6 +52,10 @@ class ErrorConsole;
 class RegisterView;
 class StackView;
 class MemoryView;
+
+// TableView_dev
+class TableMemView;
+
 class TextEditor;
 class DirectoryListing;
 class StatementListing;
@@ -91,8 +95,7 @@ class Gui : public QMainWindow {
       bool handleProgramTerminated(int reason);
       
       void activeEditorChanged(TextEditor *current);
-      void gotoDeclaration(unsigned int address);
-
+      
       void addRecentFile(const QString &fileName);
       void updateRecentFileActions();
       QString strippedName(const QString &fullFileName);
@@ -111,6 +114,8 @@ class Gui : public QMainWindow {
       //void jumpTo(const QTextBlock&);
       
    public slots:
+      void gotoDeclaration(unsigned int address);
+       
       // emitted upon run, pause, or stop of Debugger
       void programStatusChanged(int s);
       
@@ -208,6 +213,9 @@ class Gui : public QMainWindow {
       RegisterView *m_registerView;
       StackView *m_stackView;
       MemoryView *m_memoryView; // requires OpenGL support to be enabled
+      // TableView_dev
+      TableMemView *m_tableMemoryView;
+      
       DirectoryListing *m_directorylisting;
       StatementListing *m_statementListing;
       OptionsDialog *m_optionsDialog;

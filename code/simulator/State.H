@@ -57,6 +57,7 @@ class State : public QObject {
       void setMemoryWord(unsigned int address, unsigned int value);
       void setMemoryByte(unsigned int address, unsigned char value);
       unsigned int getMemoryWordUnobserved(unsigned int address);
+      unsigned char getMemoryByteUnobserved(unsigned int address);
       unsigned int getMemoryWord(unsigned int address);
       unsigned char getMemoryByte(unsigned int address);
 

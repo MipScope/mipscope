@@ -125,6 +125,18 @@ unsigned int State::getMemoryWordUnobserved(unsigned int address) {
    return 0;
 }
 
+unsigned char State::getMemoryByteUnobserved(unsigned int address) {
+   ensureValidAlignment(address, 0);
+
+   unsigned int word = getMemoryWordUnobserved(address & ~3);
+   if (word == 0)
+      return 0;
+
+   unsigned int shift = (address & 3) << 3;
+   
+   return (unsigned char)((word & (0xff << shift)) >> shift);
+}
+
 unsigned char State::getMemoryByte(unsigned int address) {
    ensureValidAlignment(address, 0);
 

@@ -36,6 +36,9 @@
 #include "RegisterView.H"
 #include "StackView.H"
 #include "MemoryView.H"
+// TableView_dev
+#include "TableMemView.H"
+
 #include "FindDialog.H"
 #include "DirectoryListing.H"
 #include "StatementListing.H"
@@ -55,7 +58,8 @@ Gui::Gui(QStringList args) : QMainWindow(), m_options(new Options(this)),
    m_mode(STOPPED), m_runningEditor(NULL), m_restarted(false), 
    m_inputSyscallHandler(new InputSyscallHandler(this, m_syscallListener))
 {
-   QApplication::setStyle(new QPlastiqueStyle());
+   QApplication::setStyle("plastique");
+   
 
    // load files
    args.removeFirst(); // first element is argv[0]
@@ -84,6 +88,7 @@ void Gui::setupGui() {
    palette.setColor(QPalette::Highlight, QColor(157, 187, 227));//180, 201, 233));
    palette.setColor(QPalette::Window, QColor(239, 239, 239));
    qApp->setPalette(palette);
+   
    m_originalFont = qApp->font();
 //   m_guiFont = QFont("tahoma", 12);
 //   qApp->setFont(m_guiFont);
@@ -314,7 +319,11 @@ void Gui::setupDockWidgets() {
       m_viewMemoryAction->setIcon(QIcon(ICONS"/viewMemory.png"));
       menu->addAction(m_viewMemoryAction);
    }
-
+   
+   // TableView_dev
+   m_tableMemoryView = new TableMemView(this);
+   
+   
    m_directorylisting = new DirectoryListing(this, m_editorPane);
    m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
    m_viewDirectoryListingAction->setIcon(QIcon(ICONS"/viewDirectoryListing.png"));
@@ -330,6 +339,10 @@ void Gui::setupDockWidgets() {
    addDockWidget(Qt::RightDockWidgetArea, m_stackView);
    addDockWidget(Qt::RightDockWidgetArea, m_registerView);
    addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
+   
+   // TableView_dev
+   addDockWidget(Qt::LeftDockWidgetArea, m_tableMemoryView);
+   
    
    if (m_memoryView != NULL)
       addDockWidget(Qt::LeftDockWidgetArea, m_memoryView);
@@ -873,6 +886,10 @@ void Gui::updateMemoryView(Program *active) {
       return; // platform doesn't support OpenGL
    
    m_memoryView->updateDisplay(active);
+   
+   // TableView_dev
+   m_tableMemoryView->updateDisplay(active);
+   
 }
 
 void Gui::gotoDeclaration(unsigned int address) {

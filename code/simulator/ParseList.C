@@ -540,7 +540,7 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
 // Functionality for Editing-On-The-Fly
 // ------------------------------------
 
-void ParseList::updateSyntacticValidity(State *currentState) {
+void ParseList::updateSyntacticValidity(State *currentState, const QTextBlock &current) {
    SyntaxErrors errors;
    int lineNo = 0;
    
@@ -552,7 +552,7 @@ void ParseList::updateSyntacticValidity(State *currentState) {
       if (oldNode == NULL) {
          if (VERBOSE)
             cerr << "(UPDATE) attempting to parse block: '" << b.text().toStdString() << "'\n";
-
+         
          QTextBlock *actual = new QTextBlock(b);
          ParseNode *newNode = NULL;
          
@@ -564,7 +564,7 @@ void ParseList::updateSyntacticValidity(State *currentState) {
          } catch(ParseError &e) {
             if (VERBOSE)
                cerr << "Error line  " << lineNo + 1 << ": " << e.toStdString() << endl;
-
+            
             e.setTextBlock(actual);
             e.setLineNo(lineNo);
             errors.push_back(e);

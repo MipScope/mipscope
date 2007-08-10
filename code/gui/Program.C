@@ -558,7 +558,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
       
       // Update validity of program
       try {
-         m_parseList->updateSyntacticValidity(getState());
+         m_parseList->updateSyntacticValidity(getState(), m_parent->textCursor().block());
       } catch(SyntaxErrors &e) {
          if (VERBOSE)
             cerr << "\tProgram is invalid; " << e.size() << " syntax errors\n";

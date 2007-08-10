@@ -218,6 +218,7 @@ void Gui::setupEditActions() {
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editRedoAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editCutAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editPasteAction, SLOT(setEnabled(bool)));
+   connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editReplaceAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editSelectAllAction, SLOT(setEnabled(bool)));
    connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editToggleCommentAction, SLOT(setEnabled(bool)));
    //connect(m_editorPane, SIGNAL(isModifiable(bool)), m_editReplaceAction, SLOT(setEnabled(bool)));

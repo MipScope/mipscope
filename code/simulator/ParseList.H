@@ -107,7 +107,7 @@ class ParseList : public QObject {
       // cause it's da shit!
       bool insert(ParseNode *newNode, State *state = NULL);
       
-      void updateSyntacticValidity(State *currentState);
+      void updateSyntacticValidity(State *currentState, const QTextBlock &current);
 
       // ensures all maps get updated; returns earliest valid timestamp
       // of any secondary nodes which had to be removed as a result of the 

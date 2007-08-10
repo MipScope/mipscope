@@ -4,19 +4,16 @@ Gui TODO: (stuff i'll forget, otherwise)
    * Cleanup last-minute Syscall architechure
 //   * Memory watchpoints; selection & setting of multiple
    * Integrate Maze into MipScope
-   * Ability to turn on/off implicit roll-back
    * Lots of testing
 //   * Have pc in regView be accurate address
-   * Options dialog
+//   * Options dialog
    * documentation in-program
-   * Recently-used files list;  use Qt demo
+//   * Recently-used files list;  use Qt demo
    * Fix multiple-programs running concurrently
    * Allow implicit rollBack to be toggled on/off
 //   * In-Doc MIPS Reference
 //   * Exceptions pause; don't break; added read-only memory protection
 
-
-Checked off during Summer:
 
 
 

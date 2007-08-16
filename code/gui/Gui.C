@@ -46,17 +46,20 @@
 #include "OptionsDialog.H"
 #include "Program.H"
 #include "Options.H"
+#include "plugins/PluginHandler.H"
 #include "../simulator/Statement.H"
 #include <QtGui>
 #include <QProcess>
 
-Gui::Gui(QStringList args) : QMainWindow(), m_options(new Options(this)), 
+Gui::Gui(QStringList args) : QMainWindow(), 
+   m_options(new Options(this)), 
    m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_debugRunAction(NULL), m_debugStepAction(NULL), 
    m_errors(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_separatorAct(NULL), 
    m_mode(STOPPED), m_runningEditor(NULL), m_restarted(false), 
-   m_inputSyscallHandler(new InputSyscallHandler(this, m_syscallListener))
+   m_inputSyscallHandler(new InputSyscallHandler(this, m_syscallListener)), 
+   m_pluginHandler(NULL)
 {
    QApplication::setStyle("plastique");
    
@@ -74,6 +77,7 @@ Gui::Gui(QStringList args) : QMainWindow(), m_options(new Options(this)),
    }
    
    setupGui();
+   setupPlugins();
    show();
 }
 
@@ -105,6 +109,10 @@ void Gui::setupGui() {
    
    loadSettings();
    m_options->setupConnections(m_editorPane);
+}
+
+void Gui::setupPlugins() {
+   m_pluginHandler = new PluginHandler(this);
 }
 
 void Gui::setupActions() {
@@ -322,7 +330,7 @@ void Gui::setupDockWidgets() {
    }
    
    // TableView_dev
-   m_tableMemoryView = new TableMemView(this);
+//   m_tableMemoryView = new TableMemView(this);
    
    
    m_directorylisting = new DirectoryListing(this, m_editorPane);
@@ -342,7 +350,7 @@ void Gui::setupDockWidgets() {
    addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    
    // TableView_dev
-   addDockWidget(Qt::LeftDockWidgetArea, m_tableMemoryView);
+//   addDockWidget(Qt::LeftDockWidgetArea, m_tableMemoryView);
    
    
    if (m_memoryView != NULL)
@@ -655,6 +663,10 @@ void Gui::updateDebugActions() {
    }
 }
 
+void Gui::stopCurrentProgram() {
+   debugStopAction();
+}
+
 void Gui::debugStopAction() {
    m_restarted = false;
    stop();
@@ -889,7 +901,7 @@ void Gui::updateMemoryView(Program *active) {
    m_memoryView->updateDisplay(active);
    
    // TableView_dev
-   m_tableMemoryView->updateDisplay(active);
+   //m_tableMemoryView->updateDisplay(active);
    
 }
 

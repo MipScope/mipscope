@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+
+    <file>active.png</file>
+    <file>searched.png</file>
+    <file>backtracked.png</file>
+    <file>cornerblank.png</file>
+    <file>cornersearched.png</file>
+    <file>cornerwall.png</file>
+    <file>flag.png</file>
+    <file>ground.png</file>
+    <file>horizontalblank.png</file>
+    <file>horizontalwall.png</file>
+    <file>horizontalsearched.png</file>
+    <file>verticalwall.png</file>
+    <file>verticalsearched.png</file>
+    <file>verticalblank.png</file>
+
+</qresource>
+</RCC>

@@ -37,8 +37,8 @@
 
 // Handles all syscalls outputted by a Program
 // -------------------------------------------
-SyscallListener::SyscallListener(Gui *gui) 
-   : QObject(gui), m_gui(gui)
+   SyscallListener::SyscallListener(Gui *gui) 
+: QObject(gui), m_gui(gui)
 {
    m_exitHandler = new ExitHandler(this);
    m_mainProxy = new MainSyscallProxy();
@@ -47,9 +47,9 @@ SyscallListener::SyscallListener(Gui *gui)
 void SyscallListener::registerHandler(SyscallHandler *handler) {
    if (handler == NULL)
       return;
-   
+
    int syscallNo = handler->getSyscallNo();
-   
+
    if (syscallNo == S_PRINT) { // convenience for OutputConsole
       m_syscallMap[S_PRINT_INT]    = handler;
       m_syscallMap[S_PRINT_FLOAT]  = handler;
@@ -62,57 +62,55 @@ void SyscallListener::registerHandler(SyscallHandler *handler) {
 void SyscallListener::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    if (m_syscallMap.contains(syscallNo))
    {
-       SyscallHandler *handler = m_syscallMap[syscallNo];
-       
-       if (handler->isSynchronous())
-       {
-           LocalSyscallProxy(handler, m_mainProxy).syscall(s, status, syscallNo, valueOfa0);
-       }
-       else
-       {
-           handler->syscall(s, status, syscallNo, valueOfa0);
-       }
+      SyscallHandler *handler = m_syscallMap[syscallNo];
+
+      if (handler->isSynchronous())
+      {
+         LocalSyscallProxy(handler, m_mainProxy).syscall(s, status, syscallNo, valueOfa0);
+      }
+      else
+      {
+         handler->syscall(s, status, syscallNo, valueOfa0);
+      }
    }
-       
+
 }
 
 void SyscallListener::undoSyscall(int syscallNo) {
    if (m_syscallMap.contains(syscallNo))
    {
-       SyscallHandler *handler = m_syscallMap[syscallNo];
-       
-       if (handler->isSynchronous())
-       {           
-           LocalSyscallProxy(m_syscallMap[syscallNo], m_mainProxy).undoSyscall(syscallNo);
-       }
-       else
-       {
-           handler->undoSyscall(syscallNo);
-       }
+      SyscallHandler *handler = m_syscallMap[syscallNo];
+
+      if (handler->isSynchronous())
+      {           
+         LocalSyscallProxy(m_syscallMap[syscallNo], m_mainProxy).undoSyscall(syscallNo);
+      }
+      else
+      {
+         handler->undoSyscall(syscallNo);
+      }
    }
-      
 }
 
 void SyscallListener::reset() {
    foreach(SyscallHandler *sh, m_syscallMap.values())
    {
-       if (sh->isSynchronous())
-       {
-           LocalSyscallProxy(sh, m_mainProxy).reset();
-       }
-       else
-       {
-           sh->reset();
-       }
-       
+      if (sh->isSynchronous())
+      {
+         LocalSyscallProxy(sh, m_mainProxy).reset();
+      }
+      else
+      {
+         sh->reset();
+      }
    }
    //m_syscallMap.clear();
 }
 
 SyscallHandler::SyscallHandler(SyscallListener *listener, int mySyscallNo, bool handlesUndo, bool synchronous) : 
-m_syscallNo(mySyscallNo), 
-m_handlesUndo(handlesUndo),
-m_synch(synchronous)
+   m_syscallNo(mySyscallNo), 
+   m_handlesUndo(handlesUndo),
+   m_synch(synchronous)
 {
    listener->registerHandler(this);
 }
@@ -129,7 +127,7 @@ bool SyscallHandler::handlesUndo() const {
 
 bool SyscallHandler::isSynchronous() const
 {
-    return m_synch;
+   return m_synch;
 }
 
 ExitHandler::ExitHandler(SyscallListener *listener) : SyscallHandler(listener, S_EXIT, FALSE) { }

@@ -452,3 +452,12 @@ void State::setSyscallListener(SyscallListener *listener) {
 void State::exit() { // syscall 10
    throw new ExitSyscallHandlerCauseIAMTooLazyToWriteThisProperly(m_pc->getTextBlock());
 }
+
+void State::breakError() {
+   breakError("");
+}
+
+void State::breakError(const QString &error) {
+   throw new BreakError(error, m_pc->getTextBlock());
+}
+

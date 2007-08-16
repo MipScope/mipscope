@@ -23,43 +23,48 @@
  */
 
 /* ---------------------------------------------- *\
-   file: Syscalls.H
+   file: PluginHandler.C
    auth: Travis Fischer, Tim O'Donnell
    acct: tfischer, tim
-   date: 4/27/2007
+   date: 8/14/2007
 \* ---------------------------------------------- */
-#ifndef __SYSCALLS_H__
-#define __SYSCALLS_H__
+#include "PluginHandler.H"
+#include "../Utilities.H"
+#include "../Gui.H"
+#include "../../simulator/State.H"
 
-// Note, probably half of these will be implemented
-enum SYSCALL {
-   S_PRINT_INT = 1,       // $a0 = integer
-   S_PRINT_FLOAT = 2, 
-   S_PRINT_DOUBLE = 3, 
-   S_PRINT_STRING = 4,    // $a0 = string
-   
-   S_READ_INT = 5,                          // integer -> $v0
-   S_READ_FLOAT = 6, 
-   S_READ_DOUBLE = 7, 
-   S_READ_STRING = 8,     // $a0 = buffer, $a1 = length
-   
-   S_SBRK = 9,            // $a0 = amount
-   S_EXIT = 10, 
-   
-   S_PRINT_CHAR = 11,     // $a0 = char
-   S_READ_CHAR = 12,                        // char -> $a0
-   
-   S_OPEN = 13,
-   S_READ = 14, 
-   S_CLOSE = 15, 
-   S_EXIT2 = 16, 
 
-   // Additions / Non-Standard
-   // ------------------------
-   S_PRINT = 17,           // combination of all print functionality
-   
-   S_CLEAR_OUTPUT = 18
-};
+// ADD your plugins HERE:
+#include "maze/MazePlugin.H"
 
-#endif // __SYSCALLS_H__
+// Handles all extensions to the program.
+// All non-mipscope specific functionality
+// should be initialized here and the 
+// code should be located in a subdirectory.
+// -----------------------------------------
+PluginHandler::PluginHandler(Gui *gui) : m_gui(gui)
+{
+   initializePlugins();
+}
+
+void PluginHandler::initializePlugins() {
+   m_plugins.clear();
+   
+   // Instantiate/initialize your plugins HERE:
+   m_plugins.append(new MazePlugin(m_gui));
+}
+
+void PluginHandler::reset() {
+   foreach(Plugin *p, m_plugins)
+      p->resetPlugin();
+}
+
+
+Plugin::Plugin(Gui *gui) : m_gui(gui)
+{ }
+
+Plugin::~Plugin()
+{ }
+
+void Plugin::resetPlugin() { }
 

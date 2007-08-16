@@ -76,5 +76,11 @@ class ExitSyscallHandlerCauseIAMTooLazyToWriteThisProperly : public StateExcepti
          : StateException("", pc) { }
 };
 
+class BreakError : public StateException {
+   public:
+      BreakError(const QString &message, QTextBlock *pc)
+         : StateException(message, pc) { }
+};
+
 #endif // STATEEXCEPTION_H_
 

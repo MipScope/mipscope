@@ -88,6 +88,7 @@ class SyscallHandler {
    
    public:
       // Initializes and registers this SyscallHandler with the given SyscallListener
+      // Set synchronous to true to enable blocking and/or Qt Gui support within a handler
       SyscallHandler(SyscallListener *listener, int mySyscallNo, bool handlesUndo = true, bool synchronous=false);
       virtual ~SyscallHandler();
       

@@ -42,6 +42,7 @@ OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
      SyscallHandler(gui->getSyscallListener(), S_PRINT), 
      m_outputHelper(new OutputHelper(this)), m_noUpdates(0)
 {
+   // initial loadup message displayed in output console
    m_display->setPlainText("Welcome to "PROJECT_NAME" version "PROJECT_VERSION"\n"
 	"Copyright (C) 2007 Travis Fischer and Tim O'Donnell\n"
 	PROJECT_NAME" comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome "

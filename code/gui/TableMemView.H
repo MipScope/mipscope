@@ -56,3 +56,4 @@ private:
 
 
 #endif /* _TABLEMEMVIEW_H_ */
+

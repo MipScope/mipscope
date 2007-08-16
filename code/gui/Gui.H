@@ -67,6 +67,7 @@ class Program;
 class State;
 class OptionsDialog;
 class Options;
+class PluginHandler;
 
 class Gui : public QMainWindow {
    
@@ -129,6 +130,8 @@ class Gui : public QMainWindow {
       void programUndoAvailabilityChanged(bool isAvailable);
       
       void updateMemory(Program*, State *state, int status);
+
+      void stopCurrentProgram();
       
       // Normal Gui/Menu Related
       // -----------------------
@@ -239,9 +242,11 @@ class Gui : public QMainWindow {
       bool m_restarted;
       
       InputSyscallHandler *m_inputSyscallHandler;
+      PluginHandler *m_pluginHandler;
 
    private:  // methods
       void setupGui();
+      void setupPlugins();
       void setupStatusBar();
       QAction *addAction(QToolBar *tb, QMenu *menu, QAction *a, const QObject *receiver, const char *member, const QKeySequence &key = QKeySequence(), bool isEnabled = true);
 

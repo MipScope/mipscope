@@ -1,0 +1,23 @@
+TEST FILES --
+
+mazetest.c: doubly linked list, depth first search
+mazetest2.c: doubly linked list, breadth first search
+mazetest3.c: singly linked list, breadth first search (the one I am implementing in asm)
+
+ASSEMBLY FILES --
+
+asm/maze.s -- mazetest3.c ported to spim using our nice friendly syscalls
+
+The Makefile is currently configured to make the "mazeq" binary out of mazetest3.c.
+
+MAZE FILES --
+Hand-built ones:
+ test.mze - a perfect maze (without any loops or inaccessible areas)
+ welcome.mze - a 'cute' maze with an embedded message (see if you can find it!)
+ small.mze - a tiny maze for sanity testing
+ template.mze - an unsolvable maze (also useful for making more hand-built ones)
+
+Maze generator: mazegen.py, generates perfect mazes of any size
+ (uses a depth-first random path-digging algorithm)
+
+-lincoln

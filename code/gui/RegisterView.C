@@ -94,7 +94,7 @@ class CustomBackgroundWidget : public QWidget {
       CustomBackgroundWidget(QString path, RegisterPane *pane, QWidget *parent = NULL) : QWidget(parent), m_registerPane(pane) {
          setMouseTracking(true);
          m_background = QImage(path);
-         m_pixMap = QPixmap::fromImage(m_background);
+         if (!m_background.isNull()) m_pixMap = QPixmap::fromImage(m_background);
 
          /*         QPalette p = palette();
                     p.setBrush(QPalette::Window, *m_pixMap);
@@ -110,6 +110,8 @@ class CustomBackgroundWidget : public QWidget {
 
       // @overridden
       void paintEvent(QPaintEvent *e) {
+         if (m_background.isNull()) return;
+         
          QPainter p(this);
          QRect r(QPoint(0, 0), m_pixMap.size());
          const QRect &bounds = rect();

@@ -151,7 +151,7 @@ CustomTextEdit::CustomTextEdit(StackView *parent, const QString &background)
    : QTextEdit(parent), m_stackView(parent)
 {
    m_background = QImage(background);
-   m_pixMap = QPixmap::fromImage(m_background);
+   if (!m_background.isNull()) m_pixMap = QPixmap::fromImage(m_background);
 
    setReadOnly(true);
    setAcceptRichText(false);
@@ -163,6 +163,8 @@ CustomTextEdit::CustomTextEdit(StackView *parent, const QString &background)
 
 // @overridden
 void CustomTextEdit::paintEvent(QPaintEvent *e) {
+   if (m_background.isNull()) return;
+   
    QPainter p(viewport());
    QRect r(QPoint(0, 0), m_pixMap.size());
    const QRect &bounds = rect();

@@ -64,6 +64,7 @@ class TempWidget : public QWidget {
       }
       
       void render(QImage *image) {
+         if (image->isNull()) return;  
          m_pixMap = QPixmap::fromImage(*image);
          update();
       }
@@ -407,6 +408,8 @@ void GLMemoryPane::reset() {
 }
 
 void GLMemoryPane::render(QImage *image) {
+   if (image->isNull()) return;   
+   
    bool hasOld = (m_currentTexture != m_defaultTexture);
    GLuint old = m_currentTexture;
    m_currentTexture = bindTexture(QPixmap::fromImage(*image), GL_TEXTURE_2D);

@@ -36,7 +36,7 @@
 BackgroundWidget::BackgroundWidget(const QString &path, QWidget *parent) : QWidget(parent) {
    setMouseTracking(true);
    m_background = QImage(path);
-   m_pixMap = QPixmap::fromImage(m_background);
+   if (!m_background.isNull()) m_pixMap = QPixmap::fromImage(m_background);
    setAutoFillBackground(false);
    setAttribute(Qt::WA_NoSystemBackground);
 }
@@ -45,6 +45,8 @@ BackgroundWidget::BackgroundWidget(const QString &path, QWidget *parent) : QWidg
 
 // @overridden
 void BackgroundWidget::paintEvent(QPaintEvent *e) {
+   if (m_background.isNull()) return;  
+   
    QPainter p(this);
    QRect r(QPoint(0, 0), m_pixMap.size());
    const QRect &bounds = rect();

@@ -93,6 +93,9 @@ class CustomBackgroundWidget : public QWidget {
    public:
       CustomBackgroundWidget(QString path, RegisterPane *pane, QWidget *parent = NULL) : QWidget(parent), m_registerPane(pane) {
          setMouseTracking(true);
+
+         //cerr << path.toStdString() << endl;
+
          m_background = QImage(path);
          if (!m_background.isNull()) m_pixMap = QPixmap::fromImage(m_background);
 
@@ -135,7 +138,7 @@ class CustomBackgroundWidget : public QWidget {
 };
 
 RegisterPane::RegisterPane(RegisterView *regView) : QWidget(), 
-   m_parent(regView), m_widget(new CustomBackgroundWidget(QString(IMAGES"/registerBackground.jpg"), this)) 
+   m_parent(regView), m_widget(new CustomBackgroundWidget(QString(IMAGES"/registerBackground.gif"), this)) 
 {
    QGridLayout *l = new QGridLayout();
 

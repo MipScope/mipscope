@@ -331,8 +331,11 @@ void Gui::setupDockWidgets() {
    }
    
    // TableView_dev
-//   m_tableMemoryView = new TableMemView(this);
-   
+   m_tableMemoryView = new TableMemView(this);
+   m_viewTableMemoryAction = m_tableMemoryView->toggleViewAction();
+//   m_viewTableMemoryAction->setIcon(QIcon(ICONS"/viewStatementListing.png"));
+   menu->addAction(m_viewTableMemoryAction);
+
    
    m_directorylisting = new DirectoryListing(this, m_editorPane);
    m_viewDirectoryListingAction = m_directorylisting->toggleViewAction();
@@ -351,7 +354,7 @@ void Gui::setupDockWidgets() {
    addDockWidget(Qt::LeftDockWidgetArea, m_directorylisting);
    
    // TableView_dev
-//   addDockWidget(Qt::LeftDockWidgetArea, m_tableMemoryView);
+   addDockWidget(Qt::LeftDockWidgetArea, m_tableMemoryView);
    
    
    if (m_memoryView != NULL)
@@ -907,7 +910,7 @@ void Gui::updateMemoryView(Program *active) {
    m_memoryView->updateDisplay(active);
    
    // TableView_dev
-   //m_tableMemoryView->updateDisplay(active);
+   m_tableMemoryView->updateDisplay(active);
    
 }
 

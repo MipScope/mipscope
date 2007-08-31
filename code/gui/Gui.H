@@ -204,6 +204,7 @@ class Gui : public QMainWindow {
               *m_viewMemoryAction, 
               *m_viewDirectoryListingAction, 
               *m_viewStatementListingAction, 
+              *m_viewTableMemoryAction, 
               
               // Options-Related
               *m_optionsAction;

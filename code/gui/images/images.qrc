@@ -14,10 +14,10 @@
     <file>optionsDebugging.png</file>
     <file>optionsEditing.png</file>
     <file>optionsGeneral.png</file>
-    <file>registerBackground.jpg</file>
+    <file>registerBackground.gif</file>
     <file>shellscript.png</file>
     <file>shellscript2.png</file>
-    <file>stackBackground.jpg</file>
+    <file>stackBackground.gif</file>
     <file>watchPoint.png</file>
 
 </qresource>

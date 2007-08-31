@@ -51,7 +51,7 @@ StackView::StackView(Gui *gui, EditorPane *editorPane)
    m_sp(STACK_BASE_ADDRESS) // current value of $sp
 {
    QDockWidget::setObjectName(tr("Stack View"));
-   m_display = new CustomTextEdit(this, QString(IMAGES"/stackBackground.jpg"));
+   m_display = new CustomTextEdit(this, QString(IMAGES"/stackBackground.gif"));
    m_display->setFont(*m_editorPane->font());
    reset();
 

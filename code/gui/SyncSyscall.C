@@ -59,19 +59,28 @@ void LocalSyscallProxy::reset()
    emit sig_reset(m_handler);
 }
 
+using namespace std;
+#include <iostream>
 void LocalSyscallProxy::connectTo(QObject *mainProxy)
-{   
+{
    Qt::ConnectionType connectionKind;
 
    // if we're already in the main thread, a blocking queued connection would deadlock
    // in this case use a plain old signal
+//   if (QThread::currentThread() != mainProxy->thread())
+   
+//   cerr << "this: " << this->thread()->objectName().toStdString() << endl;
+//   cerr << "this: " << QThread::currentThreadId() << endl;
+
    if (this->thread() != mainProxy->thread())
    {
       connectionKind = Qt::BlockingQueuedConnection;
+//      cerr << "blocking\n";
    }
    else
    {
       connectionKind = Qt::DirectConnection;
+//      cerr << "direct\n";
    }
 
    // make the connections between this and the main thread proxy
@@ -86,7 +95,7 @@ void LocalSyscallProxy::connectTo(QObject *mainProxy)
    connect(this, SIGNAL(sig_reset(SyscallHandler*)),
          mainProxy, SLOT(slot_reset(SyscallHandler*)),
          connectionKind);
-}  
+}
 
 MainSyscallProxy::MainSyscallProxy()
 {
@@ -97,6 +106,7 @@ MainSyscallProxy::MainSyscallProxy()
 // the following three methods just relay the call to handler
 void MainSyscallProxy::slot_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0)
 {
+//   cerr << "syscall: " << syscallNo << ", " << QThread::currentThreadId() << endl;
    inHandler->syscall(s, status, syscallNo, valueOfa0);
 }
 

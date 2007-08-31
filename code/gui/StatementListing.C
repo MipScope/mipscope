@@ -45,11 +45,10 @@ StatementListing::StatementListing(Gui *gui, EditorPane *editorPane)
    m_editorPane(editorPane)
 {
    setObjectName(tr("MIPS Reference"));
-   
-   m_tree = new TreeListing(this);
-
    setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(contextMenuRequested(const QPoint&)));
+   
+   m_tree = new TreeListing(this);
    m_tree->setContextMenuPolicy(Qt::NoContextMenu);
 
    m_contextMenu = new QMenu(this);
@@ -57,6 +56,28 @@ StatementListing::StatementListing(Gui *gui, EditorPane *editorPane)
    connect(m_insertAction, SIGNAL(triggered()), this, SLOT(insertAction()));
    m_contextMenu->addAction(m_insertAction);
    
+   // Populate the listing of MIPS Statements
+   updateListing();
+
+   connect(m_tree, SIGNAL(doubleClicked(const QModelIndex&)), 
+         this, SLOT(clicked(const QModelIndex&)));
+   setWidget(m_tree);
+}
+
+QString StatementListing::fix(const char *str) {
+   return QString(str).replace("&lt;", "<").replace("&gt;", ">");
+}
+
+void StatementListing::showAllInstructionsChanged(bool showAll) {
+   updateListing();
+}
+
+void StatementListing::updateListing() {
+   cerr << "updateListing" << endl;
+
+   // Clear any previous listings
+   m_tree->clear();
+
    m_tree->setColumnCount(3);
    QVector<QTreeWidgetItem*> items(0);
       
@@ -64,10 +85,13 @@ StatementListing::StatementListing(Gui *gui, EditorPane *editorPane)
    while(statementStrings[i] != NULL) {
       items.append(new QTreeWidgetItem(m_tree, QStringList(statementStrings[i++])));
    }
+   
+   // There's an Option to display only the most important & frequently used instructions
+   int importanceThreshold = (Options::showAllInstructions() ? 0 : 51);
 
    QTreeWidgetItem *item;
    foreach(Instruction *instr, instructionMap.values()) {
-      if (instr != NULL) {
+      if (instr != NULL && instr->importance() >= importanceThreshold) {
          int type = instr->getType();
 
          item = new QTreeWidgetItem(items[type], QStringList(instr->getName()) << fix(instr->getSyntax()) << fix(instr->getDescription()));
@@ -82,6 +106,9 @@ StatementListing::StatementListing(Gui *gui, EditorPane *editorPane)
    }
 
    foreach(Directive *dir, directiveMap.values()) {
+      if (dir->importance() < importanceThreshold)
+         continue;
+
       item = new QTreeWidgetItem(items[DIRECTIVE], QStringList(dir->getName()) << fix(dir->getSyntax()) << fix(dir->getDescription()));
 
       const QString &toolTip = QString("<b>%1</b> %2<br><br>%3").arg(dir->getName(), dir->getSyntax(), dir->getDescription());
@@ -106,14 +133,6 @@ StatementListing::StatementListing(Gui *gui, EditorPane *editorPane)
    m_tree->setAlternatingRowColors(true);
 //   m_tree->header()->hide(); // don't show header titles
    m_tree->setHeaderLabels(QStringList() << "Name" << "Syntax" << "Description");
-
-   connect(m_tree, SIGNAL(doubleClicked(const QModelIndex&)), 
-         this, SLOT(clicked(const QModelIndex&)));
-   setWidget(m_tree);
-}
-
-QString StatementListing::fix(const char *str) {
-   return QString(str).replace("&lt;", "<").replace("&gt;", ">");
 }
 
 bool StatementListing::isHeading(const QModelIndex &index) {

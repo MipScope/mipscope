@@ -154,6 +154,8 @@ class KTextDirective : public Directive {
          return 2;
       }
 
+      virtual int importance() const { return 50; }
+
       virtual bool isText() const {
          return true;
       }
@@ -178,6 +180,8 @@ class AlignDirective : public Directive {
       virtual unsigned int getPreferredAlignment() const {
          return m_alignment;
       }
+
+      virtual int importance() const { return 50; }
 
       virtual bool isAlign() const {
          return true;

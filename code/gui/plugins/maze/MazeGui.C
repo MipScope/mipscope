@@ -38,17 +38,20 @@
 
 MazeGui::MazeGui(Gui *gui, MazePlugin *plugin) : 
    QWidget(), Maze(), m_gui(gui), m_plugin(plugin)
-{ }
+{
+//   cerr << "con: " << QThread::currentThreadId() << endl;
+}
 
 MazeGui::~MazeGui() { }
 
 bool MazeGui::initializeMaze() {
    bool success = false;
 
+   //cerr << "init: " << QThread::currentThreadId() << endl;
+   //cerr << "mine: " << (this->thread() == QThread::currentThread()) << endl;
    if (getenv("MAZE_DEFAULT"))
       success = MazeParser::parse(getenv("MAZE_DEFAULT"), this);
-
-   success = loadFile();
+   else success = loadFile();
 
    if (success)
       setupCells();
@@ -57,11 +60,14 @@ bool MazeGui::initializeMaze() {
 }
 
 bool MazeGui::loadFile() {
+//   cerr << "thread: " << QThread::currentThreadId() << endl;
+
    const QString &fileName = QFileDialog::getOpenFileName(
          m_gui,
          tr("Choose a Maze file to open"),
          tr("./"),
          tr("Maze files (*.mze);;All files (*)"));
+   //const QString &fileName = "test.mze";
    
    if (fileName.isEmpty())
       return false;

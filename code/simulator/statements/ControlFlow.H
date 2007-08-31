@@ -46,6 +46,8 @@ class J : public Instruction {
          return args->matchesSyntax(ADDRESS | IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new J(args);
       }
@@ -81,6 +83,8 @@ class Jal : public Instruction {
          return args->matchesSyntax(ADDRESS | IMMEDIATE);
       }
       
+      virtual int importance() const { return 90; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Jal(args);
       }
@@ -114,6 +118,8 @@ class Jalr : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
       }
       
+      virtual int importance() const { return 90; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Jalr(args);
       }
@@ -147,6 +153,8 @@ class Jr : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER);
       }
       
+      virtual int importance() const { return 80; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Jr(args);
       }
@@ -182,7 +190,9 @@ class B : public J {
       virtual Instruction *create(StatementArgList *args) const {
          return new B(args);
       }
-           
+      
+      virtual int importance() const { return 50; }
+
       virtual const char *getName() const { return "b"; }
 };
 
@@ -232,6 +242,8 @@ class Bgezal : public Bgez {
          return new Bgezal(args);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          int val0 = m_args->getValue(s, 0);
          
@@ -318,6 +330,8 @@ class Bltzal : public Blez {
          return new Bltzal(args);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          int val0 = m_args->getValue(s, 0);
          
@@ -500,6 +514,8 @@ class Bgeu : public Bge {
          return new Bgeu(args);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          unsigned int val0 = m_args->getValue(s, 0); // note: unsigned important
          unsigned int val1 = m_args->getValue(s, 1);
@@ -556,6 +572,8 @@ class Bgtu : public Bgt {
          return new Bgtu(args);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          unsigned int val0 = m_args->getValue(s, 0); // note: unsigned important
          unsigned int val1 = m_args->getValue(s, 1);
@@ -612,6 +630,8 @@ class Bleu : public Ble {
          return new Bleu(args);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          unsigned int val0 = m_args->getValue(s, 0); // note: unsigned important
          unsigned int val1 = m_args->getValue(s, 1);
@@ -668,6 +688,8 @@ class Bltu : public Blt {
          return new Bltu(args);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          unsigned int val0 = m_args->getValue(s, 0); // note: unsigned is important
          unsigned int val1 = m_args->getValue(s, 1);

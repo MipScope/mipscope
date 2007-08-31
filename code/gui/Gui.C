@@ -79,6 +79,7 @@ Gui::Gui(QStringList args) : QMainWindow(),
    setupGui();
    setupPlugins();
    show();
+   //cerr << "Gui: " << QThread::currentThreadId() << endl;
 }
 
 Gui::~Gui(void) { }
@@ -265,8 +266,8 @@ void Gui::setupDebugActions() {
    m_debugBStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugBStep.png"), tr("&Back"), this), this, SLOT(debugBStepAction()), QKeySequence(), false);
    m_debugStepAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugStep.png"), tr("&Step"), this), this, SLOT(debugStepAction()), QKeySequence(), false);
  
-   m_debugBStepXAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugBStepX.png"), tr("Back.."), this), this, SLOT(debugBStepXAction()), QKeySequence(), false);
-   m_debugStepXAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugStepX.png"), tr("Step.."), this), this, SLOT(debugStepXAction()), QKeySequence(), false);
+   m_debugBStepXAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugBStepX.png"), tr("&Jump Backwards.."), this), this, SLOT(debugBStepXAction()), QKeySequence(), false);
+   m_debugStepXAction = addAction(NULL, menu, new QAction(QIcon(ICONS"/debugStepX.png"), tr("Jump &Forwards.."), this), this, SLOT(debugStepXAction()), QKeySequence(), false);
    
    menu->addSeparator();
    tb->addSeparator();
@@ -366,7 +367,7 @@ void Gui::setupDockWidgets() {
 
 void Gui::ensureVisibility(QDockWidget *widget) {
 //   cerr << "in: " << widget->isVisible() << endl;
-   if (widget == NULL)
+   /*if (widget == NULL)
       return; // possibly use etwas w/ widget's size?  if in a tab?
    
    setUpdatesEnabled(false);
@@ -382,7 +383,7 @@ void Gui::ensureVisibility(QDockWidget *widget) {
    else tabifyDockWidget(widget, m_errors);
    
    widget->setUpdatesEnabled(true);
-   setUpdatesEnabled(true);
+   setUpdatesEnabled(true);*/
    //cerr << "out: " << widget->isVisible() << endl;
 }
 
@@ -392,6 +393,10 @@ SyscallListener *Gui::getSyscallListener() const {
 
 RegisterView *Gui::getRegisterView() const {
    return m_registerView;
+}
+
+StatementListing *Gui::getStatementListing() const {
+   return m_statementListing;
 }
 
 StackView *Gui::getStackView() const {
@@ -762,7 +767,6 @@ void Gui::debugRunXSpimAction() {
    char *path = Options::getXSpimPath().toAscii().data();
       //"/course/cs031/pro/spim/xspim";
    
-   // TODO:  better error message if cannot find xspim
    switch(fork()) {
       case 0: // child
          {
@@ -772,11 +776,13 @@ void Gui::debugRunXSpimAction() {
          execl(path, "xspim", "-file", filename, NULL);
 
          cerr << "Error launching: " << path << endl;
+         cerr << "You can change the path to xspim in the Options menu." << endl;
          exit(1);
          }
          break;
       case -1: // error
          cerr << "Error launching: " << path << endl;
+         cerr << "You can change the path to xspim in the Options menu." << endl;
          perror("fork()");
          break;
       default: // parent

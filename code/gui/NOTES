@@ -3,8 +3,8 @@ Gui TODO: (stuff i'll forget, otherwise)
    * Optimize editing-on-the-fly algorithmically; reduce number of linear for loops
    * Cleanup last-minute Syscall architechure
 //   * Memory watchpoints; selection & setting of multiple
-   * Integrate Maze into MipScope
-   * Lots of testing
+//   * Integrate Maze into MipScope
+   * Lots of testing :)
 //   * Have pc in regView be accurate address
 //   * Options dialog
    * documentation in-program

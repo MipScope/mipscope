@@ -63,6 +63,8 @@ void SyscallListener::syscall(State *s, int status, int syscallNo, int valueOfa0
    if (m_syscallMap.contains(syscallNo))
    {
       SyscallHandler *handler = m_syscallMap[syscallNo];
+      
+      //cerr << "Syscall: " << syscallNo << endl;
 
       if (handler->isSynchronous())
       {
@@ -73,7 +75,6 @@ void SyscallListener::syscall(State *s, int status, int syscallNo, int valueOfa0
          handler->syscall(s, status, syscallNo, valueOfa0);
       }
    }
-
 }
 
 void SyscallListener::undoSyscall(int syscallNo) {

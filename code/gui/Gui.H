@@ -89,6 +89,7 @@ class Gui : public QMainWindow {
       ErrorConsole *getErrorConsole() const;
       OutputConsole *getOutputConsole() const;
       TextEditor *getActiveProgram() const;
+      StatementListing *getStatementListing() const;
    
       void watchPointModified(unsigned int reg, bool watchPoint);
       bool *getWatchpoints() const; // register watchpoints

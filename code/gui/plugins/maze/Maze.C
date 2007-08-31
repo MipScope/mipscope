@@ -37,6 +37,7 @@
 
 Cell::Cell(MazeStatus status,WallSet walls){
    this->status = status;
+   this->oldStatus=EMPTY;
    //We extract the walls bitwise from
    //the walls argument
    northWall = walls & NORTH;
@@ -56,6 +57,7 @@ Cell::Cell(MazeStatus status,WallSet walls){
 Cell::Cell(){
    //An empty uninteresting Cell
    status = EMPTY;
+   oldStatus = EMPTY;
    northWall = 0;
    southWall = 0;
    eastWall = 0;
@@ -101,6 +103,7 @@ bool Cell::hasWall(Direction where){
 
 Cell &Cell::operator=(const Cell &other){
    status = other.status;
+   oldStatus = other.oldStatus;
    northWall = other.northWall;
    southWall = other.southWall;
    eastWall = other.eastWall;
@@ -163,7 +166,8 @@ int Maze::moveCurrent(point loc) {
    if (!validRoom(loc))
       exitWithPopup("You passed an invalid cell id to draw_arrow",0);
    
-//   cerr << "moveCurrent: " << getCurrentCell() << ", " << currCell.x << ", " << currCell.y << endl;
+   //cerr << "moveCurrent: " <<  currCell.y << ", " << currCell.x;
+//   cerr << ", (" << getCurrentCell() << ", " << getCell(loc.y, loc.x) << ")\n";
 
    getCurrentCell()->setMazeStatus(SEARCHED);
 //   cerr << "moveCurrent: " << getCurrentCell()->getMazeStatus() << endl;
@@ -186,13 +190,17 @@ int Maze::undoMove(point loc) {
       return 0;
    
    // TODO:  possibly not just empty, but last maze status before moveCurrent()
-   getCurrentCell()->setMazeStatus(EMPTY);
+//   cerr << "currCell: " << currCell.y << ", " << currCell.x << endl;
+ //  cerr << "undo: " << (currCell.x==loc.x&&currCell.y==loc.y);
+
+   getCurrentCell()->setMazeStatus(getCurrentCell()->getOldMazeStatus());
    getCell(loc.y, loc.x)->setMazeStatus(CURRENT);
 //   grid[currCell.y][currCell.x].setMazeStatus(EMPTY);
 //   grid[loc.y][loc.x].setMazeStatus(CURRENT);
    currCell = loc;
    --nodesVisited;
 
+  // cerr << "End-currCell: " << currCell.x << ", " << currCell.y << endl;
    if (m_mazeGui)
       m_mazeGui->updateNodesVisited();
    // TODO:  update m_noVisited counter

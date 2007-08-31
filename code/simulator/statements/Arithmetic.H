@@ -128,6 +128,8 @@ class Addi : public Add {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
       }
       
+      virtual int importance() const { return 25; }
+
       // @overridden from Add
       virtual Instruction *create(StatementArgList *args) const {
          return new Addi(args);
@@ -153,6 +155,8 @@ class Addu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Addu(args);
       }
@@ -187,6 +191,8 @@ class Addiu : public Addu {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
       }
       
+      virtual int importance() const { return 25; }
+
       // @overridden from Addu
       virtual Instruction *create(StatementArgList *args) const {
          return new Addiu(args);
@@ -265,6 +271,8 @@ class Clo : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Clo(args);
       }
@@ -302,6 +310,8 @@ class Clz : public Instruction {
       virtual Instruction *create(StatementArgList *args) const {
          return new Clz(args);
       }
+
+      virtual int importance() const { return 25; }
 
       virtual void execute(State *s, ParseList* parseList) const {
          int val = m_args->getValue(s, 1);
@@ -386,6 +396,8 @@ class Divu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE | NONE);
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Divu(args);
       }
@@ -475,6 +487,8 @@ class Multu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Multu(args);
       }
@@ -540,6 +554,8 @@ class Mulo : public Mul {
          return new Mulo(args);
       }
 
+      virtual int importance() const { return 25; }
+
       virtual void execute(State *s, ParseList* parseList) const {
          int val1 = m_args->getValue(s, 1);
          int val2 = m_args->getValue(s, 2);
@@ -565,6 +581,8 @@ class Mulou : public Mul {
    public:
       Mulou(StatementArgList *args = NULL) : Mul(args) { }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Mulou(args);
       }
@@ -601,6 +619,8 @@ class Madd : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Madd(args);
       }
@@ -638,6 +658,8 @@ class Maddu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Maddu(args);
       }
@@ -677,6 +699,8 @@ class Msub : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Msub(args);
       }
@@ -718,6 +742,8 @@ class Msubu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 25; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Msubu(args);
       }
@@ -758,6 +784,8 @@ class Neg : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Neg(args);
       }
@@ -792,6 +820,8 @@ class Negu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Negu(args);
       }
@@ -918,6 +948,8 @@ class Ori : public Or {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Ori(args);
       }
@@ -977,6 +1009,8 @@ class Remu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Remu(args);
       }
@@ -1010,6 +1044,8 @@ class Sll : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE ) && args->getValue(NULL, 2) <= 31 && args->getValue(NULL, 2) >= 0;
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sll(args);
       }
@@ -1043,6 +1079,8 @@ class Sllv : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sllv(args);
       }
@@ -1076,6 +1114,8 @@ class Srl : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE ) && args->getValue(NULL, 2) <= 31 && args->getValue(NULL, 2) >= 0;
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Srl(args);
       }
@@ -1108,6 +1148,8 @@ class Srlv : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Srlv(args);
       }
@@ -1141,6 +1183,8 @@ class Sra : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE ) && args->getValue(NULL, 2) <= 31 && args->getValue(NULL, 2) >= 0;
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sra(args);
       }
@@ -1173,6 +1217,8 @@ class Srav : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Srav(args);
       }
@@ -1206,6 +1252,8 @@ class Rol : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Rol(args);
       }
@@ -1239,6 +1287,8 @@ class Ror : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Ror(args);
       }
@@ -1312,6 +1362,8 @@ class Subu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Subu(args);
       }
@@ -1378,6 +1430,8 @@ class Xori : public Xor {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER, IMMEDIATE );
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Xori(args);
       }

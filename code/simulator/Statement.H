@@ -55,6 +55,11 @@ class Statement {
       virtual const char *getSyntax() const = 0;
       virtual const char *getDescription() const = 0;
       
+      // should return an int from 0 to 100 inclusive, rating 
+      // this Statement's importance in relation to other 
+      // statements (for reference purposes)
+      virtual int importance() const;
+
       virtual bool isInstruction();
       virtual bool isDirective();
       virtual bool isPreprocessor(); // consts and #defines
@@ -141,6 +146,8 @@ class Done : public Instruction {
       virtual Instruction *create(StatementArgList *args) const;
       virtual void execute(State *s, ParseList* parseList) const;
       
+      virtual int importance() const;
+
       // @overridden from Statement
       virtual const char *getName() const;
       virtual const char *getSyntax() const;
@@ -155,6 +162,8 @@ class ConstStatement : public Statement {
       virtual bool isInstruction();
       virtual bool isDirective();
       
+      virtual int importance() const;
+
       virtual AddressIdentifier *getID() const;
       virtual ImmediateIdentifier *getImmediate() const;
       

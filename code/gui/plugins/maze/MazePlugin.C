@@ -177,6 +177,9 @@ int MazePlugin::init_maze(State *s) {
       MAZE_ERROR(s, "Attempted to initialize Maze twice");
    
    m_maze = new MazeGui(m_gui, this);
+//   QEventLoop *eventLoop = new QEventLoop();
+//   eventLoop->exec();
+
    if (!m_maze->initializeMaze())
       return false;
 
@@ -186,6 +189,10 @@ int MazePlugin::init_maze(State *s) {
       cerr << "MAZE_DEBUG init_maze() -> " << src << endl;
 
    return cellID(src);
+}
+
+void printPoint(point *p) {
+   cerr << "point: " << p->x << ", " << p->y;
 }
 
 /*
@@ -200,14 +207,20 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
    if (m_maze == NULL)
       MAZE_ERROR(s, "MAZE: call to draw_arrow on uninitialized maze");
    
-   m_searchStack.push(parentRoom);
+   /*printPoint(&parentRoomP);
+   cerr << " -> ";
+   printPoint(&roomP);
+   cerr << endl;*/
+
+   m_searchStack.push(cellID(m_maze->getCurrCellLoc()));//parentRoom);
 
    m_maze->moveCurrent(roomP);
 
    if(getenv("MAZE_DEBUG"))
       cerr << "MAZE_DEBUG: draw_arrow() -> void" << endl;
    if(getenv("MAZE_SLOW") && status == RUNNING) {
-      usleep(2500000); 
+      QThread::currentThread()->wait(2500000);
+//      usleep(2500000); 
    }
 }
 

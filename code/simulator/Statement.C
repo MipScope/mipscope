@@ -86,6 +86,10 @@ bool Statement::isPreprocessor() { // consts and #defines
    return (constSt != NULL);
 }
 
+int Statement::importance() const {
+   return 75;
+}
+
 Directive   *Statement::getDirective(Statement *s) {
    return dynamic_cast<Directive*>(s);
 }
@@ -96,6 +100,14 @@ Instruction *Statement::getInstruction(Statement *s) {
 
 ConstStatement *Statement::getConst(Statement *s) {
    return dynamic_cast<ConstStatement*>(s);
+}
+
+int Done::importance() const {
+   return 90;
+}
+
+int ConstStatement::importance() const {
+   return 0;
 }
 
 // ----------------------

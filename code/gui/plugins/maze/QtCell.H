@@ -70,6 +70,7 @@ class QtCell : public QWidget {
       MazeGui *m_parent;
       int m_row, m_col;
       Cell *m_cell;
+      int m_oldStatus;
       
 };
 

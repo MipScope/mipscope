@@ -27,6 +27,9 @@
    auth: Travis Fischer, Tim O'Donnell
    acct: tfischer, tim
    date: 8/14/2007
+
+Note:  this was quickly adapted from Lincoln Quirk's 
+Gtk version and is just as hacky as the original.
 \* ---------------------------------------------- */
 #include "QtCell.H"
 #include <QtGui>
@@ -43,7 +46,8 @@ QPixmap getPixmap(const char *str) {
 QVector<QPixmap> *MazeImages = NULL;
 
 QtCell::QtCell(MazeGui *parent, int i, int j, Cell *cell) :
-   m_parent(parent), m_row(i), m_col(j), m_cell(cell)
+   m_parent(parent), m_row(i), m_col(j), m_cell(cell), 
+   m_oldStatus((int)cell->getMazeStatus())
 {
    //connect(m_cell, SIGNAL(stateChanged()), this, SLOT(update()));
    m_cell->m_parent = this;
@@ -90,6 +94,11 @@ QtCell::QtCell(MazeGui *parent, int i, int j, Cell *cell) :
 
 // update background to reflect current cell status (repaint)
 void QtCell::updateCell() {
+   //cerr << "QtCellUpdate: " << m_row << ", " << m_col << ": " << m_cell->getMazeStatus() << endl;
+
+   if (m_oldStatus!=(int)m_cell->getMazeStatus())
+      m_cell->setOldStatus((MazeStatus)m_oldStatus);
+
    update();
 }
 
@@ -119,16 +128,56 @@ void QtCell::paintEvent(QPaintEvent *e) {
      p.drawPixmap((x), (y), (*MazeImages)[(exists) ? (wall) : (blank)]);
    
    int top=0, mid=8, bot = CELL_SIZE - 8;
-   
+   /*int wallSize = CELL_SIZE - 16;
    //p.fillRect(rect(), QBrush(QColor(255, 0, 0)));
    
-   if(status == SEARCHED || status == BACKTRACKED){
-      addWallIfExists(top,top,northWall||westWall,I_CORNER_WALL,I_CORNER_SEARCHED);
-      addWallIfExists(mid,top,northWall,I_HORIZONTAL_WALL,I_HORIZONTAL_SEARCHED);
-      addWallIfExists(bot,top,northWall||eastWall,I_CORNER_WALL,I_CORNER_SEARCHED);
-      addWallIfExists(top,mid,westWall,I_VERTICAL_WALL,I_VERTICAL_SEARCHED);
-      
-      addWallIfExists(mid,mid,(status==SEARCHED), I_SEARCHED_GROUND, I_BACKTRACKED_GROUND);
+   
+   const QBrush &wall=QBrush(QColor(145,95,35));
+   const QBrush &blank=(status == SEARCHED ? QBrush(QColor(220,86,232)) : QBrush(QColor(196,154,6)));
+   
+   // draw background
+   p.setPen(Qt::NoPen);
+   p.setRenderHint(QPainter::Antialiasing, false);
+   p.setBrush(blank);
+   p.fillRect(rect(), blank);
+   p.setBrush(wall);
+   
+   point me={m_col,m_row};
+   if (status==CURRENT)
+      p.drawPixmap(mid,mid,(*MazeImages)[I_CURRENT_GROUND]);
+   else if (m_parent->isGoal(me))
+      p.drawPixmap(mid,mid,(*MazeImages)[I_FLAG]);
+   
+   // draw walls and rounded corners
+   if (northWall)
+      p.drawRect(mid,top, wallSize, 8);
+   if (westWall)
+      p.drawRect(top,mid, 8, wallSize);
+   if (eastWall)
+      p.drawRect(bot,mid, 8, wallSize);
+   if (southWall)
+      p.drawRect(mid,bot, wallSize, 8);
+
+   p.setRenderHint(QPainter::Antialiasing, true);
+   int rad = 12;
+   
+   if (northWall||westWall)
+      p.drawEllipse(-4,-4,rad,rad);
+   if (northWall||eastWall)
+      p.drawEllipse(CELL_SIZE-3,-4,rad,rad);
+   if (southWall||westWall)
+      p.drawEllipse(-4,CELL_SIZE-3,rad,rad);
+   if (southWall||eastWall)
+      p.drawEllipse(CELL_SIZE-3,CELL_SIZE-3,rad,rad);*/
+
+    // Without rounded corners
+    if(status == SEARCHED || status == BACKTRACKED){
+    addWallIfExists(top,top,northWall||westWall,I_CORNER_WALL,I_CORNER_SEARCHED);
+    addWallIfExists(mid,top,northWall,I_HORIZONTAL_WALL,I_HORIZONTAL_SEARCHED);
+    addWallIfExists(bot,top,northWall||eastWall,I_CORNER_WALL,I_CORNER_SEARCHED);
+    addWallIfExists(top,mid,westWall,I_VERTICAL_WALL,I_VERTICAL_SEARCHED);
+
+    addWallIfExists(mid,mid,(status==SEARCHED), I_SEARCHED_GROUND, I_BACKTRACKED_GROUND);
 
       addWallIfExists(bot,mid,eastWall,I_VERTICAL_WALL,I_VERTICAL_SEARCHED);
       addWallIfExists(top,bot,southWall||westWall,I_CORNER_WALL,I_CORNER_SEARCHED);

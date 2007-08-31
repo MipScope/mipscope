@@ -83,6 +83,8 @@ class Sltu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, PLAIN_REGISTER | IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sltu(args);
       }
@@ -113,6 +115,8 @@ class Slti : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Slti(args);
       }
@@ -143,6 +147,8 @@ class Sltiu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sltiu(args);
       }
@@ -233,6 +239,8 @@ class Sgeu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, PLAIN_REGISTER | IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sgeu(args);
       }
@@ -293,6 +301,8 @@ class Sgtu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, PLAIN_REGISTER | IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sgtu(args);
       }
@@ -354,6 +364,8 @@ class Sleu : public Instruction {
          return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | IMMEDIATE, PLAIN_REGISTER | IMMEDIATE);
       }
       
+      virtual int importance() const { return 50; }
+
       virtual Instruction *create(StatementArgList *args) const {
          return new Sleu(args);
       }

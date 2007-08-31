@@ -123,7 +123,7 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    b->setStyle(style);
    b->setChecked(!Options::showAllInstructions());
    l->addWidget(b);
-   connect(ch, SIGNAL(stateChanged(int)), this, SLOT(showAllInstructionsChanged(int)));
+   connect(b, SIGNAL(toggled(bool)), this, SLOT(showAllInstructionsChanged(bool)));
    
    group->setLayout(l);
    mainLayout->addWidget(group);
@@ -178,8 +178,8 @@ void GeneralOptionsPage::displayBaseChanged(int index) {
    Options::m_options->setDislayBase(bases[index]);
 }
 
-void GeneralOptionsPage::showAllInstructionsChanged(int index) {
-   Options::m_options->setShowAllInstructions(index != Qt::Unchecked);
+void GeneralOptionsPage::showAllInstructionsChanged(bool showImportant) {
+   Options::m_options->setShowAllInstructions(!showImportant);
 }
 
 void GeneralOptionsPage::templatePathChanged(const QString &str) {
@@ -312,7 +312,7 @@ DebuggingOptionsPage::DebuggingOptionsPage(QWidget *parent) : QWidget(parent)
    // ----------------------------------------------------------
    QGroupBox *group = new QGroupBox(tr("Debugging"));
    QVBoxLayout *l = new QVBoxLayout;
-   QCheckBox *ch = new QCheckBox(tr("Toggle read-only debugging"));
+   QCheckBox *ch = new QCheckBox(tr("Disable editing during debugging (read-only)"));
    ch->setToolTip(tr("Enable/Disable editing-on-the-fly during debugging."));
    ch->setStyle(style);
    l->addWidget(ch);
@@ -322,8 +322,13 @@ DebuggingOptionsPage::DebuggingOptionsPage(QWidget *parent) : QWidget(parent)
    ch = new QCheckBox(tr("Toggle implicit rollback upon editing"));
    ch->setToolTip(tr("Enable/Disable implicit program rollback to earliest point "
                      "in execution, just before an edit would have been first "
-                     "encountered."));
+                     "encountered. (currently must be enabled)"));
    ch->setStyle(style);
+   
+   // TODO:  Add support for turning on/off implicit rollback and reenable this Option
+   ch->setEnabled(false);
+
+
    l->addWidget(ch);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(implicitRollbackChanged(int)));
 

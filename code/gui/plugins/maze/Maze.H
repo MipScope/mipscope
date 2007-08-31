@@ -36,8 +36,10 @@
 
 #include <QObject>
 //#include <vector>
+enum MazeStatus {EMPTY,SEARCHED,CURRENT,BACKTRACKED};
 #include "QtCell.H"
 //using namespace std;
+#include "../../Utilities.H"
 
 class Cell;
 class Maze;
@@ -45,7 +47,6 @@ class QtCell;
 enum {NORTH= 1,SOUTH= 2,EAST= 4,WEST= 8};
 typedef int WallSet;
 typedef int Direction;
-enum MazeStatus {EMPTY,SEARCHED,CURRENT,BACKTRACKED};
 
 typedef struct {
    int x;
@@ -61,13 +62,23 @@ class Cell {
       const char *to_s();
       bool hasWall(Direction);
       MazeStatus getMazeStatus(){return status;}
-      void setMazeStatus(MazeStatus s){status = s; if (m_parent!=NULL) m_parent->updateCell(); }
+      void setMazeStatus(MazeStatus s){
+         
+         //cerr<<"oldSt: " << status << " vs " << s << "  (old: " << oldStatus << ")\n";
+         
+         //if (s==SEARCHED)
+         //   oldStatus=CURRENT;
+         //else 
+         oldStatus=status;
+         status = s; if (m_parent!=NULL) m_parent->updateCell(); }
+      MazeStatus getOldMazeStatus() { return oldStatus; }
+      void setOldStatus(MazeStatus s) { oldStatus = s; }
       bool isNode(){return node;}
       bool isDeadEnd(){return deadEnd;}
    
       QtCell *m_parent;
    protected:
-      MazeStatus status;
+      MazeStatus status, oldStatus;
       bool northWall;
       bool southWall;
       bool eastWall;

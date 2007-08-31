@@ -71,7 +71,7 @@ class Options : public QObject
       void verbosityChanged(bool);
       void registerAliasesChanged(bool);
       void displayBaseChanged(int);
-      void showAllInstructionschanged(bool);
+      void showAllInstructionsChanged(bool);
       void templatePathChanged(const QString&);
       void xspimPathChanged(const QString&);
 

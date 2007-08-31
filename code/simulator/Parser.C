@@ -65,7 +65,8 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
       try {
          n = Parser::parseLine(actual, parseList);
       } catch(ParseError &e) {
-         cerr << "Error line  " << lineNo + 1 << ": " << e.toStdString() << endl;
+         if (VERBOSE)
+            cerr << "Error line  " << lineNo + 1 << ": " << e.toStdString() << endl;
          e.setTextBlock(actual);
          e.setLineNo(lineNo);
          errors.push_back(e);
@@ -244,7 +245,8 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    Instruction *instrFactory = *i;
    
    if (instrFactory == NULL) {
-      cerr << _tab << ">>> Error: instruction '" << instr.toStdString() << "' has not been implemented yet! <<<\n";
+      if (VERBOSE)
+         cerr << _tab << ">>> Error: instruction '" << instr.toStdString() << "' has not been implemented yet! <<<\n";
       PARSE_ERRORL(QString("instruction '%1' has not been implemented yet!").arg(instr), text, instr.length());
    }
    
@@ -252,7 +254,8 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    // Ensure instruction and arguments found are Syntactically Valid
    // --------------------------------------------------------------
    if (!instrFactory->isSyntacticallyValid(argList)) {
-      cerr << _tab << "Error: arguments to instruction '" << instrFactory->getName() << "' are invalid!\n";
+      if (VERBOSE)
+         cerr << _tab << "Error: arguments to instruction '" << instrFactory->getName() << "' are invalid!\n";
       PARSE_ERRORL(QString("invalid arguments to instruction '%1'.\n"
                   "Syntax: '%2'").arg(instr, instrFactory->getName() + QString(" ") + instrFactory->getSyntax()), text, text.length());
    }

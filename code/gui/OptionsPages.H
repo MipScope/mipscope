@@ -49,7 +49,7 @@ class GeneralOptionsPage : public QWidget
       void verbosityChanged(int);
       void registerAliasesChanged(int);
       void displayBaseChanged(int);
-      void showAllInstructionsChanged(int);
+      void showAllInstructionsChanged(bool);
       void templatePathChanged(const QString&);
       void xspimPathChanged(const QString&);
 };

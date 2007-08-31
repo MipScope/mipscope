@@ -31,6 +31,7 @@
 #include "Gui.H"
 #include "EditorPane.H"
 #include "RegisterView.H"
+#include "StatementListing.H"
 #include <QtGui>
 
 Options   *Options::m_options  = NULL;
@@ -77,6 +78,7 @@ void Options::setupConnections(EditorPane *editorPane) {
    connect(this, SIGNAL(fontChanged(const QFont&)), editorPane, SLOT(currentFontChanged(const QFont&)));
    connect(this, SIGNAL(registerAliasesChanged(bool)), m_gui->getRegisterView(), SLOT(updateDisplay(bool)));
    connect(this, SIGNAL(displayBaseChanged(int)), m_gui->getRegisterView(), SLOT(updateBase(int)));
+   connect(this, SIGNAL(showAllInstructionsChanged(bool)), m_gui->getStatementListing(), SLOT(showAllInstructionsChanged(bool)));
 }
 
 // -----------------------------------------------
@@ -128,9 +130,11 @@ void Options::setDislayBase(unsigned int d) {
 }
 
 void Options::setShowAllInstructions(bool s) {
+   cerr << "Options::setShowAllInstructions: " << s << endl;
+
    m_options->m_showAllInstructions = s;
    m_settings->setValue("showAllInstructions", s);
-   m_options->showAllInstructionschanged(s);
+   m_options->showAllInstructionsChanged(s);
 }
 
 void Options::setTemplatePath(const QString &s) {

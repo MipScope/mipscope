@@ -54,6 +54,9 @@ class StatementListing : public QDockWidget {
       void contextMenuRequested(const QPoint & pos);
       void insertAction();
       
+      void showAllInstructionsChanged(bool);
+      void updateListing();
+
    protected:
       Gui *m_gui;
       EditorPane *m_editorPane;
@@ -62,7 +65,6 @@ class StatementListing : public QDockWidget {
       QAction *m_insertAction;
       QMenu *m_contextMenu;
       QModelIndex m_menuIndex;
-
 
       bool isHeading(const QModelIndex &index);
 };

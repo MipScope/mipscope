@@ -757,8 +757,14 @@ void Gui::debugRunXSpimAction() {
    
    if (load) {
       QFile *file = m_editorPane->m_activeEditor->file();
-      if (file == NULL)
+      if (file == NULL) {
+         QMessageBox::warning(this, tr("Error"), tr("Cannot open (empty?) file in xspim. Check xspim path in Options"));
+
+         if (VERBOSE)
+            cerr << "Cannot open (empty?) file in xspim. Check xspim path in Options" << endl;
+
          return;
+      }
       
       fileName = file->fileName();
    }

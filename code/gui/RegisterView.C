@@ -138,7 +138,7 @@ class CustomBackgroundWidget : public QWidget {
 };
 
 RegisterPane::RegisterPane(RegisterView *regView) : QWidget(), 
-   m_parent(regView), m_widget(new CustomBackgroundWidget(QString(IMAGES"/registerBackground.gif"), this)) 
+   m_parent(regView), m_widget(new CustomBackgroundWidget(QString(IMAGES"/registerBackground.jpg"), this)) 
 {
    QGridLayout *l = new QGridLayout();
 

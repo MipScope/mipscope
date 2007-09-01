@@ -30,7 +30,7 @@
 \* ---------------------------------------------- */
 
 #include <iostream>
-using namespace std;
+#include <vector>
 
 #include <QApplication>
 #include <QTextDocument>
@@ -68,9 +68,18 @@ int main(int argc, char** argv) {
          cerr << "Usage: " << args.at(0).toStdString() << " textFile" << endl;
          return 1;
       }
-      
-      TextGui ui(args);
-      ui.executeProgram(&app);
+            
+      try {
+         TextGui ui(args);
+         ui.executeProgram(&app);
+      } catch(std::vector<ParseError, std::allocator<ParseError> > &e) {
+         cerr << "Parse errors:" << endl;
+         for (std::vector<ParseError, std::allocator<ParseError> >::const_iterator iter = e.begin();
+              iter != e.end();
+              iter++) {
+            cerr << "   [" << iter->getLineNo()+1 << "] " << iter->toStdString() << endl;
+         }
+      } 
    }
    else {
       Q_INIT_RESOURCE(images);

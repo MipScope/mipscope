@@ -184,7 +184,7 @@ void Debugger::executionInit(void) {
    m_forceStopped = false;
    
    if (!m_parseList->isValid()) {
-      cerr << "Debugger: parseList isn't valid.\n";
+      cerr << "Invalid program. Sorry for this lame error -- check the GUI for hints on what's wrong.\n";
       m_terminationReason = T_INVALID_PROGRAM;
       return;
    }

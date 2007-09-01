@@ -769,7 +769,7 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                PARSE_ERRORL(QString("directive '%1' takes a string").arg(QString(directives[type])), text, text.length());
             
             // TODO:  possibly remove simplified() -- cause it may remove white space from strings?  No -- don't think so
-            // TODO(tim): we used to call .trimmed() on text, but that made the string " " become "", which we don't want.
+            // NOTE(tim): we used to call .trimmed() on text, but that made the string " " become "", which we don't want.
             //            Therefore, removing trimmed().
             text = text.remove(0, 1);
            

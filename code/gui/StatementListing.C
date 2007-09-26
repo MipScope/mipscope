@@ -73,7 +73,7 @@ void StatementListing::showAllInstructionsChanged(bool showAll) {
 }
 
 void StatementListing::updateListing() {
-   cerr << "updateListing" << endl;
+//   cerr << "updateListing" << endl;
 
    // Clear any previous listings
    m_tree->clear();

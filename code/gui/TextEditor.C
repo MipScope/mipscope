@@ -356,14 +356,16 @@ void TextEditor::pcChanged(ParseNode *pc, bool justRolledBack) {
 
    if (m_pc != NULL) {
       QTextBlock *b = m_pc->getTextBlock();
+
 //      cerr << "b: " << b->text().toStdString() << endl;
       int state = b->userState();
       if (state < 0)
          b->setUserState(B_CURRENT_PC);
       else b->setUserState(state | B_CURRENT_PC);
       
-      if (!justRolledBack) {
+      if (!justRolledBack && b != NULL) {
          QTextCursor c = textCursor();
+
          c.setPosition(b->position());
          setTextCursor(c);
          ensureCursorVisible();

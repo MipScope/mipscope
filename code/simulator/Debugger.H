@@ -133,7 +133,7 @@ class Debugger : public QThread {
       ParseList* m_parseList;      
       QMutex m_statusMutex;
       int m_status, m_terminationReason;
-      QWaitCondition m_statusChangedWaitCondition;            
+      QWaitCondition m_statusChangedWaitCondition;
       
       // flags denoting which registers are protected by memory watchpoints
       bool m_registerWatchpoints[register_count];

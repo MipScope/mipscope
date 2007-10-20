@@ -79,8 +79,8 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
 
    // if (m_currentTimestamp != CLEAN_TIMESTAMP) // record change
    const unsigned int aligned = (address & ~3);
-   unsigned int result = 
-      (m_memory[aligned] |= (value << ((address & 3) << 3)));
+   m_memory[aligned] &= ~(0xFF << ((address & 3) << 3));  /* Zero out the byte. */
+   m_memory[aligned] |= (value << ((address & 3) << 3));  /* Set the byte. */
 
    if (m_currentTimestamp != CLEAN_TIMESTAMP) { // record change
       m_undoList.push_back(new MemoryChangedAction(m_currentTimestamp, aligned, m_memory[aligned]));
@@ -92,7 +92,7 @@ void State::setMemoryByte(unsigned int address, unsigned char value) {
       list->push_back(m_currentTimestamp);
    }
    
-   memoryChanged(aligned, result, m_pc);
+   memoryChanged(aligned, m_memory[aligned], m_pc);
    
    if (m_currentTimestamp != CLEAN_TIMESTAMP) {
       // has to be direct

@@ -5667,6 +5667,32 @@ main:
 	li $v0, 1
 	jal printnewline
 	
+	sb $s0, hunk + 0
+	sb $s1, hunk + 1
+	sb $0, hunk + 1
+	sb $s2, hunk + 2
+	sb $s3, hunk + 3
+	sb $s2, hunk + 4
+	sb $0, hunk + 5 #null terminate it
+	
+	li $v0, 4
+	la $a0, hunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
+	sb $0, hunk + 0
+	sb $0, hunk + 1
+	sb $0, hunk + 2
+	sb $0, hunk + 3
+	sb $0, hunk + 5 #null terminate it
+	
+	li $v0, 4
+	la $a0, hunk
+	syscall
+	li $v0, 1
+	jal printnewline
+	
 #############################################		
 	# sh
 	

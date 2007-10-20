@@ -37,7 +37,7 @@ using namespace std;
 #include "Options.H"
 
 #define PROJECT_NAME       "MipScope"
-#define PROJECT_VERSION    "PRE-RELEASE-MAY-2007"
+#define PROJECT_VERSION    "OCT-2007-FOR-CSCI-310"
 
 #define FILE_FILTER        tr("MIPS Files (*.s *.a *.mal);;All Files (*)")
 #define STATUS_DELAY       (12000)

@@ -942,16 +942,16 @@ void Gui::updateMemory(Program *program, State *state, int status) {
    }
 }
 
-   void Gui::updateMemoryView(Program *active) {
-      if (active == NULL || m_memoryView == NULL)
-         return; // platform doesn't support OpenGL
+void Gui::updateMemoryView(Program *active) {
+   if (active == NULL || m_memoryView == NULL)
+      return; // platform doesn't support OpenGL
 
-      m_memoryView->updateDisplay(active);
+   m_memoryView->updateDisplay(active);
 
-      // TableView_dev
-      m_tableMemoryView->updateDisplay(active);
+   // TableView_dev
+   m_tableMemoryView->updateDisplay(active);
 
-   }
+}
 
 void Gui::gotoDeclaration(unsigned int address) {
    TextEditor *active = m_runningEditor;

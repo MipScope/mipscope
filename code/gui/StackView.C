@@ -88,6 +88,10 @@ void StackView::memoryChanged(unsigned int address, unsigned int value, ParseNod
 void StackView::updateDisplay(State *s, int state) {
    if (m_dirty && state != RUNNING) {
       s->getStack(m_stack);
+      
+      
+      int cur_index = 0, size = m_stack.size();
+      
       const unsigned int base = 16;  // hex
       const QString &longestAddr = QString::number(STACK_BASE_ADDRESS - 4, base);
       const int maxAddrLength = longestAddr.length();
@@ -109,12 +113,24 @@ void StackView::updateDisplay(State *s, int state) {
          c.movePosition(QTextCursor::End);
          //int oldEnd = c.position();
          QTextCharFormat format(m_display->currentCharFormat());
-         
+
+         if (cur_index++ > 200) {
+            if (VERBOSE)
+               cerr << "STACK_SIZE: " << m_stack.size() << endl;
+            c.insertText(QString("... STACK IS TOO LARGE TO DISPLAY ...\n"
+                                 "You may be in an infinite loop. Stack size: %1 words").arg(QString::number(size)));
+               /*QMessageBox::warning(this, tr("Stack warning"), 
+                     QString("Stack is too large to display.\n"
+                        "You may be in an infinite loop. Stack size: %1 words").arg(QString::number(size)));*/
+            break;
+         }
+
+
          // TODO:  Have tip tell which line last modified it!
          QString tip = QString("Hex: %1: %2<br>"
-                               "Dec: %3: %4").arg(addr, valString, 
-                       QString::number(address, 10), 
-                       QString::number(value, 10));
+               "Dec: %3: %4").arg(addr, valString, 
+                  QString::number(address, 10), 
+                  QString::number(value, 10));
          if (address == m_sp) {
             format.setFontWeight(100);
             tip += "<br>(<b>$sp</b>)";
@@ -122,24 +138,24 @@ void StackView::updateDisplay(State *s, int state) {
          if (m_modifiedMap.contains(address)) {
             ParseNode *last = m_modifiedMap[address];
             TextEditor *active = NULL;
-            
+
             if (last != NULL && last->isValid() && last->getTextBlock() != NULL && (active = m_gui->getActiveProgram()) != NULL) {
                tip += QString("<br>"
-                      "(Set by line <i>%1</i>)").arg(1 + active->lineNumber(*last->getTextBlock()));
+                     "(Set by line <i>%1</i>)").arg(1 + active->lineNumber(*last->getTextBlock()));
             }
          }
          format.setToolTip(tip);
-         
+
          c.insertText(addr, format);
          if (address == m_sp)
             format.setFontWeight(50);
          c.insertText(text, format);
-         
+
          address -= 4;
       }
-      
+
       m_display->setUpdatesEnabled(true);
-//      m_display->setPlainText(text);
+      //      m_display->setPlainText(text);
    }
 }
 
@@ -147,8 +163,8 @@ void StackView::fontChanged(const QFont &newFont) {
    m_display->setFont(newFont);
 }
 
-CustomTextEdit::CustomTextEdit(StackView *parent, const QString &background)
-   : QTextEdit(parent), m_stackView(parent)
+   CustomTextEdit::CustomTextEdit(StackView *parent, const QString &background)
+: QTextEdit(parent), m_stackView(parent)
 {
    m_background = QImage(background);
    if (!m_background.isNull()) m_pixMap = QPixmap::fromImage(m_background);
@@ -164,7 +180,7 @@ CustomTextEdit::CustomTextEdit(StackView *parent, const QString &background)
 // @overridden
 void CustomTextEdit::paintEvent(QPaintEvent *e) {
    if (m_background.isNull()) return;
-   
+
    QPainter p(viewport());
    QRect r(QPoint(0, 0), m_pixMap.size());
    const QRect &bounds = rect();
@@ -185,25 +201,25 @@ void CustomTextEdit::paintEvent(QPaintEvent *e) {
 }
 
 /*c.setPosition(oldEnd);
-         c.select(QTextCursor::LineUnderCursor);
+  c.select(QTextCursor::LineUnderCursor);
 //         c.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-         
-         QTextCharFormat format(m_display->currentCharFormat());
-         format.setToolTip(QString("Hex: %1: %2<br>"
-                                   "Dec: %3: %4").arg(addr, valString, 
-                           QString::number(address, 10), 
-                           QString::number(value, 10)));
-         format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-         
-         const struct QTextEdit::ExtraSelection newSelection = {
-            QTextCursor(c), 
-            format, //QTextCharFormat(f), 
-         };
-         
-         highlights.push_back(newSelection);
-         
-         
-         QList<QTextEdit::ExtraSelection> highlights;
-         m_display->setExtraSelections(highlights);
-         */
+
+QTextCharFormat format(m_display->currentCharFormat());
+format.setToolTip(QString("Hex: %1: %2<br>"
+"Dec: %3: %4").arg(addr, valString, 
+QString::number(address, 10), 
+QString::number(value, 10)));
+format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+
+const struct QTextEdit::ExtraSelection newSelection = {
+QTextCursor(c), 
+format, //QTextCharFormat(f), 
+};
+
+highlights.push_back(newSelection);
+
+
+QList<QTextEdit::ExtraSelection> highlights;
+m_display->setExtraSelections(highlights);
+*/
 

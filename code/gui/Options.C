@@ -68,6 +68,21 @@ void Options::resetDefaults() {
    m_font = QFont();
    m_font.fromString(m_settings->value("font", QFont("Courier", 11).toString()).toString());
 
+	//Auto-Save	
+	int temp = m_settings->value("autoSaveOptions", 4).toInt();
+	
+	switch (temp) {
+		case 1:
+			m_autoSaveOptions = ALWAYS;
+			break;
+		case 2:
+			m_autoSaveOptions = NEVER;
+			break;
+		default:
+			m_autoSaveOptions = PROMPT;
+			break;
+	}
+	
    // Debugging
    m_readOnlyDebuggingEnabled = m_settings->value("readOnlyDebuggingEnabled", false).toBool();
    m_implicitRollbackEnabled  = m_settings->value("implicitRollbackEnabled", true).toBool();
@@ -203,6 +218,20 @@ void Options::setFont(const QFont &f) {
    m_options->fontChanged(f);
 }
 
+// -----------------------------------------------
+//                   Auto-Save
+// -----------------------------------------------
+
+Options::AutoSaveOptions Options::autoSaveOptions() {
+	return m_options->m_autoSaveOptions;
+}
+
+void Options::setAutoSaveOptions(Options::AutoSaveOptions aso) {
+	
+	m_options->m_autoSaveOptions = aso;
+	m_settings->setValue("autoSaveOptions", aso);
+   m_options->autoSaveOptionsChanged(aso);
+}
 
 // -----------------------------------------------
 //                   Debugging

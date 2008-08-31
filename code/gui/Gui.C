@@ -551,7 +551,7 @@ void Gui::clipboardModified() {
 }
 
 void Gui::saveSettings() {
-   QFile file(SETTINGS_FILE);
+   QFile file(QDir::home().absoluteFilePath(QString(SETTINGS_FILE)));
 
    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
       cerr << PROJECT_NAME": error saving workspace settings\n";
@@ -578,7 +578,7 @@ void Gui::saveSettings() {
 }
 
 void Gui::loadSettings() {
-   QFile file(SETTINGS_FILE);
+   QFile file(QDir::home().absoluteFilePath(QString(SETTINGS_FILE)));
 
    if (!file.open(QIODevice::ReadOnly)) {
       //cerr << PROJECT_NAME": error loading workspace settings\n";
@@ -636,7 +636,14 @@ void Gui::debugRunAction() {
            else if (m_mode == PAUSED)
            m_mode = RUNNING;
            else m_mode = PAUSED;*/
-
+	if (m_editorPane->m_activeEditor->isModified() && Options::autoSaveOptions() != Options::NEVER ) {
+		if (Options::autoSaveOptions() == Options::ALWAYS ||
+			 QMessageBox::Yes == QMessageBox::question(this, QString("File not saved!"), QString("The current file is not saved. Do you wish to save before running?"), QMessageBox::Yes | QMessageBox::No)) {
+			m_editorPane->saveAction(); 
+		}
+	}
+	
+	
    run();
    //updateDebugActions();
 }
@@ -763,29 +770,40 @@ void Gui::debugRestartAction() {
 void Gui::debugRunXSpimAction() {
    QString fileName;
    bool load = true;
-
+	
    if (m_editorPane->m_activeEditor->isModified()) {
-      QMessageBox::StandardButton ret = m_editorPane->m_activeEditor->promptUnsavedChanges();
+      
+		QMessageBox::StandardButton ret = QMessageBox::Yes;
+		if (Options::autoSaveOptions() == Options::PROMPT) {
+			ret = QMessageBox::question(this, QString("File not saved!"), QString("The current file is not saved. Do you wish to save before running?"), QMessageBox::Yes | QMessageBox::No);
+		}
 
-      if (ret == QMessageBox::Cancel)
-         return;
-      if (ret == QMessageBox::No) {
-         load = false;
-
-         QFile file(".temp.s");
-         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-            cerr << PROJECT_NAME": error creating temporary file to load into xspim\n" << "Save your file before running to avoid this error.\n";
-            cerr << file.errorString().toStdString() << endl;
-
-            return;
-         }
-
-         QTextStream t(&file);
-         t << m_editorPane->m_activeEditor->toPlainText();
-         file.close();
-
-         fileName = file.fileName();
-      }
+      switch(ret) {
+			case QMessageBox::Cancel:
+         	return;
+				break;
+      	case QMessageBox::No:
+			{		
+				load = false;
+	
+				QFile file(".temp.s");
+				if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+					cerr << PROJECT_NAME": error creating temporary file to load into xspim\n" << "Save your file before running to avoid this error.\n";
+					cerr << file.errorString().toStdString() << endl;
+	
+					return;
+				}
+	
+				QTextStream t(&file);
+				t << m_editorPane->m_activeEditor->toPlainText();
+				file.close();
+	
+				fileName = file.fileName();
+				break;
+			}
+			default:
+				m_editorPane->saveAction(); 
+		}
    }
 
    if (load) {

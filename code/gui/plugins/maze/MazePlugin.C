@@ -219,8 +219,12 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
    if(getenv("MAZE_DEBUG"))
       cerr << "MAZE_DEBUG: draw_arrow() -> void" << endl;
    if(getenv("MAZE_SLOW") && status == RUNNING) {
-      QThread::currentThread()->wait(2500000);
-//      usleep(2500000); 
+      
+		//use system call usleep so we don't need to create our own 
+		//QThread. Loop repeatedly for better responsiveness
+		for (int i=0; i < 1000; i++) {
+			usleep(1000);
+		}
    }
 }
 
@@ -326,4 +330,14 @@ void MazePlugin::get_neighbors(State *s, int start, int* buf){
          << eastRoom  << ")" 
          << endl;
 }
+
+QString  MazePlugin::getMazePath() {
+	return m_lastMazeDir.isEmpty() ? QString("./") : m_lastMazeDir;\
+}
+
+void MazePlugin::setMazePath(QString path) {
+	m_lastMazeDir = path;
+}
+
+
 

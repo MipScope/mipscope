@@ -175,7 +175,12 @@ void TextOutputConsole::syscall(State *s, int status, int syscallNo, int valueOf
          output = QString(s->getString(valueOfa0));
          break;
       case S_PRINT_CHAR:
-         output = QString::number((char)(valueOfa0 & 0xFF));
+        {
+            unsigned char str[4];
+            str[0] = (unsigned char)(valueOfa0 & 0xFF);
+            str[1] = '\0';
+            output = QString::fromAscii((const char*)str);
+         }
          break;
       case S_CLEAR_OUTPUT:
       case S_PRINT_FLOAT:  // Unimplemented

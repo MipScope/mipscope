@@ -112,7 +112,22 @@ class Options : public QObject
       void setAutoIndentationEnabled(bool);
       void setTabWidth(unsigned int);
       void setFont(const QFont&);
+		
+		 // Auto-save
+   public:
+		
+		enum AutoSaveOptions {PROMPT, ALWAYS, NEVER};
+		
+      static AutoSaveOptions autoSaveOptions();
+            
+      AutoSaveOptions m_autoSaveOptions;
       
+   signals:
+      void autoSaveOptionsChanged(AutoSaveOptions);
+
+   public slots:
+      void setAutoSaveOptions(AutoSaveOptions);
+		
        
        // Debugging
    public:

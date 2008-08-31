@@ -35,6 +35,7 @@
 #include "Identifier.H"
 #include "Statement.H"
 #include "State.H"
+#include <limits.h>
 
 #include "../gui/Program.H"
 

@@ -30,6 +30,7 @@
 
 #include <QWidget>
 #include <QFont>
+#include "Options.H"
 
 class QPushButton;
 class QString;
@@ -73,6 +74,9 @@ class EditingOptionsPage : public QWidget
       void errorHighlightingChanged(int);
       void autoIndentationChanged(int);
       void tabWidthChanged(int);
+		void autoSaveToPrompt(bool doIfTrue);
+		void autoSaveToAlways(bool doIfTrue);
+		void autoSaveToNever(bool doIfTrue);
       void changeFont();
 
    protected:

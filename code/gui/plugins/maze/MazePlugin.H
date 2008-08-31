@@ -73,6 +73,9 @@ class MazePlugin : public Plugin, public SyscallHandler {
       virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
       virtual void undoSyscall(int syscallNo);
       virtual void reset();
+		
+		QString getMazePath();
+		void setMazePath(QString path);
       
    protected:
       // --------------------------------------
@@ -90,6 +93,8 @@ class MazePlugin : public Plugin, public SyscallHandler {
 
       MazeGui *m_maze;
       QStack<int> m_searchStack;
+		
+		QString m_lastMazeDir;
 };
 
 #endif // __MAZE_PLUGIN_H__

@@ -132,8 +132,8 @@ class Gui : public QMainWindow {
       
       void updateMemory(Program*, State *state, int status);
 
-      void stopCurrentProgram();
-      
+      void stopCurrentProgram();      
+
       // Normal Gui/Menu Related
       // -----------------------
    private slots:

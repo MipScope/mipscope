@@ -30,6 +30,7 @@
 #include "State.H"
 #include <exception>
 #include <assert.h>
+#include <typeinfo>
 
 // Include all Statement Implementations
 #include "statements/Arithmetic.H"
@@ -67,7 +68,7 @@ bool Statement::isInstruction() {
 
    try {
       instr = dynamic_cast<Instruction*>(this);
-   } catch(bad_cast&) { }
+   } catch(std::bad_cast&) { }
 
    return (instr != NULL);
 }
@@ -81,7 +82,7 @@ bool Statement::isPreprocessor() { // consts and #defines
 
    try {
       constSt = dynamic_cast<ConstStatement*>(this);
-   } catch(bad_cast&) { }
+   } catch(std::bad_cast&) { }
 
    return (constSt != NULL);
 }

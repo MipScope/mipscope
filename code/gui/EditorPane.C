@@ -72,8 +72,14 @@ void EditorPane::openFile(const QString &fileName) {
    QFile *file = new QFile(fileName);
    
    if (m_activeEditor != NULL && !m_activeEditor->document()->isModified() && !m_activeEditor->m_loaded) {
-      if (m_activeEditor->openFile(file))
+      if (m_activeEditor->openFile(file)) {
          setActiveEditor(m_activeEditor);
+			
+			//Bug fix, hack: TextEditor briefly thinks it has changed and
+			//has fired off a changed event causing signal isModified(true).
+			//Resync with actual isModified() property.
+			isModified(m_activeEditor->isModified());
+		}
       
 //      contentChanged(m_activeEditor);
       // else error
@@ -82,6 +88,8 @@ void EditorPane::openFile(const QString &fileName) {
       setActiveEditor(editor);
       editor->openFile(file);
    }
+	
+	
 }
 
 void EditorPane::setActiveEditor(TextEditor *newlyActive) {
@@ -114,7 +122,7 @@ void EditorPane::activeEditorChanged(int index) {
    tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    tabbar->setTabTextColor(index, Qt::blue);
    
-//   cerr << "\tactive changed to: " << index << endl;
+   cerr << "\tactive changed to: " << index << endl;
    m_activeEditor = (TextEditor*) widget(index);
    
    // Send out signals to update (enable/disable) certain Gui Actions
@@ -140,6 +148,8 @@ void EditorPane::activeEditorChanged(int index) {
 }
 
 void EditorPane::resetModified() {
+	
+	cerr << "resetModified" << endl;
    isModified(m_activeEditor->isModified());
 }
 

@@ -237,6 +237,34 @@ EditingOptionsPage::EditingOptionsPage(QWidget *parent) : QWidget(parent)
    group->setLayout(l);
    mainLayout->addWidget(group);
    mainLayout->addSpacing(12);
+	//-----------------------------------------------------------
+	
+	group = new QGroupBox(tr("Auto-Save on Run"));
+   QVBoxLayout *l2 = new QVBoxLayout;
+   QRadioButton *rb1 = new QRadioButton(tr("Prompt to save on run."));
+   rb1->setToolTip(tr("If you try to run an unsaved file, you will be prompted to save it."));
+   rb1->setStyle(style);
+   l2->addWidget(rb1);
+   rb1->setChecked(Options::autoSaveOptions() == Options::PROMPT);
+   connect(rb1, SIGNAL(toggled(bool)), this, SLOT(autoSaveToPrompt(bool)));
+	
+	QRadioButton *rb2 = new QRadioButton(tr("Always save on run."));
+   rb2->setToolTip(tr("If you try to run an unsaved file, it will automatically be saved."));
+   rb2->setStyle(style);
+   l2->addWidget(rb2);
+   rb2->setChecked(Options::autoSaveOptions() == Options::ALWAYS);
+   connect(rb2, SIGNAL(toggled(bool)), this, SLOT(autoSaveToAlways(bool)));
+	
+	QRadioButton *rb3 = new QRadioButton(tr("Do nothing on run."));
+   rb3->setToolTip(tr("Nothing will happen if you try to run an unsaved file."));
+   rb3->setStyle(style);
+   l2->addWidget(rb3);
+   rb3->setChecked(Options::autoSaveOptions() == Options::NEVER);
+   connect(rb3, SIGNAL(toggled(bool)), this, SLOT(autoSaveToNever(bool)));
+
+   group->setLayout(l2);
+   mainLayout->addWidget(group);
+   mainLayout->addSpacing(12);
    
    // ----------------------------------------------------------
    QPushButton *b = new QPushButton(QString("Change Font"));// (%1)").arg(m_font.toString()));
@@ -290,6 +318,18 @@ void EditingOptionsPage::autoIndentationChanged(int index) {
 
 void EditingOptionsPage::tabWidthChanged(int index) {
    Options::m_options->setTabWidth(index);
+}
+
+void EditingOptionsPage::autoSaveToPrompt(bool doIfTrue) {
+	if (doIfTrue) Options::m_options->setAutoSaveOptions(Options::PROMPT);
+}
+
+void EditingOptionsPage::autoSaveToAlways(bool doIfTrue) {
+	if (doIfTrue) Options::m_options->setAutoSaveOptions(Options::ALWAYS);
+}
+
+void EditingOptionsPage::autoSaveToNever(bool doIfTrue) {
+	if (doIfTrue) Options::m_options->setAutoSaveOptions(Options::NEVER);
 }
 
 void EditingOptionsPage::changeFont() {

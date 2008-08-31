@@ -35,6 +35,7 @@
 #include "MazeParser.H"
 #include "QtCell.H"
 #include <QtGui>
+#include <QString>
 
 MazeGui::MazeGui(Gui *gui, MazePlugin *plugin) : 
    QWidget(), Maze(), m_gui(gui), m_plugin(plugin)
@@ -60,17 +61,17 @@ bool MazeGui::initializeMaze() {
 }
 
 bool MazeGui::loadFile() {
-//   cerr << "thread: " << QThread::currentThreadId() << endl;
-
+	
    const QString &fileName = QFileDialog::getOpenFileName(
          m_gui,
          tr("Choose a Maze file to open"),
-         tr("./"),
+         m_plugin->getMazePath(),
          tr("Maze files (*.mze);;All files (*)"));
-   //const QString &fileName = "test.mze";
    
    if (fileName.isEmpty())
       return false;
+	
+	m_plugin->setMazePath(fileName.left(fileName.lastIndexOf(QString("/"))));
 
    return MazeParser::parse(fileName, this);
 }

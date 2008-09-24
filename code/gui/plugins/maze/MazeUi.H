@@ -23,54 +23,29 @@
  */
 
 /* ---------------------------------------------- *\
-   file: PluginHandler.H
-   auth: Travis Fischer, Tim O'Donnell
-   acct: tfischer, tim
-   date: 8/14/2007
+   file: MazeUi.H
+   auth: Andrew Brindamour
+   acct: ab
+   date: 8/31/2008
 \* ---------------------------------------------- */
-#ifndef __PLUGIN_HANDLER_H__
-#define __PLUGIN_HANDLER_H__
 
-#include <QList>
+#ifndef __MAZE_UI_H__
+#define __MAZE_UI_H__
 
-class UI;
-class Gui;
-class TextGui;
-class Plugin;
+#include "Maze.H"
 
-/* PluginHandler:
- * ---------------
- * 
- *   Central class which initializes and registers 
- * all non-mipscope specific plugins.
- */
-class PluginHandler {
-   
-   public:
-		PluginHandler(Gui *parent);
-		PluginHandler(TextGui *parent);
-      void reset();
-      
-   protected:
-      void initializePlugins();
 
-      UI *m_ui;
-		bool m_textOnly;
-      QList<Plugin*> m_plugins;
+class MazeUi: public Maze {
+	
+	public: 
+		MazeUi();
+		virtual ~MazeUi();
+		bool initializeMaze();
+		virtual void showMessage(QString title, QString message) = 0;
+	protected:
+		virtual bool loadFile() = 0;
+		virtual void setupUI() = 0;
+	
 };
 
-class Plugin {
-   
-   public:
-      Plugin(UI *ui);
-      virtual ~Plugin();
-      
-      // avoid reset() name conflict with SyscallHandler class
-      virtual void resetPlugin();
-
-   protected:
-      UI *m_ui;
-};
-
-#endif // __PLUGIN_HANDLER_H__
-
+#endif

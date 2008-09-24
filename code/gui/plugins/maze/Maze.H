@@ -120,6 +120,9 @@ class Maze {
       bool validRoom(const point& p);
 
    protected:
+		
+		virtual void onNodesVisitedChanged();
+		
       // array of cells
       Cell **m_grid;
       //vector<vector<Cell> > grid;
@@ -128,7 +131,6 @@ class Maze {
       int destCol;
       int nodesVisited;
       int m_width, m_height;
-      MazeGui *m_mazeGui;
 };
 
 #endif // __MAZE_H__

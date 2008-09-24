@@ -8,7 +8,7 @@
 	
 .text
 
-main:
+__start:
 	
 	# Print out begin message:
 	li $v0, 4

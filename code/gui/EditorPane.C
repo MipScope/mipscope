@@ -118,11 +118,18 @@ void EditorPane::setActiveEditor(TextEditor *newlyActive) {
 }
 
 void EditorPane::activeEditorChanged(int index) {
+
+	//cerr << "active changed to: " << index << endl;
+	
+	if (index == -1) {
+		//we don't care, abort
+		return;
+	}
+
    QTabBar *tabbar = tabBar();
    tabbar->setTabTextColor(indexOf(m_activeEditor), Qt::black);
    tabbar->setTabTextColor(index, Qt::blue);
    
-   cerr << "\tactive changed to: " << index << endl;
    m_activeEditor = (TextEditor*) widget(index);
    
    // Send out signals to update (enable/disable) certain Gui Actions
@@ -149,7 +156,7 @@ void EditorPane::activeEditorChanged(int index) {
 
 void EditorPane::resetModified() {
 	
-	cerr << "resetModified" << endl;
+	//cerr << "resetModified" << endl;
    isModified(m_activeEditor->isModified());
 }
 

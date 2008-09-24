@@ -144,7 +144,6 @@ void Maze::init(int width, int height) {
    for(i = m_width * m_height; i--;)
       m_grid[i] = NULL;
    
-   m_mazeGui = NULL;
    //cerr << "Maze::init(" << getWidth() << ", " << getHeight() << ")\n";
 }
 
@@ -177,8 +176,7 @@ int Maze::moveCurrent(point loc) {
    currCell = loc;
    ++nodesVisited;
    
-   if (m_mazeGui)
-      m_mazeGui->updateNodesVisited();
+   onNodesVisitedChanged();
 //   cerr << ";moveCurrent\n";
    // TODO:  update m_noVisited counter
 
@@ -201,8 +199,7 @@ int Maze::undoMove(point loc) {
    --nodesVisited;
 
   // cerr << "End-currCell: " << currCell.x << ", " << currCell.y << endl;
-   if (m_mazeGui)
-      m_mazeGui->updateNodesVisited();
+	onNodesVisitedChanged();
    // TODO:  update m_noVisited counter
    
    return 1;
@@ -259,6 +256,8 @@ bool Maze::validRoom(const point& p) {
    return  (p.x >= 0 && p.x < m_width &&
       p.y >= 0 && p.y < m_height);
 }
+
+void Maze::onNodesVisitedChanged() {}
 
 /*
  * for debugging

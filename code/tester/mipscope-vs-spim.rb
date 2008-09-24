@@ -1,8 +1,9 @@
 #! /usr/bin/ruby
 
-#spimpath = "/course/cs031/pro/spim/spim"
-spimpath = "/course/cs036_projects/mipscope/spim/bin/spim"
-mipscopepath = "~/course/cs036/mipscope/code/mipscope"
+spimpath = "/course/cs031/bin/spim"
+#spimpath = "/course/cs036_projects/mipscope/spim/bin/spim"
+#mipscopepath = "~/course/cs036/mipscope/code/mipscope"
+mipscopepath = "../mipscope"
 startline = "Begin tests."
 endline = "End tests."
 

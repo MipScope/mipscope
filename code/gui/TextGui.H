@@ -26,6 +26,7 @@
 #define TEXTGUI_H_
 
 #include <QObject>
+#include "UI.H"
 
 class QStringList;
 class Debugger;
@@ -35,22 +36,26 @@ class QApplication;
 
 #define PROGRAM_TIMEOUT 30 // seconds
 
-class TextGui : public QObject {
+class TextGui : public QObject, public UI {
    
    Q_OBJECT
    
    public:
       TextGui(QStringList args);
       void executeProgram(QApplication* app);
+		SyscallListener *getSyscallListener();
+		void stopCurrentProgram();
       
    public slots:
       void syscallReceived(int no, int valueOfa0);
       void programTerminated(int reason);
+		
       
    private:
       Debugger* m_debugger;
       SyscallListener* m_syscallListener;
       TextOutputConsole* m_output;   
+		void setupPlugins();
    
 };
 

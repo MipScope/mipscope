@@ -30,7 +30,9 @@
 \* ---------------------------------------------- */
 #include "PluginHandler.H"
 #include "../Utilities.H"
+#include "../UI.H"
 #include "../Gui.H"
+#include "../TextGui.H"
 #include "../../simulator/State.H"
 
 
@@ -42,16 +44,23 @@
 // should be initialized here and the 
 // code should be located in a subdirectory.
 // -----------------------------------------
-PluginHandler::PluginHandler(Gui *gui) : m_gui(gui)
+
+PluginHandler::PluginHandler(Gui *ui) : m_ui(ui), m_textOnly(false)
 {
    initializePlugins();
 }
+
+PluginHandler::PluginHandler(TextGui *ui) : m_ui(ui), m_textOnly(true)
+{
+	 initializePlugins();
+}
+
 
 void PluginHandler::initializePlugins() {
    m_plugins.clear();
    
    // Instantiate/initialize your plugins HERE:
-   m_plugins.append(new MazePlugin(m_gui));
+   m_plugins.append(new MazePlugin(m_ui, m_textOnly));
 }
 
 void PluginHandler::reset() {
@@ -60,7 +69,7 @@ void PluginHandler::reset() {
 }
 
 
-Plugin::Plugin(Gui *gui) : m_gui(gui)
+Plugin::Plugin(UI *ui) : m_ui(ui)
 { }
 
 Plugin::~Plugin()

@@ -423,7 +423,7 @@ void Gui::ensureVisibility(QDockWidget *widget) {
    //cerr << "out: " << widget->isVisible() << endl;
 }
 
-SyscallListener *Gui::getSyscallListener() const {
+SyscallListener *Gui::getSyscallListener() {
    return m_syscallListener;
 }
 

@@ -23,54 +23,47 @@
  */
 
 /* ---------------------------------------------- *\
-   file: PluginHandler.H
-   auth: Travis Fischer, Tim O'Donnell
-   acct: tfischer, tim
-   date: 8/14/2007
+   file: MazeTui.C
+   auth: Andrew Brindamour
+   acct: ab
+   date: 8/31/2008
 \* ---------------------------------------------- */
-#ifndef __PLUGIN_HANDLER_H__
-#define __PLUGIN_HANDLER_H__
+#include "MazeTui.H"
+#include "../../Utilities.H"
+#include "MazePlugin.H"
+#include "MazeParser.H"
 
-#include <QList>
+MazeTui::MazeTui(MazePlugin *plugin) : 
+   MazeUi(), m_plugin(plugin)
+{
+//   cerr << "con: " << QThread::currentThreadId() << endl;
+}
 
-class UI;
-class Gui;
-class TextGui;
-class Plugin;
+MazeTui::~MazeTui() { }
 
-/* PluginHandler:
- * ---------------
- * 
- *   Central class which initializes and registers 
- * all non-mipscope specific plugins.
- */
-class PluginHandler {
+
+
+bool MazeTui::loadFile() {
+	
+	
+	cout <<endl << "Please enter maze filename: ";
+	std::string fileNameStd;
+	
+	cin >> fileNameStd;
+	
+   const QString &fileName = QString(fileNameStd.c_str()); //QString("/course/cs031/asgn/maze/test.mze");
    
-   public:
-		PluginHandler(Gui *parent);
-		PluginHandler(TextGui *parent);
-      void reset();
-      
-   protected:
-      void initializePlugins();
+   if (fileName.isEmpty())
+      return false;
+	
+	m_plugin->setMazePath(fileName.left(fileName.lastIndexOf(QString("/"))));
 
-      UI *m_ui;
-		bool m_textOnly;
-      QList<Plugin*> m_plugins;
-};
+   return MazeParser::parse(fileName, this);
+}
 
-class Plugin {
-   
-   public:
-      Plugin(UI *ui);
-      virtual ~Plugin();
-      
-      // avoid reset() name conflict with SyscallHandler class
-      virtual void resetPlugin();
+void MazeTui::setupUI() {}
 
-   protected:
-      UI *m_ui;
-};
-
-#endif // __PLUGIN_HANDLER_H__
+void MazeTui::showMessage(QString title, QString message) {
+	cout << title.toStdString() << ": " << message.toStdString() <<endl;
+}
 

@@ -38,27 +38,14 @@
 #include <QString>
 
 MazeGui::MazeGui(Gui *gui, MazePlugin *plugin) : 
-   QWidget(), Maze(), m_gui(gui), m_plugin(plugin)
+   QWidget(), MazeUi(), m_gui(gui), m_plugin(plugin)
 {
 //   cerr << "con: " << QThread::currentThreadId() << endl;
 }
 
 MazeGui::~MazeGui() { }
 
-bool MazeGui::initializeMaze() {
-   bool success = false;
 
-   //cerr << "init: " << QThread::currentThreadId() << endl;
-   //cerr << "mine: " << (this->thread() == QThread::currentThread()) << endl;
-   if (getenv("MAZE_DEFAULT"))
-      success = MazeParser::parse(getenv("MAZE_DEFAULT"), this);
-   else success = loadFile();
-
-   if (success)
-      setupCells();
-
-   return success;
-}
 
 bool MazeGui::loadFile() {
 	
@@ -76,8 +63,7 @@ bool MazeGui::loadFile() {
    return MazeParser::parse(fileName, this);
 }
 
-void MazeGui::setupCells() {
-   m_mazeGui = this;
+void MazeGui::setupUI() {
    // holds number of nodes visited text
    QGridLayout *mainLay = new QGridLayout();
    
@@ -102,7 +88,7 @@ void MazeGui::setupCells() {
    
    //QLabel *l = new QLabel(QString("Nodes Visited: %1").arg(nodesVisited));
 //   m_noVisited = new QLabel(QString("Nodes Visited: %1").arg(nodesVisited));
-   updateNodesVisited();
+   onNodesVisitedChanged();
    mainLay->setSizeConstraint(QLayout::SetFixedSize);
    mainLay->addWidget(&m_noVisited, 0, 0, Qt::AlignRight);
    mainLay->addWidget(m_cellPanel, 1, 0, Qt::AlignCenter);
@@ -116,13 +102,17 @@ void MazeGui::setupCells() {
 
 void MazeGui::closeEvent(QCloseEvent *event) {
    m_gui->stopCurrentProgram(); // quit Maze
-   
    QWidget::closeEvent(event);
 }
 
-void MazeGui::updateNodesVisited() {
+void MazeGui::onNodesVisitedChanged() {
    m_noVisited.setText(QString("Nodes Visited: %1").arg(nodesVisited));
 }
+
+void MazeGui::showMessage(QString title, QString message) {
+	QMessageBox::information(this, title, message);
+}
+
 
 /*int MazeGui::moveCurrent(point loc) {
    int res = Maze::moveCurrent(loc);

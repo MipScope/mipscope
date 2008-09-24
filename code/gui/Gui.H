@@ -35,6 +35,7 @@
 #include <QKeySequence>
 #include <QHash>
 #include "Utilities.H"
+#include "UI.H"
 
 #define SETTINGS_FILE      "."PROJECT_NAME".cfg"
 #define MAX_RECENT_FILES   (5)
@@ -69,7 +70,7 @@ class OptionsDialog;
 class Options;
 class PluginHandler;
 
-class Gui : public QMainWindow {
+class Gui : public QMainWindow, public UI {
    
    Q_OBJECT
    
@@ -83,7 +84,7 @@ class Gui : public QMainWindow {
       QAction *getSaveAllAction();
       QMenu *getEditMenu();
 
-      SyscallListener *getSyscallListener() const;
+      virtual SyscallListener *getSyscallListener();
       RegisterView *getRegisterView() const;
       StackView *getStackView() const;
       ErrorConsole *getErrorConsole() const;

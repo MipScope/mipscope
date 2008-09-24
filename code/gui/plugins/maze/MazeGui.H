@@ -36,21 +36,19 @@
 
 #include <QWidget>
 #include <QLabel>
-#include "Maze.H"
+#include "MazeUi.H"
 
 class Gui;
 class MazePlugin;
 class QCloseEvent;
 
-class MazeGui : public QWidget, public Maze {
+class MazeGui : public QWidget, public MazeUi {
    public:
       MazeGui(Gui *gui, MazePlugin *plugin);
       virtual ~MazeGui();
 
-      bool initializeMaze();
-      bool loadFile();
-
       void updateNodesVisited();
+		virtual void showMessage(QString title, QString message);
       
       // @overridden
       //virtual int moveCurrent(point loc);
@@ -59,8 +57,10 @@ class MazeGui : public QWidget, public Maze {
    protected:
       // @overridden
       virtual void closeEvent(QCloseEvent *event);
+		virtual bool loadFile();
+		virtual void onNodesVisitedChanged();
 
-      void setupCells();
+      void setupUI();
       
       QLabel m_noVisited;
       QWidget *m_cellPanel;

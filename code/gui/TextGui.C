@@ -33,6 +33,7 @@
 #include "../simulator/Statement.H"
 #include "../simulator/ParseNode.H"
 #include "../simulator/Debugger.H"
+#include "plugins/PluginHandler.H"
 
 #include <iostream>
 
@@ -65,6 +66,9 @@ TextGui::TextGui(QStringList args) : m_debugger(NULL), m_syscallListener(new Sys
    }
    
    ParseList* parseList = Parser::parseDocument(doc);
+	
+	
+	setupPlugins();
    
    if (VERBOSE) cerr << "Executing the program.\n";
    
@@ -108,4 +112,15 @@ void TextGui::programTerminated(int reason) {
    }
    
    exit(0);
+}
+
+void TextGui::setupPlugins() {
+   new PluginHandler(this);
+}
+
+SyscallListener *TextGui::getSyscallListener() {
+	return m_syscallListener;
+}
+void TextGui::stopCurrentProgram() {
+	m_debugger->programStop();
 }

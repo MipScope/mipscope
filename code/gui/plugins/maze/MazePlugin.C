@@ -30,19 +30,23 @@
 \* ---------------------------------------------- */
 #include "MazePlugin.H"
 #include "../../Utilities.H"
+#include "../../UI.H"
 #include "../../Gui.H"
 #include "../../SyscallHandler.H"
 #include "../../../simulator/State.H"
 #include "MazeGui.H"
+#include "MazeTui.H"
+#include "MazeUi.H"
 #include <QtGui>
 
 // Main interface between MipScope and the Maze gui plugin.
 // --------------------------------------------------------
-MazePlugin::MazePlugin(Gui *gui) : 
-   Plugin(gui), SyscallHandler(gui->getSyscallListener(), S_MAZE_INIT, true, true), 
-   m_maze(NULL)
+MazePlugin::MazePlugin(UI *ui, bool textOnly) : 
+   Plugin(ui), SyscallHandler(ui->getSyscallListener(), S_MAZE_INIT, true, true), 
+   m_maze(NULL),
+	m_textOnly(textOnly)
 {
-   SyscallListener *listener = gui->getSyscallListener();
+   SyscallListener *listener = ui->getSyscallListener();
 
    // Register this plugin as the default handler for all maze syscalls
    m_syscallNo = S_MAZE_DEFEAT;
@@ -126,9 +130,8 @@ void MazePlugin::undoSyscall(int syscallNo) {
 }
 
 void MazePlugin::reset() {
-   if (m_maze && m_maze->isVisible())
-      m_maze->setVisible(false);
    
+	delete m_maze;
    m_maze = NULL;
    m_searchStack.clear();
 }
@@ -176,7 +179,14 @@ int MazePlugin::init_maze(State *s) {
    if (m_maze != NULL)
       MAZE_ERROR(s, "Attempted to initialize Maze twice");
    
-   m_maze = new MazeGui(m_gui, this);
+	
+	//TODO add text-only option here
+   if (m_textOnly) {
+		m_maze = new MazeTui(this);
+	}
+	else {
+		m_maze = new MazeGui((Gui*) m_ui, this);
+	}
 //   QEventLoop *eventLoop = new QEventLoop();
 //   eventLoop->exec();
 
@@ -294,8 +304,8 @@ void MazePlugin::defeat(){
 }
 
 void MazePlugin::showEndMessage(const QString &str) {
-   QMessageBox::information(m_maze?(QWidget*)m_maze:(QWidget*)m_gui, "Pascal's Fate", str);
-   m_maze->setVisible(false);
+	m_maze->showMessage("Pascal's Fate", str);
+	reset();
 }
 
 

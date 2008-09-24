@@ -23,54 +23,24 @@
  */
 
 /* ---------------------------------------------- *\
-   file: PluginHandler.H
-   auth: Travis Fischer, Tim O'Donnell
-   acct: tfischer, tim
-   date: 8/14/2007
+   file: UI.H
+   auth: Andrew Brindamour
+   acct: ab
+   date: 8/31/2008
 \* ---------------------------------------------- */
-#ifndef __PLUGIN_HANDLER_H__
-#define __PLUGIN_HANDLER_H__
 
-#include <QList>
+#ifndef __UI_H__
+#define __UI_H__
 
-class UI;
-class Gui;
-class TextGui;
-class Plugin;
 
-/* PluginHandler:
- * ---------------
- * 
- *   Central class which initializes and registers 
- * all non-mipscope specific plugins.
- */
-class PluginHandler {
-   
-   public:
-		PluginHandler(Gui *parent);
-		PluginHandler(TextGui *parent);
-      void reset();
-      
-   protected:
-      void initializePlugins();
+class SyscallListener;
 
-      UI *m_ui;
-		bool m_textOnly;
-      QList<Plugin*> m_plugins;
+class UI {
+	
+	public: 
+		virtual SyscallListener *getSyscallListener() = 0;
+		virtual void stopCurrentProgram() = 0;
+	
 };
 
-class Plugin {
-   
-   public:
-      Plugin(UI *ui);
-      virtual ~Plugin();
-      
-      // avoid reset() name conflict with SyscallHandler class
-      virtual void resetPlugin();
-
-   protected:
-      UI *m_ui;
-};
-
-#endif // __PLUGIN_HANDLER_H__
-
+#endif

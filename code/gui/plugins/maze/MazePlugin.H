@@ -39,9 +39,8 @@
 #include "Maze.H"
 #include <QStack>
 
-class Gui;
 class Maze;
-class MazeGui;
+class MazeUi;
 class State;
 
 enum MazeSyscalls {
@@ -66,8 +65,7 @@ enum MazeSyscalls {
 class MazePlugin : public Plugin, public SyscallHandler {
    
    public:
-      MazePlugin(Gui *parent);
-
+		MazePlugin(UI *parent, bool textOnly = false);
       virtual void resetPlugin();
 
       virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
@@ -78,6 +76,7 @@ class MazePlugin : public Plugin, public SyscallHandler {
 		void setMazePath(QString path);
       
    protected:
+		
       // --------------------------------------
       // Maze Interface (accessed via syscalls)
       // --------------------------------------
@@ -91,10 +90,11 @@ class MazePlugin : public Plugin, public SyscallHandler {
       void showEndMessage(const QString &str);
       void get_neighbors(State *s, int start, int* buf);
 
-      MazeGui *m_maze;
+      MazeUi *m_maze;
       QStack<int> m_searchStack;
 		
 		QString m_lastMazeDir;
+		bool m_textOnly;
 };
 
 #endif // __MAZE_PLUGIN_H__

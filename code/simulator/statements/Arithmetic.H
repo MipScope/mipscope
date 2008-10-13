@@ -794,7 +794,7 @@ class Neg : public Instruction {
          int val = m_args->getValue(s, 1);
          
          // this is the only value that doesn't have a negative:
-         if (val == -2147483648) throw ArithmeticOverflow(s->getPC()->getTextBlock());
+         if (val == (signed long long)-2147483648LL) throw ArithmeticOverflow(s->getPC()->getTextBlock());
          
          s->setRegister((*m_args)[0]->getRegister(),  -1 * val);
       }

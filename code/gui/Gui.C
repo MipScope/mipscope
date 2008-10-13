@@ -166,7 +166,7 @@ void Gui::setupActions() {
    QAction *Gui::addAction(QToolBar *tb, QMenu *menu, QAction *a, const QObject *receiver, const char *member, const QKeySequence &key, bool isEnabled) {
       if (!key.isEmpty())
          a->setShortcut(key);
-
+      
       a->setEnabled(isEnabled);
       connect(a, SIGNAL(triggered()), receiver, member);
 
@@ -648,68 +648,70 @@ void Gui::debugRunAction() {
    //updateDebugActions();
 }
 
-   void Gui::updateDebugActions() {
-      if (m_debugStepAction == NULL)
-         return;
+void Gui::updateDebugActions() {
+   if (m_debugStepAction == NULL)
+      return;
+   
+   switch(m_mode) {
+      case RUNNING:
+         m_debugRunAction->setText(tr("&Pause"));
+         m_debugRunAction->setIcon(QIcon(ICONS"/debugPause.png"));
+         m_debugStopAction->setEnabled(true);
+         m_debugRestartAction->setEnabled(true);
+         m_debugStepAction->setEnabled(false);
+         m_debugBStepAction->setEnabled(false);
+         m_debugStepXAction->setEnabled(false);
+         m_debugBStepXAction->setEnabled(false);
+         if (m_runningEditor != NULL)
+            m_runningEditor->setModifiable(false);
+         
+         break;
+      case PAUSED:
+         setUpdatesEnabled(false);
 
-      switch(m_mode) {
-         case RUNNING:
-            m_debugRunAction->setText(tr("&Pause"));
-            m_debugRunAction->setIcon(QIcon(ICONS"/debugPause.png"));
-            m_debugStopAction->setEnabled(true);
-            m_debugRestartAction->setEnabled(true);
-            m_debugStepAction->setEnabled(false);
-            m_debugBStepAction->setEnabled(false);
-            m_debugStepXAction->setEnabled(false);
-            m_debugBStepXAction->setEnabled(false);
-            if (m_runningEditor != NULL)
-               m_runningEditor->setModifiable(false);
+         m_debugRunAction->setText(tr("&Run"));
+         m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
+         m_debugStopAction->setEnabled(true);
+         m_debugRestartAction->setEnabled(true);
+         m_debugStepAction->setEnabled(true);
+         m_debugBStepAction->setEnabled(true);
 
-            break;
-         case PAUSED:
-            setUpdatesEnabled(false);
+         m_debugStepXAction->setEnabled(true);
+         m_debugBStepXAction->setEnabled(true);
 
-            m_debugRunAction->setText(tr("&Run"));
-            m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
-            m_debugStopAction->setEnabled(true);
-            m_debugRestartAction->setEnabled(true);
-            m_debugStepAction->setEnabled(true);
-            m_debugBStepAction->setEnabled(true);
+         // Allow for on-the-fly editing!
+         if (m_runningEditor != NULL) {
+            m_runningEditor->setModifiable(!Options::readOnlyDebuggingEnabled());
 
-            m_debugStepXAction->setEnabled(true);
-            m_debugBStepXAction->setEnabled(true);
+            Program *program = m_runningEditor->getProgram();
+            if (program != NULL) {
+               bool undoIsAvailable = program->undoIsAvailable();
 
-            // Allow for on-the-fly editing!
-            if (m_runningEditor != NULL) {
-               m_runningEditor->setModifiable(!Options::readOnlyDebuggingEnabled());
-
-               Program *program = m_runningEditor->getProgram();
-               if (program != NULL) {
-                  bool undoIsAvailable = program->undoIsAvailable();
-
-                  m_debugBStepAction->setEnabled(undoIsAvailable);
-                  m_debugBStepXAction->setEnabled(undoIsAvailable);
-               }
+               m_debugBStepAction->setEnabled(undoIsAvailable);
+               m_debugBStepXAction->setEnabled(undoIsAvailable);
             }
+         }
 
-            setUpdatesEnabled(true);
-            break;
-         case STOPPED:
-            m_debugRunAction->setText(tr("&Run"));
-            m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
-            m_debugStopAction->setEnabled(false);
-            m_debugRestartAction->setEnabled(false);
-            m_debugStepAction->setEnabled(false);
-            m_debugBStepAction->setEnabled(false);
-            m_debugStepXAction->setEnabled(false);
-            m_debugBStepXAction->setEnabled(false);
-            if (m_runningEditor != NULL)
-               m_runningEditor->setModifiable(true);
+         setUpdatesEnabled(true);
+         break;
+      case STOPPED:
+         m_debugRunAction->setText(tr("&Run"));
+         m_debugRunAction->setIcon(QIcon(ICONS"/debugRun.png"));
+         m_debugRunAction->setEnabled(true);
+         
+         m_debugStopAction->setEnabled(false);
+         m_debugRestartAction->setEnabled(false);
+         m_debugStepAction->setEnabled(false);
+         m_debugBStepAction->setEnabled(false);
+         m_debugStepXAction->setEnabled(false);
+         m_debugBStepXAction->setEnabled(false);
+         if (m_runningEditor != NULL)
+            m_runningEditor->setModifiable(true);
 
-         default:
-            break;
-      }
+      default:
+         break;
    }
+}
 
 void Gui::stopCurrentProgram() {
    debugStopAction();
@@ -876,9 +878,10 @@ bool Gui::handleProgramTerminated(int reason) {
 
 // emitted whenever the runnability of a program changes
 void Gui::validityChanged(bool isValid) {
-
-   if (m_debugStepXAction != NULL) {
+   
+   if (m_debugStepXAction != NULL && m_debugRunAction != NULL) {
       m_debugRunAction->setEnabled(isValid);
+      //cerr << "validityChanged: " << isValid << endl;
 
       if (m_mode == PAUSED) {
          //cerr << "validityChanged: " << isValid << endl;
@@ -938,20 +941,20 @@ QHash<unsigned int, bool> *Gui::getMemoryWatchpoints() const {
    return m_memoryView->getWatchpoints();
 }
 
-   void Gui::activeEditorChanged(TextEditor *current) {
-      if (current == NULL)
-         return;
-
-      Program *program = current->getProgram();
-      if (program == NULL)
-         return;
-
-      m_mode = program->getStatus();
-      if (m_mode != STOPPED)
-         m_runningEditor = current;
-
-      updateDebugActions();
-   }
+void Gui::activeEditorChanged(TextEditor *current) {
+   if (current == NULL)
+      return;
+   
+   Program *program = current->getProgram();
+   if (program == NULL)
+      return;
+   
+   m_mode = program->getStatus();
+   if (m_mode != STOPPED)
+      m_runningEditor = current;
+   
+   updateDebugActions();
+}
 
 void Gui::updateMemory(Program *program, State *state, int status) {
    if (status != RUNNING) {

@@ -61,7 +61,7 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
       QTextBlock *actual = new QTextBlock(cur);
       
       _tab = "   ";
-
+      
       try {
          n = Parser::parseLine(actual, parseList);
       } catch(ParseError &e) {
@@ -78,6 +78,8 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
       // Setup n in dis hizhouse
       parseNodes.push_back(n);
    }
+   
+   parseList->cleanup();
    
    if (!errors.empty()) {
       delete parseList;
@@ -99,14 +101,19 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    Parser::trimCommentsAndWhitespace(text);
    int index;
    
-   if (VERBOSE) cerr << "Parsing line: " << text.toStdString() << endl;
+   if (VERBOSE) {
+      cerr << "Parsing line: " << text.toStdString() << endl;
+   }
    string orig = _tab;
    _tab += "   ";
       
    //if (VERBOSE) cerr << _tab << "Removed comment: '" << text.toStdString() << "' is left\n";
    
    if (text.isEmpty()) {
-      if (VERBOSE) cerr << _tab << "Recognized as blank or comment\n";
+      if (VERBOSE) {
+         cerr << _tab << "Recognized as blank or comment\n";
+      }
+      
       _tab = orig;
       return new ParseNode(list, b);
    }
@@ -128,6 +135,13 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
          text = text.remove(0, index + 1).simplified();
          //cerr << "after label: '" << text.toStdString() << "'\n";
          
+         cerr << "----------------------------------" << endl;
+         for(LabelMapIterator i = list->m_labelMap.begin(); i != list->m_labelMap.end(); ++i) {
+            cerr << "(" << i.key().toAscii().data();
+            cerr << ", " << i.value()->getValue() << ")" << endl;
+         }
+         cerr << endl;
+         
          const QString &id = label->getID();
          if (list->m_labelMap.contains(id))
             PARSE_ERRORL(QString("redeclaration of label '%1'").arg(id), labelStr, labelStr.length());
@@ -140,7 +154,7 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
             return new ParseNode(list, b, NULL, label);
          }
       } else { // possibly colon w/out identifier
-         // may also be a directive (.byte 0:100  or .ascii "colon:"
+         // may also be a directive ( .byte 0:100  or  .ascii "colon:" )
          if (!text.contains('.'))
             PARSE_ERRORL("missing label before ':'", text, 1);
       }

@@ -71,6 +71,8 @@ class ParseList : public QObject {
       ParseList(QTextDocument *document);
       virtual ~ParseList();
       
+      void cleanup();
+      
       void setDocument(QTextDocument *document);
       
       ParseNode *first() const;

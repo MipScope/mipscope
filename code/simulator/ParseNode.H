@@ -50,6 +50,7 @@ class PlaceHolder : public QTextBlockUserData {
       ParseNode *m_parent;
       QTextBlock *m_textBlock;
 };
+
 class ParseNode {
    public:
       ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statement = NULL, AddressIdentifier *label = NULL);

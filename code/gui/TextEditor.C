@@ -393,7 +393,7 @@ void TextEditor::focusPC() {
 void TextEditor::programStatusChanged(int status) {
 //   cerr << "TextEditor::programStatusChanged(" << status << ")\n";
 //   cerr << "\t" << QThread::currentThreadId() << "\n";
-
+   
    if (status == PAUSED)
       pcChanged(m_program->getPC(), false);
    else pcChanged(NULL, false);

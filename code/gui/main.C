@@ -58,8 +58,8 @@ int main(int argc, char** argv) {
          args.removeAt(index);
          VERBOSE = true;
          cout << "Verbosity on.\n";
-   }   
-      
+   }
+   
    if ( (index = args.indexOf("-nox")) != -1 ) {
       // run in the command line
       args.removeAt(index); 

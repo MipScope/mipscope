@@ -36,6 +36,7 @@
 #include "Statement.H"
 #include "State.H"
 #include <limits.h>
+#include <assert.h>
 
 #include "../gui/Program.H"
 
@@ -57,6 +58,40 @@ ParseList::~ParseList() { }
 
 void ParseList::setDocument(QTextDocument *document) {
    m_source = document;
+}
+
+void ParseList::cleanup() {
+   std::list<QString> labels;
+   
+   for(QTextBlock b = m_source->begin(); b != m_source->end(); b = b.next()) {
+      ParseNode *p = ParseNode::Node(b);
+      
+      if (p == NULL)
+         continue;
+      
+      AddressIdentifier *label = p->getLabel();
+      if (label)
+         labels.push_back(label->getID());
+   }
+   
+   std::list<QString> toRemove;
+   for(LabelMapIterator i = m_labelMap.begin(); i != m_labelMap.end(); ++i) {
+      bool found = false;
+      
+      for(std::list<QString>::iterator j = labels.begin(); j != labels.end(); ++j) {
+         if ((found = (*j == i.key())))
+            break;
+      }
+      
+      if (!found)
+         toRemove.push_back(i.key());
+   }
+   
+   for(std::list<QString>::iterator i = toRemove.begin(); i != toRemove.end(); ++i)
+      m_labelMap.remove(*i);
+   
+   for(std::list<QString>::iterator i = labels.begin(); i != labels.end(); ++i)
+      assert(m_labelMap.contains(*i));
 }
 
 ParseNode *ParseList::first() const {

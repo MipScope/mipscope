@@ -97,13 +97,15 @@ Program::Program(Gui *gui, EditorPane *editorPane, TextEditor *parent)
    connect(m_editorPane, SIGNAL(activeEditorChanged(TextEditor*)), this, SLOT(currentChanged(TextEditor*)));
 }
 
-bool Program::isRunnable() const {
+bool Program::isRunnable() {
+   m_runnable = (m_syntaxErrors == NULL || m_syntaxErrors->size() <= 0);
+   
    return m_runnable;
 }
 
 void Program::setRunnable(bool isRunnable) {
    m_runnable = isRunnable;
-   validityChanged(m_runnable);
+   emit validityChanged(m_runnable);
 }
 
 SyntaxErrors *Program::getSyntaxErrors() const {
@@ -231,7 +233,7 @@ void Program::programTerminated(int reason) {
    
 //   const int delay = STATUS_DELAY + 40000;
    const QString &name = m_parent->fileName();
-
+   
    switch(reason) {
       case T_COMPLETED:
          STATUS_BAR->showMessage(QString("Program %1 completed successfully. %2").arg(name, m_debugger->getDuration()));
@@ -368,10 +370,11 @@ void Program::loadProgram(bool forceLoad) {
          try {
             m_parseList = Parser::parseDocument(m_parent->document());
          } catch(SyntaxErrors &e) {
+            m_parseList->cleanup();
             updateSyntaxErrors(new SyntaxErrors(e));
             return;
          }
-
+         
          m_parseList->setInteractiveProgram(this);
          if (!m_parseList->isValid()) {
             updateSyntaxErrors(m_parseList->getSyntaxErrors());
@@ -403,7 +406,7 @@ void Program::run() {
       loadProgram(true);
       if (m_parseList == NULL || !m_parseList->isValid())
          return; // errors remain
-
+      
       m_debugger->setParseList(m_parseList);
       m_debugger->setWatchpoints(getWatchpoints());
       m_debugger->setMemoryWatchpoints(m_gui->getMemoryWatchpoints());
@@ -484,6 +487,7 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          return;
    }
    
+   m_parseList->cleanup();
    if (getStatus() != RUNNING) {
       QTextDocument *doc = m_parent->getTextDocument();
       
@@ -552,8 +556,10 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          position = c.position();
       } while(position <= affected && position != oldPosition);
       
+      bool shouldUpdate = (!m_modified.empty() || newlyInsertedTimestamp < MAX_TIMESTAMP);
+      
       // Update program State
-      if (!m_modified.empty() || newlyInsertedTimestamp < MAX_TIMESTAMP)
+      if (shouldUpdate)
          rollBackToEarliest(newlyInsertedTimestamp);
       
       // Update validity of program
@@ -604,7 +610,8 @@ void Program::rollBackToEarliest(TIMESTAMP earliest) {
    
    // TODO:  test this very thoroughly
    
-   //cerr << "rollBackToEarliest: " << m_modified.size() << " modified\n";
+   if (VERBOSE)
+      cerr << "rollBackToEarliest: " << m_modified.size() << " modified\n";
    
    foreach(ParseNode *modified, m_modified) {
 /*      TIMESTAMP curTimestamp = modified->getFirstExecuted();

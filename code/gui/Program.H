@@ -32,6 +32,7 @@
 \* ---------------------------------------------- */
 #ifndef __PROGRAM_H__
 #define __PROGRAM_H__
+
 #include <QObject>
 #include <QStack>
 #include "../simulator/typedefs.H"
@@ -61,7 +62,7 @@ class Program : public QObject {
       
       Program(Gui *gui, EditorPane *editorPane, TextEditor *parent);
       
-      bool isRunnable() const;
+      bool isRunnable();
 
       SyntaxErrors *getSyntaxErrors() const;
       int getStatus() const; // gets status of Debugger
@@ -94,9 +95,9 @@ class Program : public QObject {
       void gotoDeclaration(unsigned int address);
       bool getLabelForAddress(unsigned int address, QString &label);
       
+      void setRunnable(bool);
    protected:
       void loadProgram(bool forceLoad);
-      void setRunnable(bool);
       void updateSyntaxErrors(SyntaxErrors *newS);
       void forceUpdateOfSyntaxErrors(bool noChange = false);
       QString getName();

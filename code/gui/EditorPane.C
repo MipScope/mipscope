@@ -143,11 +143,15 @@ void EditorPane::activeEditorChanged(int index) {
    
    // notify main Gui first
    m_parent->activeEditorChanged(m_activeEditor);
-
+   
    // notify other listeners
    activeEditorChanged(m_activeEditor);
    QTimer::singleShot(250, this, SLOT(resetModified()));
    isModified(m_activeEditor->isModified());
+   
+   Program *program = m_activeEditor->getProgram();
+   if (program)
+      program->setRunnable(program->isRunnable());
 
 //   cerr << m_activeEditor->isModified() << ", ";// << m_parent->m_editUndoAction->isEnabled() << endl;
    

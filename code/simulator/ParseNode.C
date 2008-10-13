@@ -35,6 +35,7 @@
 #include "State.H"
 #include "../gui/Utilities.H"
 #include <QTextBlock>
+#include <assert.h>
 
 
 PlaceHolder::PlaceHolder(ParseNode *parent, QTextBlock *textBlock) 
@@ -63,17 +64,26 @@ ParseNode::ParseNode(ParseList *parent, QTextBlock* textBlock, Statement* statem
    
    if (m_label != NULL) {
       m_label->setLabelParseNode(this);
+      
+      assert(!parent->getLabelMap()->contains(label->getID()));
       parent->getLabelMap()->insert(label->getID(), label);
+      
+      //cerr << m_label->getID().toStdString() << " set to " <<  endl;
    }
-      //cerr << m_label->getID().toStdString() << " set (in constructor) to " << this << endl;
 }
 
 void ParseNode::notifyDeleted(bool alreadyKnown) {
    m_placeHolder = NULL;  // keep track that we were deleted
    
    // for editing-on-the-fly, have to know when a ParseNode gets deleted.. messy
-   if (!alreadyKnown)
-      m_parseList->notifyParseNodeDeleted(this);
+   
+   // TODO: 10/12/2008 -- newer version of Qt craps out on this...
+   //    For a temporary workaround, we've disabled implicit reversible debugging...
+   //if (!alreadyKnown)
+   //   m_parseList->notifyParseNodeDeleted(this);
+   
+   // delete any parsenodes from parseList which have been deleted by Qt.. won't work as workaround
+   //m_parseList->remove(this);
 }
 
 ParseNode *ParseNode::Node(const QTextBlock &b) { // utility method

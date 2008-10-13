@@ -135,12 +135,14 @@ ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
          text = text.remove(0, index + 1).simplified();
          //cerr << "after label: '" << text.toStdString() << "'\n";
          
-         cerr << "----------------------------------" << endl;
-         for(LabelMapIterator i = list->m_labelMap.begin(); i != list->m_labelMap.end(); ++i) {
-            cerr << "(" << i.key().toAscii().data();
-            cerr << ", " << i.value()->getValue() << ")" << endl;
+         if (VERBOSE) {
+            cerr << "--------------- LABELS -------------------" << endl;
+            for(LabelMapIterator i = list->m_labelMap.begin(); i != list->m_labelMap.end(); ++i) {
+               cerr << "(" << i.key().toAscii().data();
+               cerr << ", " << i.value()->getValue() << ")" << endl;
+            }
+            cerr << endl;
          }
-         cerr << endl;
          
          const QString &id = label->getID();
          if (list->m_labelMap.contains(id))

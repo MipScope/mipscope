@@ -370,7 +370,9 @@ void Program::loadProgram(bool forceLoad) {
          try {
             m_parseList = Parser::parseDocument(m_parent->document());
          } catch(SyntaxErrors &e) {
-            m_parseList->cleanup();
+				if (m_parseList != NULL) {
+            	m_parseList->cleanup();
+				}
             updateSyntaxErrors(new SyntaxErrors(e));
             return;
          }

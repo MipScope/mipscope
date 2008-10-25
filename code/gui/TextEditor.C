@@ -1074,9 +1074,9 @@ int TextEditor::lineNumber(const QTextBlock &b) const {
    // if you have a QTextCursor, easy to get corresponding block(), position()
    if (!b.isValid())
       return -1;
-
-   QTextCursor c = textCursor();
-   c.setPosition(b.position());
+	
+	//bug fix: previous method caused invisible text bug
+	QTextCursor c = QTextCursor(b);
 
    return lineNumber(c);
 }

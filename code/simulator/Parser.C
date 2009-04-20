@@ -447,7 +447,7 @@ AddressIdentifier *Parser::parseLabelWithOffset(QString text, ParseList *list) {
    AddressIdentifier *label = Parser::parseLabel(labelStr);
 
    if (label != NULL)
-      label->setOffset(imm->getValue());
+      label->setOffset((plus ? 1 : -1) * imm->getValue());
    
    _tab = orig;
    return label;

@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 
-spimpath = "/course/cs031/bin/spim"
+#spimpath = "/course/cs031/bin/spim"
+spimpath = "./spim"
 #spimpath = "/course/cs036_projects/mipscope/spim/bin/spim"
 #mipscopepath = "~/course/cs036/mipscope/code/mipscope"
 mipscopepath = "../mipscope"

@@ -515,7 +515,7 @@ const char *ABOUT_TEXT =
 "<span style=\"font-size: 12pt;font-family: arial;\">"
 "<p>"PROJECT_NAME" is an environment for learning MIPS r3000 / MIPS32 assembly programming.</p>"
 "<p>"PROJECT_NAME" includes an editor, a MIPS32 / r3000 simulator, and a visual, reversible debugger. "
-"Floating-point operations, exceptions, and self-modifying code aren't supported at this time.</p>"
+"Floating-point operations, exceptions, and self-modifying code aren't supported.</p>"
 "<p>We're delighted to receive your patches, bug reports and suggestions.</p>"
 "<br>"
 PROJECT_NAME" is written and maintained by"

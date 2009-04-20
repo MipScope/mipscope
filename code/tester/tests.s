@@ -8,8 +8,8 @@
 	
 .text
 
-__start:
-	
+main:	
+
 	# Print out begin message:
 	li $v0, 4
 	la $a0, beginmessage
@@ -1520,6 +1520,7 @@ __start:
 	syscall
 	jal printnewline
 	
+	# note that this test fails for SPIM version < 7.4 due to a bug in SPIM
 	li $s0, 0xFFFFFFEF
 	li $s1, 1
 	madd $s0, $s1

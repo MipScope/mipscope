@@ -61,7 +61,7 @@ GeneralOptionsPage::GeneralOptionsPage(QWidget *parent) : QWidget(parent)
    // ----------------------------------------------------------
    QGroupBox *group = new QGroupBox(tr("General"));
    QVBoxLayout *l = new QVBoxLayout;
-   QCheckBox *ch = new QCheckBox(tr("Toggle Verbosity"));
+   QCheckBox *ch = new QCheckBox(tr("Verbose output on stderr"));
    ch->setToolTip(tr("Enable/Disable the display of internal debugging information to stderr"));
    ch->setStyle(style);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(verbosityChanged(int)));
@@ -199,21 +199,21 @@ EditingOptionsPage::EditingOptionsPage(QWidget *parent) : QWidget(parent)
    // ----------------------------------------------------------
    QGroupBox *group = new QGroupBox(tr("Editing"));
    QVBoxLayout *l = new QVBoxLayout;
-   QCheckBox *ch = new QCheckBox(tr("Toggle syntax popups"));
+   QCheckBox *ch = new QCheckBox(tr("Syntax popups"));
    ch->setToolTip(tr("Enable/Disable the display of syntax popups during editing."));
    ch->setStyle(style);
    l->addWidget(ch);
    ch->setCheckState(Options::syntaxPopupsEnabled() ? Qt::Checked : Qt::Unchecked);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(syntaxPopupsChanged(int)));
 
-   ch = new QCheckBox(tr("Toggle error highlighting"));
+   ch = new QCheckBox(tr("Error highlighting"));
    ch->setToolTip(tr("Enable/Disable on-the-fly error highlighting"));
    ch->setStyle(style);
    l->addWidget(ch);
    ch->setCheckState(Options::errorHighlightingEnabled() ? Qt::Checked : Qt::Unchecked);
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(errorHighlightingChanged(int)));
 
-   ch = new QCheckBox(tr("Toggle auto-indentation"));
+   ch = new QCheckBox(tr("Auto-indentation"));
    ch->setToolTip(tr("Enable/Disable attempted auto-indentation on pressing Enter."));
    ch->setStyle(style);
    l->addWidget(ch);
@@ -359,7 +359,7 @@ DebuggingOptionsPage::DebuggingOptionsPage(QWidget *parent) : QWidget(parent)
    connect(ch, SIGNAL(stateChanged(int)), this, SLOT(readOnlyDebuggingChanged(int)));
    
    // TODO:  enable implicit rollback CheckBox iff not read-only
-   ch = new QCheckBox(tr("Toggle implicit rollback upon editing"));
+   ch = new QCheckBox(tr("Implicit rollback upon editing"));
    ch->setToolTip(tr("Enable/Disable implicit program rollback to earliest point "
                      "in execution, just before an edit would have been first "
                      "encountered. (currently must be enabled)"));

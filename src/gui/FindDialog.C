@@ -216,7 +216,7 @@ QTextCursor FindDialog::replace(const QTextCursor &start, QTextDocument *doc, in
       } else {
          result.removeSelectedText();
          result.insertText(getReplaceString());
-         result.setPosition(result.position() + getReplaceString().length());
+         //result.setPosition(result.position() + getReplaceString().length());
       }
    }
    

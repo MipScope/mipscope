@@ -38,7 +38,7 @@
 
 #include <QtGui>
 #ifndef QT_NO_OPENGL
-#include <Qt/QtOpenGL>
+#include <QtOpenGL/QtOpenGL>
 #endif
 
 #include <math.h>

@@ -32,7 +32,7 @@
 #define _MEMORY_VIEW_H_
 
 #include <QDockWidget>
-#include <Qt/QtOpenGL>
+#include <QtOpenGL/QtOpenGL>
 #include <QHash>
 
 class QGraphicsScene;

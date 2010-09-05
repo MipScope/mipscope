@@ -43,7 +43,7 @@
 #include "chip/scene.h"
 
 #include <QtGui>
-#include <Qt/QtOpenGL>
+#include <QtOpenGL/QtOpenGL>
 using namespace QGL;
 
 // Comment or uncomment to switch between 2d, bird's-eye view and a texture-mapped sphere

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+QMAKE=qmake-qt4
+PRO_FILE=mipscope.pro
+
+$QMAKE -project -o $PRO_FILE
+cat >> $PRO_FILE <<-!
+QT += opengl
+OBJECTS_DIR = obj
+MOC_DIR     = obj
+!

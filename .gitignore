@@ -1,8 +1,7 @@
 /Makefile
 /mipscope
-/objects
+/obj
 /qrc_icons.cpp
 /qrc_images.cpp
 /qrc_mazeImages.cpp
 /qrc_memoryImages.cpp
-/src.pro

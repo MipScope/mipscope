@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 #include <QApplication>
 #include <QTextDocument>
@@ -47,7 +48,12 @@
 
 bool VERBOSE = false;
 int main(int argc, char** argv) {
-   QApplication app(argc, argv);
+   bool nox = false;
+   //Disable X if -nox specified
+   for (int i = 1; i < argc; ++i) {
+      if (strcmp(argv[i],"-nox") == 0) nox = true;
+   }
+   QApplication app(argc, argv, !nox);
    Statement::InitializeStatementMaps();
    
    int index;

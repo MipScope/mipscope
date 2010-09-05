@@ -179,24 +179,24 @@ void StackView::fontChanged(const QFont &newFont) {
 
 // @overridden
 void CustomTextEdit::paintEvent(QPaintEvent *e) {
-   if (m_background.isNull()) return;
+   if (!m_background.isNull()) {
+      QPainter p(viewport());
+      QRect r(QPoint(0, 0), m_pixMap.size());
+      const QRect &bounds = rect();
+      bool resizeH = (bounds.width() > r.width());
+      bool resizeV = (bounds.height() > r.height());
 
-   QPainter p(viewport());
-   QRect r(QPoint(0, 0), m_pixMap.size());
-   const QRect &bounds = rect();
-   bool resizeH = (bounds.width() > r.width());
-   bool resizeV = (bounds.height() > r.height());
+      // ensure background pic always takes up whole frame, scaling if necessary
+      if (resizeH || resizeV) {
+         m_pixMap = QPixmap::fromImage(m_background.scaled(resizeH ? bounds.width() : r.width(), resizeV ? bounds.height() : r.height()));
 
-   // ensure background pic always takes up whole frame, scaling if necessary
-   if (resizeH || resizeV) {
-      m_pixMap = QPixmap::fromImage(m_background.scaled(resizeH ? bounds.width() : r.width(), resizeV ? bounds.height() : r.height()));
+         r.setSize(m_pixMap.size());
+      }
 
-      r.setSize(m_pixMap.size());
+      r.moveCenter(rect().center());
+      p.drawPixmap(r, m_pixMap);
+      p.end();
    }
-
-   r.moveCenter(rect().center());
-   p.drawPixmap(r, m_pixMap);
-   p.end();
    QTextEdit::paintEvent(e);
 }
 

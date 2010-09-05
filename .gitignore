@@ -1,7 +1,10 @@
 /Makefile
+/Makefile.*
 /mipscope
 /obj
 /qrc_icons.cpp
 /qrc_images.cpp
 /qrc_mazeImages.cpp
 /qrc_memoryImages.cpp
+/release
+/debug

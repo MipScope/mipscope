@@ -392,7 +392,7 @@ void GLMemoryPane::initializeGL() {
    m_currentTexture = m_defaultTexture;
 
    glShadeModel(GL_FLAT);
-#ifndef TARGET_SYSTEM_WIN
+#ifndef Q_OS_WIN32
    glEnable(GL_MULTISAMPLE);
 #endif
    glEnable(GL_DEPTH_TEST);

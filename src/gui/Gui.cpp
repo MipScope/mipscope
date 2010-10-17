@@ -305,7 +305,7 @@ void Gui::setupDebugActions() {
    menu->addSeparator();
    tb->addSeparator();
 
-#ifndef TARGET_SYSTEM_WIN
+#ifndef Q_OS_WIN32
    m_debugRunXSpimAction = addAction(tb, menu, new QAction(QIcon(ICONS"/debugRunXSpim.png"), tr("Open in xspim"), this), this, SLOT(debugRunXSpimAction()), QKeySequence(QString("CTRL+F9")));
 #endif
 }
@@ -835,7 +835,7 @@ void Gui::debugRunXSpimAction() {
    if (fileName == "" || fileName.isEmpty())
       return;
 
-#ifndef TARGET_SYSTEM_WIN
+#ifndef Q_OS_WIN32
    char *path = Options::getXSpimPath().toAscii().data();
    //"/course/cs031/pro/spim/xspim";
 

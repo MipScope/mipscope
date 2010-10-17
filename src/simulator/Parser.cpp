@@ -96,6 +96,9 @@ ParseList *Parser::parseDocument(QTextDocument *document) {
 // Returns NULL if b does not contain a syntactically-valid line
 ParseNode *Parser::parseLine(QTextBlock *b, ParseList *list) {
    QString text = b->text();
+
+   // Clear out the user data to make sure that a failed parsing doesn't leave any residue
+   b->setUserData(NULL);
    
    // Remove any comments and extraneous leading/trailing whitespace
    Parser::trimCommentsAndWhitespace(text);

@@ -380,6 +380,8 @@ void Program::loadProgram(bool forceLoad) {
          m_parseList->setInteractiveProgram(this);
          if (!m_parseList->isValid()) {
             updateSyntaxErrors(m_parseList->getSyntaxErrors());
+            delete m_parseList;
+            m_parseList = NULL;
             return;
          }
       }
@@ -574,7 +576,8 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          //m_parent->setTextCursor(c);
          setRunnable(false);
          updateSyntaxErrors(new SyntaxErrors(e));
-         
+         delete m_parseList;
+         m_parseList = NULL;
          return;
       }
       

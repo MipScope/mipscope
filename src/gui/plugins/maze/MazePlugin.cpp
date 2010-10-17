@@ -39,6 +39,11 @@
 #include "MazeUi.H"
 #include <QtGui>
 
+#ifdef Q_OS_WIN32
+// For Sleep()
+#include <windows.h>
+#endif
+
 // Main interface between MipScope and the Maze gui plugin.
 // --------------------------------------------------------
 MazePlugin::MazePlugin(UI *ui, bool textOnly) : 
@@ -230,10 +235,18 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
       cerr << "MAZE_DEBUG: draw_arrow() -> void" << endl;
    if(getenv("MAZE_SLOW") && status == RUNNING) {
       
-		//use system call usleep so we don't need to create our own 
-		//QThread. Loop repeatedly for better responsiveness
+		// Loop 1000 times, sleeping for 1000 milliseconds each time,
+		// for a net sleep of 1 second.
+		// Use system call usleep so we don't need to create our own QThread.
+		// Use multiple sleeps so that the GUI still responds while sleeping.
+		// (If we used a single sleep of 1 second, the GUI would lock up.)
 		for (int i=0; i < 1000; i++) {
+#ifdef Q_OS_WIN32
+			Sleep(1);
+#else
 			usleep(1000);
+#endif
+
 		}
    }
 }

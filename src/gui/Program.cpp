@@ -576,8 +576,6 @@ void Program::contentsChange(int position, int charsRemoved, int charsAdded) {
          //m_parent->setTextCursor(c);
          setRunnable(false);
          updateSyntaxErrors(new SyntaxErrors(e));
-         delete m_parseList;
-         m_parseList = NULL;
          return;
       }
       

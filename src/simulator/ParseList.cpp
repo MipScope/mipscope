@@ -111,7 +111,7 @@ ParseNode *ParseList::getNodeForAddress(unsigned int address) const {
    if (address < TEXT_BASE_ADDRESS || address >= m_nextTextAddress)
       return NULL;
    
-   ParseNode *cur = getEntryPoint();
+   ParseNode *cur = first();
 
    
    // TODO:  start at better address point

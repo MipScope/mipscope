@@ -110,6 +110,26 @@ class Jal : public Instruction {
 // ----------------------------------
 // Instruction jalr $dest, $instr
 // ----------------------------------
+
+/*
+ * IMPORTANT: Order of arguments to jalr
+ *
+ * There is a *lot* of confusion about the correct order of arguments to this
+ * instruction.  Even Hennessy and Patterson got it wrong.  The correct order
+ * (according to the MIPS specification, which gcc follows) is
+ *
+ *    jalr rd, rs
+ *
+ * where rs is the address of the instruction to execute, and rd is the register
+ * in which to store the next instruction.  This order makes no sense, but it is
+ * correct.
+ *
+ * MipScope used to do it the wrong way.  Spim probably does it the wrong way too.
+ * DO NOT CHANGE THE ORDER BACK, REGARDLESS OF WHAT THE INTERNET OR HENNESSY AND
+ * PATTERSON SAYS!  IT IS CORRECT NOW!
+ *
+ *  -- andrew (20 Nov 2010)
+ */
 class Jalr : public Instruction {
    public:
       Jalr(StatementArgList *args = NULL) : Instruction(args) { }
@@ -125,16 +145,20 @@ class Jalr : public Instruction {
       }
       
       virtual void execute(State *s, ParseList* parseList) const {
-         unsigned int registerNo = (*m_args)[1]->getRegister();
+         // Do not change the order of arguments -- it is correct!
+         // (see comment above this class for details)
+         unsigned int registerNo = (*m_args)[0]->getRegister();
          
          link(s, registerNo); // store the addr of the next instruction
-         s->setPC(parseList->getNodeForAddress(m_args->getValue(s, 0)));
+         s->setPC(parseList->getNodeForAddress(m_args->getValue(s, 1)));
       }
       
       virtual bool autoIncrementPC() const { return false; }
       
       virtual const char *getName() const { return "jalr"; }
-      virtual const char *getSyntax() const { return "$dest, $instr"; }
+      // Do not change the order of arguments -- it is correct!
+      // (see comment above this class for details)
+      virtual const char *getSyntax() const { return "$instr, $dest"; }
       virtual const char *getDescription() const {
          return "Unconditionally jumps to the address stored in register $dest. Save the address of the next instruction in register $instr.";
       }

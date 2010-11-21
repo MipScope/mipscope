@@ -117,6 +117,7 @@ class ClearOutputAction : public OutputAction {
 
 class TextOutputConsole : public SyscallHandler
 {
+     void handleInputSyscall(State *s, int status, int syscallNo, int valueOfa0);
    public:
       
       TextOutputConsole(SyscallListener* listener);

@@ -158,11 +158,80 @@ void OutputConsole::setStrings(QVector<QString> *strings) {
 TextOutputConsole::TextOutputConsole(SyscallListener* listener) :
      SyscallHandler(listener, S_PRINT, false) // false=we don't handle undo
 {
+   m_syscallNo = S_READ_INT;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_CHAR;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_STRING;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_FLOAT;
+   listener->registerHandler(this);
+   m_syscallNo = S_READ_DOUBLE;
+   listener->registerHandler(this);
 	cout << PROJECT_NAME" version "PROJECT_VERSION"\nCopyright (C) 2007 Travis Fischer and Tim O'Donnell\n\r\n";
 
 }
 
+void TextOutputConsole::handleInputSyscall(State *s, int status, int syscallNo, int valueOfa0) {
+   int max   = 2147483647; // max signed int as defined by Qt
+   int min   = -max;
+   
+   QString input;
+   
+   switch(syscallNo) {
+      case S_READ_INT:
+         input = "Input integer: ";
+         break;
+      case S_READ_FLOAT:
+         input = "Input float: ";
+         break;
+      case S_READ_DOUBLE:
+         input = "Input double: ";
+         break;
+      case S_READ_CHAR:
+         input = "Input character: ";
+         max = 256;
+         min = -127;
+         break;
+      case S_READ_STRING:
+         input = "Input string: ";
+         break;
+      default:
+         break;
+   }
+   
+   cerr << qPrintable(input);
+   if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR) {
+      int result = 0;
+      cin >> result;
+      s->setRegister((syscallNo == S_READ_CHAR ? a0 : v0), result);
+   } else if (syscallNo == S_READ_FLOAT || syscallNo == S_READ_DOUBLE) {
+      double result = 0.0;
+      cin >> result;
+
+//      s->setRegister(, result);
+   } else { // syscallNo == S_READ_STRING
+      string stdresult;
+      cin >> stdresult;
+
+      QString result(stdresult.c_str());
+      
+      // a0 holds address of buffer
+      // a1 holds maximum length
+      
+      if (s->getRegister(a1) <= (unsigned)result.length())
+         result = result.left(s->getRegister(a1) - 1);
+      
+      const QByteArray &data = result.toAscii();
+      s->memcpy(valueOfa0, data.constData(), data.size());
+   }
+}
+
 void TextOutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
+   if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR || syscallNo == S_READ_STRING || syscallNo == S_READ_FLOAT || syscallNo == S_READ_DOUBLE) {
+     handleInputSyscall(s, status, syscallNo, valueOfa0);
+     return;
+   }
    QString output;
    
    //cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;

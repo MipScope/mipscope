@@ -48,7 +48,7 @@ using namespace QGL;
 
 // Comment or uncomment to switch between 2d, bird's-eye view and a texture-mapped sphere
 //    I like the 2d version better, but the sphere was still a cool idea.
-#define USE_BIRDS_EYE
+//#define USE_BIRDS_EYE
 
 #define SIZE    (128)
 

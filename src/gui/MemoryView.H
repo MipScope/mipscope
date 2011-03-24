@@ -32,7 +32,7 @@
 #define _MEMORY_VIEW_H_
 
 #include <QDockWidget>
-#include <QtOpenGL/QtOpenGL>
+//#include <QtOpenGL/QtOpenGL>
 #include <QHash>
 
 class QGraphicsScene;
@@ -89,6 +89,7 @@ class MemoryView : public QDockWidget {
       QHash<unsigned int, bool> m_watchpoints;
 };
 
+#if 0
 class GLMemoryPane : public QGLWidget {
    
    Q_OBJECT
@@ -139,6 +140,7 @@ class GLMemoryPane : public QGLWidget {
       Gui *m_gui;
 
 };
+#endif
 
 #endif // _MEMORY_VIEW_H_
 

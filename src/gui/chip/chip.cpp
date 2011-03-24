@@ -112,20 +112,20 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
    // Draw text
    if (option->levelOfDetail >= 0.2f) {
-      QFont font("Times", 18);
+      QFont font("Times", 32);
       font.setStyleStrategy(QFont::ForceOutline);
       painter->setFont(font);
       painter->setRenderHint(QPainter::TextAntialiasing, true); // false
       painter->save();
       painter->scale(0.2, 0.2);
       
-      painter->drawText(85, 92, QString("Address: 0x%1").arg(QString::number(m_address, 16)));
-      painter->drawText(85, 116, QString("Value: 0x%1").arg(QString::number(m_value, 16)));
+      painter->drawText(85, 104, QString("Address: 0x%1").arg(QString::number(m_address, 16)));
+      painter->drawText(85, 152, QString("Value: 0x%1").arg(QString::number(m_value, 16)));
 
       if (!m_label.isEmpty())
-         painter->drawText(85, 140, QString("Within label '%1'").arg(m_label));
+         painter->drawText(85, 200, QString("Within label '%1'").arg(m_label));
       else if (m_setBy != NULL)
-         painter->drawText(85, 140, QString("(Set by '%1')").arg(m_setBy->getTextBlock()->text()));
+         painter->drawText(85, 200, QString("(Set by '%1')").arg(m_setBy->getTextBlock()->text()));
      
       painter->restore();
    }
@@ -142,6 +142,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
          lines.append(QLineF(94, 18 + i * 5, 102, 18 + i * 5));
       }
    }
+#if 0
    if (option->levelOfDetail >= 0.2) {
 
 #define LBASE  (15)
@@ -158,6 +159,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
       lines.append(lineData, 6);
    }
    painter->drawLines(lines.data(), lines.size());
+#endif
 
    if (m_watchpoint)
       painter->drawPixmap(18, 35, *WATCHPOINT);

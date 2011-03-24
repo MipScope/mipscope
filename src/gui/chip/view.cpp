@@ -75,9 +75,9 @@ View::View(const QString &name, MemoryView *parent)
    zoomOutIcon->setIcon(QPixmap(":/zoomout.png"));
    zoomOutIcon->setIconSize(iconSize);
    zoomSlider = new QSlider;
-   zoomSlider->setMinimum(0);
-   zoomSlider->setMaximum(500);
-   zoomSlider->setValue(156);//250);
+   zoomSlider->setMinimum(80);
+   zoomSlider->setMaximum(300);
+   zoomSlider->setValue(162);
    zoomSlider->setTickPosition(QSlider::TicksRight);
    zoomSlider->setStyle(new QCleanlooksStyle());
 

@@ -254,7 +254,7 @@ void View::print()
 
 #include <iostream>
 using namespace std;
-#define TARGET_ZOOM     (337)
+#define TARGET_ZOOM     (300)
 
 void View::zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event) {
    m_active = chip;

@@ -89,7 +89,7 @@ class Program : public QObject {
       TIMESTAMP getCurrentTimestamp() const;
       
       MemoryUseMap *getMemoryUseMap() const;
-      unsigned int getHeapSize() const;
+      unsigned int getDataSize() const;
 
       LabelMap *getLabelMap() const;
       void gotoDeclaration(unsigned int address);

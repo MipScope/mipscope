@@ -149,17 +149,17 @@ void MemoryView::updateDisplay(Program *program) {
    
    MemoryUseMap *memoryUseMap = program->getMemoryUseMap();
 //   unsigned int blockSize = (unsigned int)ceilf(sqrt(noAddresses));
-   unsigned int heapSize  = program->getHeapSize();
-   unsigned int noAddresses = heapSize >> 2;//memoryUseMap->size();
-   unsigned int maxHeap = DATA_BASE_ADDRESS + heapSize;
-//   unsigned int noStackAddresses  = noAddresses - (heapSize >> 2);
-//   unsigned int noHeapAddresses = noAddresses - noStackAddresses;
+   unsigned int dataSize  = program->getDataSize();
+   unsigned int noAddresses = dataSize >> 2;//memoryUseMap->size();
+   unsigned int maxData = DATA_BASE_ADDRESS + dataSize;
+//   unsigned int noStackAddresses  = noAddresses - (dataSize >> 2);
+//   unsigned int noDataAddresses = noAddresses - noStackAddresses;
    
    TIMESTAMP current = program->getCurrentTimestamp();
    unsigned int earliest = 0;//current - 100; // earliest timestamp to consider
    
-//   cerr << "UPDATEDISPLAY:  noAddr: " << noAddresses << /*", noHeap: " << noHeapAddresses << 
-//      ", noStack: " << noStackAddresses << */ ", heapSize: " << heapSize << "\n";
+//   cerr << "UPDATEDISPLAY:  noAddr: " << noAddresses << /*", noData: " << noDataAddresses << 
+//      ", noStack: " << noStackAddresses << */ ", dataSize: " << dataSize << "\n";
    
 //   memset(m_buffer, 0, sizeof(float) * 128 * 128);
 //   memset(m_norms, 0, sizeof(float) * 128 * 128);
@@ -170,14 +170,14 @@ void MemoryView::updateDisplay(Program *program) {
    QHash<unsigned int, unsigned int> addressesToAccesses;
    unsigned int lastValidAddr = DATA_BASE_ADDRESS;
  
-   for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
+   for(unsigned int address = DATA_BASE_ADDRESS; address < maxData; address += 4) {
       if (!memoryUseMap->contains(address)) {
          addressesToAccesses.insert(address, 0);
          continue;
       }
       QList<TIMESTAMP> *list = memoryUseMap->value(address);
       
-      if (list == NULL || address > maxHeap)
+      if (list == NULL || address > maxData)
          continue;
       unsigned int accesseses = list->size();
       foreach(TIMESTAMP stamp, *list) {
@@ -206,7 +206,7 @@ void MemoryView::updateDisplay(Program *program) {
    int *occurrences = (int*)malloc(sizeof(int) * noAddresses);
    memset(occurrences, 0, sizeof(int) * noAddresses);
     
-   for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
+   for(unsigned int address = DATA_BASE_ADDRESS; address < maxData; address += 4) {
       if (!addressesToAccesses.contains(address))
          continue;
    //foreach(unsigned int address, addressesToAccesses.keys()) {
@@ -215,7 +215,7 @@ void MemoryView::updateDisplay(Program *program) {
       float val = ((float)size) / mostAccesses;
       unsigned int index;
 
-      // data/heap section
+      // data section
       index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);
       
       if (index >= noAddresses)
@@ -515,9 +515,9 @@ void GLMemoryPane::normalizeAngle(int *angle) {
 void MemoryView::populateScene(Program *program) {
    MemoryUseMap *memoryUseMap = program->getMemoryUseMap();
 //   unsigned int noAddresses   = memoryUseMap->size();
-   unsigned int heapSize  = program->getHeapSize();
-   unsigned int noAddresses = heapSize >> 2;
-   unsigned int maxHeap = DATA_BASE_ADDRESS + heapSize;
+   unsigned int dataSize  = program->getDataSize();
+   unsigned int noAddresses = dataSize >> 2;
+   unsigned int maxData = DATA_BASE_ADDRESS + dataSize;
    
    //TIMESTAMP current = program->getCurrentTimestamp();
    unsigned int earliest = 0;//current - 100; // earliest timestamp to consider
@@ -527,7 +527,7 @@ void MemoryView::populateScene(Program *program) {
    unsigned int lastValidAddr = DATA_BASE_ADDRESS;
    unsigned int averageAccesses = 0;
    
-   for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
+   for(unsigned int address = DATA_BASE_ADDRESS; address < maxData; address += 4) {
 //   foreach(unsigned int address, memoryUseMap->keys()) {
       //assert(memoryUseMap->contains(address));
       if (!memoryUseMap->contains(address)) {
@@ -536,7 +536,7 @@ void MemoryView::populateScene(Program *program) {
       }
       QList<TIMESTAMP> *list = memoryUseMap->value(address);
       
-      if (list == NULL || address > maxHeap)
+      if (list == NULL || address > maxData)
          continue;
       unsigned int accesseses = list->size();
       foreach(TIMESTAMP stamp, *list) {
@@ -579,7 +579,7 @@ void MemoryView::populateScene(Program *program) {
    int *occurrences = (int*)malloc(sizeof(int) * noAddresses);
    memset(occurrences, 0, sizeof(int) * noAddresses);
     
-   for(unsigned int address = DATA_BASE_ADDRESS; address < maxHeap; address += 4) {
+   for(unsigned int address = DATA_BASE_ADDRESS; address < maxData; address += 4) {
       if (!addressesToAccesses.contains(address))
          continue;
    //foreach(unsigned int address, addressesToAccesses.keys()) {
@@ -591,7 +591,7 @@ void MemoryView::populateScene(Program *program) {
       if (size < largestList && outlierFactor > 1)
          val *= outlierFactor;
       
-      // data/heap section
+      // data section
       index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 2);
       
       if (index >= noAddresses)
@@ -776,28 +776,28 @@ bool MemoryView::hasWatchpoint(unsigned int addr) const {
    foreach(unsigned int address, memoryUseMap->keys()) {
       QList<TIMESTAMP> *list = memoryUseMap->value(address);
       
-      if (list == NULL || list->isEmpty() || address > maxHeap)
+      if (list == NULL || list->isEmpty() || address > maxData)
          continue;
 
       unsigned int size = list->size();
       float val = size / mostAccesses;
       unsigned int index;
       
-      if (address > maxHeap) { // probably in stack
+      if (address > maxData) { // probably in stack
 #if 0
-         index = noHeapAddresses + (unsigned int)round(((float)(STACK_BASE_ADDRESS - address)) / (float)(noStackAddresses * 4));
+         index = noDataAddresses + (unsigned int)round(((float)(STACK_BASE_ADDRESS - address)) / (float)(noStackAddresses * 4));
          if (index >= noAddresses)
             index = noAddresses - 1;
 #endif
          continue;
-      } else { // data/heap section
-         index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 4);// ) / (float)(noHeapAddresses * 4);
+      } else { // data section
+         index = (unsigned int)((address - DATA_BASE_ADDRESS) >> 4);// ) / (float)(noDataAddresses * 4);
          if (index > noAddresses)
             index = noAddresses;
             
       }
       
-      cerr << "Address: " << address << "( " << (address > maxHeap) << " ) -> " << index << ", (maxHeap = " << maxHeap << ")" << endl;
+      cerr << "Address: " << address << "( " << (address > maxData) << " ) -> " << index << ", (maxData = " << maxData << ")" << endl;
       
       m_buffer[index] += val;
       m_norms[index] += 1;

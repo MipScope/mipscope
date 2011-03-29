@@ -128,7 +128,7 @@ class ParseList : public QObject {
       ParseNode *getDeclaration(const QString &identifier);
       
       LabelMap *getLabelMap();
-      unsigned int getHeapSize() const;
+      unsigned int getDataSize() const;
       
       static void setStatus(int status);
       

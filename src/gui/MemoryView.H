@@ -82,7 +82,7 @@ class MemoryView : public QDockWidget {
 
       void populateScene(Program*);
       void populateDefault();
-      void createChips(float *values, unsigned int heapSize, Program *program = NULL);
+      void createChips(float *values, unsigned int dataSize, Program *program = NULL);
       QGraphicsScene *m_scene;
       
       // holds whether or not each memory address contains a watchpoint

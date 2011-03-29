@@ -687,11 +687,11 @@ MemoryUseMap *Program::getMemoryUseMap() const {
    return getState()->getMemoryUseMap();
 }
 
-unsigned int Program::getHeapSize() const {
+unsigned int Program::getDataSize() const {
    if (m_parseList == NULL)
       return 0;
    
-   return m_parseList->getHeapSize();
+   return m_parseList->getDataSize();
 }
 
 LabelMap *Program::getLabelMap() const {

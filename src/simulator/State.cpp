@@ -156,7 +156,7 @@ void State::ensureValidAlignment(unsigned int address, unsigned int align) const
       throw InvalidAddress(address, m_pc->getTextBlock());
    }
 
-   if (address > DATA_BASE_ADDRESS + m_debugger->getParseList()->getHeapSize() 
+   if (address > DATA_BASE_ADDRESS + m_debugger->getParseList()->getDataSize() 
        && address + align < m_registers[sp]) {
       cerr << address << ", " << align << ", " << endl;
 

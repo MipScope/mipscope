@@ -786,7 +786,7 @@ LabelMap *ParseList::getLabelMap() {
    return &m_labelMap;
 }
 
-unsigned int ParseList::getHeapSize() const {
+unsigned int ParseList::getDataSize() const {
    return (m_nextDataAddress - DATA_BASE_ADDRESS);
 }
 

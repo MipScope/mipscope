@@ -2,9 +2,8 @@
 /Makefile.*
 /mipscope
 /obj
-/qrc_icons.cpp
-/qrc_images.cpp
-/qrc_mazeImages.cpp
-/qrc_memoryImages.cpp
+/qrc_*.cpp
 /release
 /debug
+*~
+.DS_Store

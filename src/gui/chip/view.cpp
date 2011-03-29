@@ -37,6 +37,8 @@
 #include <assert.h>
 
 #include <QtGui>
+
+#define QT_NO_OPENGL
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL/QtOpenGL>
 #endif
@@ -73,9 +75,9 @@ View::View(const QString &name, MemoryView *parent)
    zoomOutIcon->setIcon(QPixmap(":/zoomout.png"));
    zoomOutIcon->setIconSize(iconSize);
    zoomSlider = new QSlider;
-   zoomSlider->setMinimum(0);
-   zoomSlider->setMaximum(500);
-   zoomSlider->setValue(156);//250);
+   zoomSlider->setMinimum(80);
+   zoomSlider->setMaximum(300);
+   zoomSlider->setValue(162);
    zoomSlider->setTickPosition(QSlider::TicksRight);
    zoomSlider->setStyle(new QCleanlooksStyle());
 
@@ -115,17 +117,15 @@ View::View(const QString &name, MemoryView *parent)
    antialiasButton->setText(tr("Antialiasing"));
    antialiasButton->setCheckable(true);
    antialiasButton->setChecked(true);
+#ifndef QT_NO_OPENGL
    openGlButton = new QToolButton;
    openGlButton->setText(tr("OpenGL"));
    openGlButton->setCheckable(true);
-#ifndef QT_NO_OPENGL
    openGlButton->setEnabled(QGLFormat::hasOpenGL());
    if (openGlButton->isEnabled()) {
       openGlButton->setChecked(true);
       graphicsView->setViewport(openGlButton->isChecked() ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
    }
-#else
-   openGlButton->setEnabled(false);
 #endif
    printButton = new QToolButton;
    printButton->setIcon(QIcon(QPixmap(":/fileprint.png")));
@@ -133,7 +133,9 @@ View::View(const QString &name, MemoryView *parent)
 
 //   labelLayout->addWidget(label);
    labelLayout->addWidget(antialiasButton);
+#ifndef QT_NO_OPENGL
    labelLayout->addWidget(openGlButton);
+#endif
    labelLayout->addStretch();
    labelLayout->addWidget(printButton);
 
@@ -153,7 +155,9 @@ View::View(const QString &name, MemoryView *parent)
 //   connect(graphicsView->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(setResetButtonEnabled()));
 //   connect(graphicsView->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(setResetButtonEnabled()));
    connect(antialiasButton, SIGNAL(toggled(bool)), this, SLOT(toggleAntialiasing()));
+#ifndef QT_NO_OPENGL
    connect(openGlButton, SIGNAL(toggled(bool)), this, SLOT(toggleOpenGL()));
+#endif
    //connect(rotateLeftIcon, SIGNAL(clicked()), this, SLOT(rotateLeft()));
    //connect(rotateRightIcon, SIGNAL(clicked()), this, SLOT(rotateRight()));
    connect(zoomInIcon, SIGNAL(clicked()), this, SLOT(zoomIn()));
@@ -250,7 +254,7 @@ void View::print()
 
 #include <iostream>
 using namespace std;
-#define TARGET_ZOOM     (337)
+#define TARGET_ZOOM     (300)
 
 void View::zoomInOn(Chip *chip, QGraphicsSceneMouseEvent *event) {
    m_active = chip;

@@ -43,8 +43,8 @@
 #include "chip/scene.h"
 
 #include <QtGui>
-#include <QtOpenGL/QtOpenGL>
-using namespace QGL;
+//#include <QtOpenGL/QtOpenGL>
+//using namespace QGL;
 
 // Comment or uncomment to switch between 2d, bird's-eye view and a texture-mapped sphere
 //    I like the 2d version better, but the sphere was still a cool idea.
@@ -103,7 +103,7 @@ bool MemoryView::isSupported() {
 
 MemoryView::MemoryView(Gui *gui) 
    : QDockWidget(tr("Memory View"), gui), m_gui(gui), 
-   m_glMemoryPane(NULL), m_view(NULL), m_scene(NULL)
+   /*m_glMemoryPane(NULL),*/ m_view(NULL), m_scene(NULL)
 {
    QDockWidget::setObjectName(tr("Memory View"));
    
@@ -123,7 +123,7 @@ MemoryView::MemoryView(Gui *gui)
 }
 
 MemoryView::~MemoryView() {
-   safeDelete(m_glMemoryPane);
+   //safeDelete(m_glMemoryPane);
    safeDelete(m_view);
 }
 
@@ -292,7 +292,7 @@ void MemoryView::updateDisplay(Program *program) {
    //memset(image.bits(), 0, image.numBytes() * sizeof(unsigned char));
    
    //m_tempWidget->render(image);
-   m_glMemoryPane->render(image);
+   //m_glMemoryPane->render(image);
    
    delete image;
    free(values);
@@ -324,7 +324,7 @@ QSize MemoryView::sizeHint() const {
 // ------------
 // GLMemoryPane
 // ------------
-
+#if 0
 
 GLMemoryPane::GLMemoryPane(MemoryView *parent, Gui *gui)
 : QGLWidget(parent), m_parent(parent), m_gui(gui)
@@ -509,7 +509,7 @@ void GLMemoryPane::normalizeAngle(int *angle) {
       *angle -= 360 * 16;
 }
 
-
+#endif
 
 
 void MemoryView::populateScene(Program *program) {

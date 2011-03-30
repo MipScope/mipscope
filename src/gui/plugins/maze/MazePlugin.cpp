@@ -72,10 +72,13 @@ void MazePlugin::resetPlugin() {
    reset();
 }
 
-#define MAZE_ERROR(s, str) \
-   { cerr << "Maze Error: " << (str) << endl; \
-     (s)->breakError((str)); \
-   }
+namespace {
+	inline void maze_error (State* s, const char* str)
+	{
+		std::cerr << "Maze Error: " << str << std::endl;
+		s->breakError(str);
+	}
+}
 
 void MazePlugin::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    Q_UNUSED(status);
@@ -182,7 +185,7 @@ int MazePlugin::init_maze(State *s) {
       cerr << "MAZE_DEBUG: call init_maze()" << endl;
 
    if (m_maze != NULL)
-      MAZE_ERROR(s, "Attempted to initialize Maze twice");
+      maze_error(s, "Attempted to initialize Maze twice");
    
 	
 	//TODO add text-only option here
@@ -220,7 +223,7 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
       cerr << "MAZE_DEBUG: call draw_arrow(" << roomP << ", " << parentRoomP << ")" << endl;
    
    if (m_maze == NULL)
-      MAZE_ERROR(s, "MAZE: call to draw_arrow on uninitialized maze");
+      maze_error(s, "MAZE: call to draw_arrow on uninitialized maze");
    
    /*printPoint(&parentRoomP);
    cerr << " -> ";
@@ -270,7 +273,7 @@ int MazePlugin::is_goal(State *s, int room){
       cerr << "MAZE_DEBUG: call is_goal(" << roomP << ")" << endl;
    
    if (m_maze == NULL)
-      MAZE_ERROR(s, "MAZE: call to is_goal on uninitialized maze");
+      maze_error(s, "MAZE: call to is_goal on uninitialized maze");
 
    int answer = m_maze->isGoal(cellLoc(room));
    
@@ -285,7 +288,7 @@ int MazePlugin::is_searched(State *s, int room){
    point roomP = cellLoc(room);
 
    if (m_maze == NULL)
-      MAZE_ERROR(s, "MAZE: call to is_searched on uninitialized maze");
+      maze_error(s, "MAZE: call to is_searched on uninitialized maze");
 
    return m_maze->isSearched(roomP); 
 }
@@ -334,7 +337,7 @@ void MazePlugin::get_neighbors(State *s, int start, int* buf){
       cerr << "MAZE_DEBUG: call get_neighbors(" << curr << ", <buf>)" << endl;
    
    if (m_maze == NULL)
-      MAZE_ERROR(s, "MAZE: call to get_neighbors on uninitialized maze");
+      maze_error(s, "MAZE: call to get_neighbors on uninitialized maze");
 
    point northRoom = m_maze->roomAt(curr,NORTH);
    buf[0] = northRoom.x == -1 ? 0 : cellID(northRoom);

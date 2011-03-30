@@ -56,7 +56,6 @@ enum SYSCALL {
 
    // Additions / Non-Standard
    // ------------------------
-   S_PRINT = 17,           // combination of all print functionality
    
    S_CLEAR_OUTPUT = 18
 };

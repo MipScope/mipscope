@@ -49,6 +49,8 @@ class Console : public QDockWidget {
       Console(Gui *parent, EditorPane *editorPane, const QString &name, bool createDisplay = true);
       virtual ~Console();
 
+      void setStrings(const QVector<QString>& strings);
+
    protected slots:
       // Clears the console's display
       void flush();

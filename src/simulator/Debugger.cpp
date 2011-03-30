@@ -127,7 +127,7 @@ void Debugger::runAnotherStep(void) {
 //      cerr << m_state->getPC() << ",  " << m_state->getPC()->getAddress() << endl;
 
       m_state->getPC()->execute(m_state, m_parseList, m_status);
-   } catch (StateException e) {
+   } catch (const StateException& e) {
       m_exception = e; // propogate exception up to gui
 
       if (e.isEmpty()) { // syscall 10  -> exit

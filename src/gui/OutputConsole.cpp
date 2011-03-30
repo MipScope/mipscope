@@ -39,7 +39,6 @@
 // ----------------------------------------------------------
 OutputConsole::OutputConsole(Gui *gui, EditorPane *editorPane)
    : Console(gui, editorPane, "Output Console"), 
-     SyscallHandler(gui->getSyscallListener(), S_PRINT), 
      m_outputHelper(new OutputHelper(this)), m_noUpdates(0)
 {
    // initial loadup message displayed in output console
@@ -74,44 +73,78 @@ void OutputConsole::pop() {
 //   update();
 }
 
-void OutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
-   QString output;
-   
-   //cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;
-   
-   switch(syscallNo) {
-      case S_PRINT_INT:
-         output = QString::number(valueOfa0);
-         break;
-      case S_PRINT_STRING:
-         output = QString(s->getString(valueOfa0));
-         //cerr << "syscall print string: '" << output.toStdString() << "'  (status=" << status << endl;
+void OutputConsole::update_output ()
+{
+	++m_noUpdates;
+	updateBatchSignal();
+}
 
-         break;
-      case S_PRINT_CHAR:
-         {
-            unsigned char str[4];
-            str[0] = (unsigned char)(valueOfa0 & 0xFF);
-            str[1] = '\0';
-            output = QString::fromAscii((const char*)str);
-         }
-         break;
-      case S_CLEAR_OUTPUT:
-         m_outputActions.push_back(new ClearOutputAction(this, m_strings));
-         break;
-      case S_PRINT_FLOAT:  // Unimplemented
-      case S_PRINT_DOUBLE:
-      default:
-         return;
+
+std::string	OutputConsole::prompt_for_string (State* state, int status, std::string prompt_message, size_t max_length)
+{
+	m_gui->getOutputConsole()->update();
+	QString result = QInputDialog::getText(NULL, "Syscall", prompt_message.c_str());
+	return result.toStdString().substr(0, max_length);
+}
+
+int		OutputConsole::prompt_for_int (State* state, int status, std::string prompt_message, int min, int max)
+{
+	bool okay = false;
+	int result = QInputDialog::getInteger(NULL, "Syscall", prompt_message.c_str(), 0, min, max, 1, &okay);
+
+	return okay ? result : 0;
+}
+
+double		OutputConsole::prompt_for_double (State* state, int status, std::string prompt_message, double min, double max)
+{
+	bool okay = false;
+	double result = QInputDialog::getDouble(NULL, "Syscall", prompt_message.c_str(), 0, min, max, 1, &okay);
+
+	return okay ? result : 0.0;
+}
+
+
+void		OutputConsole::output_string (State* state, int status, std::string message)
+{
+	m_outputActions.push_back(new NewOutputAction(this, QString(message.c_str())));
+	if (status == PAUSED)
+		update_output();
+   
+}
+
+void		OutputConsole::clear_output (State* state, int status)
+{
+	m_outputActions.push_back(new ClearOutputAction(this, m_strings));
+	if (status == PAUSED)
+		update_output();
+}
+
+void		OutputConsole::reset ()
+{
+   flush();
+   m_noUpdates = 0;
+
+   foreach(OutputAction *a, m_outputActions) {
+      if (a != NULL)
+         delete a;
    }
-   
-   m_outputActions.push_back(new NewOutputAction(this, output, syscallNo));
-   
-   if (status == PAUSED) {
-      ++m_noUpdates;
-      updateBatchSignal();
+
+   m_outputActions.clear();
+}
+
+void		OutputConsole::undo_output ()
+{
+   if (!m_outputActions.isEmpty()) {
+      OutputAction *a = m_outputActions.back();
+      if (a == NULL)
+         return;
+      
+      a->undo(this);
+      m_outputActions.pop_back();
+      delete a;
    }
 }
+
 
 // should always be called in Gui thread
 void OutputConsole::updateBatch() {
@@ -124,154 +157,10 @@ void OutputConsole::updateBatch() {
    }
 }
 
-void OutputConsole::undoSyscall(int syscallNo) {
-   if (!m_outputActions.isEmpty() && 
-      (syscallNo == S_PRINT_CHAR || syscallNo == S_PRINT_INT || 
-       syscallNo == S_PRINT_STRING)) {
-      OutputAction *a = m_outputActions.back();
-      if (a == NULL)
-         return;
-      
-      a->undo(this);
-      m_outputActions.pop_back();
-      delete a;
-   }
-}
-
-void OutputConsole::reset() {
-   flush();
-   m_noUpdates = 0;
-
-   foreach(OutputAction *a, m_outputActions) {
-      if (a != NULL)
-         delete a;
-   }
-
-   m_outputActions.clear();
-}
-
-void OutputConsole::setStrings(QVector<QString> *strings) {
-   m_strings = QVector<QString>(*strings);
-}
-
-/* used in command-line mode */
-TextOutputConsole::TextOutputConsole(SyscallListener* listener) :
-     SyscallHandler(listener, S_PRINT, false) // false=we don't handle undo
-{
-   m_syscallNo = S_READ_INT;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_CHAR;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_STRING;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_FLOAT;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_DOUBLE;
-   listener->registerHandler(this);
-	cout << PROJECT_NAME" version "PROJECT_VERSION"\nCopyright (C) 2007 Travis Fischer and Tim O'Donnell\n\r\n";
-
-}
-
-void TextOutputConsole::handleInputSyscall(State *s, int status, int syscallNo, int valueOfa0) {
-   int max   = 2147483647; // max signed int as defined by Qt
-   int min   = -max;
-   
-   QString input;
-   
-   switch(syscallNo) {
-      case S_READ_INT:
-         input = "Input integer: ";
-         break;
-      case S_READ_FLOAT:
-         input = "Input float: ";
-         break;
-      case S_READ_DOUBLE:
-         input = "Input double: ";
-         break;
-      case S_READ_CHAR:
-         input = "Input character: ";
-         max = 256;
-         min = -127;
-         break;
-      case S_READ_STRING:
-         input = "Input string: ";
-         break;
-      default:
-         break;
-   }
-   
-   cerr << qPrintable(input);
-   if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR) {
-      int result = 0;
-      cin >> result;
-      s->setRegister((syscallNo == S_READ_CHAR ? a0 : v0), result);
-   } else if (syscallNo == S_READ_FLOAT || syscallNo == S_READ_DOUBLE) {
-      double result = 0.0;
-      cin >> result;
-
-//      s->setRegister(, result);
-   } else { // syscallNo == S_READ_STRING
-      string stdresult;
-      cin >> stdresult;
-
-      QString result(stdresult.c_str());
-      
-      // a0 holds address of buffer
-      // a1 holds maximum length
-      
-      if (s->getRegister(a1) <= (unsigned)result.length())
-         result = result.left(s->getRegister(a1) - 1);
-      
-      const QByteArray &data = result.toAscii();
-      s->memcpy(valueOfa0, data.constData(), data.size());
-   }
-}
-
-void TextOutputConsole::syscall(State *s, int status, int syscallNo, int valueOfa0) {
-   if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR || syscallNo == S_READ_STRING || syscallNo == S_READ_FLOAT || syscallNo == S_READ_DOUBLE) {
-     handleInputSyscall(s, status, syscallNo, valueOfa0);
-     return;
-   }
-   QString output;
-   
-   //cerr << "syscallNo: " << syscallNo << ", status: " << status << ", a0 = " << valueOfa0 << endl;
-   
-   switch(syscallNo) {
-      case S_PRINT_INT:
-         output = QString::number(valueOfa0);
-         break;
-      case S_PRINT_STRING:
-         output = QString(s->getString(valueOfa0));
-         break;
-      case S_PRINT_CHAR:
-        {
-            unsigned char str[4];
-            str[0] = (unsigned char)(valueOfa0 & 0xFF);
-            str[1] = '\0';
-            output = QString::fromAscii((const char*)str);
-         }
-         break;
-      case S_CLEAR_OUTPUT:
-      case S_PRINT_FLOAT:  // Unimplemented
-      case S_PRINT_DOUBLE:
-      default:
-         return;
-   }
-   
-   cout << output.toStdString();
-}
-
-// unimplemented:
-void TextOutputConsole::undoSyscall(int) {}
-void TextOutputConsole::reset() {}
 
 
-
-OutputAction::OutputAction(int syscallNo) : m_syscallNo(syscallNo) { }
-OutputAction::~OutputAction() { }
-
-NewOutputAction::NewOutputAction(OutputConsole *out, const QString &s, int syscallNo) 
-   : OutputAction(syscallNo), m_string(s)
+NewOutputAction::NewOutputAction(OutputConsole *out, const QString &s)
+   : m_string(s)
 {
    out->push(s);
 }
@@ -280,14 +169,10 @@ void NewOutputAction::undo(OutputConsole *output) {
    output->pop();
 }
 
-ClearOutputAction::ClearOutputAction(OutputConsole *out, QVector<QString> strings) 
-   : OutputAction(S_CLEAR_OUTPUT), m_strings(new QVector<QString>(strings))
+ClearOutputAction::ClearOutputAction(OutputConsole *out, const QVector<QString>& strings) 
+   : m_strings(strings)
 {
    out->flush();
-}
-
-ClearOutputAction::~ClearOutputAction() {
-   safeDelete(m_strings);
 }
 
 void ClearOutputAction::undo(OutputConsole *output) {
@@ -308,79 +193,4 @@ void OutputHelper::updateBatch() {
    m_output->updateBatch();
 }
 
-
-InputSyscallHandler::InputSyscallHandler(Gui *gui, SyscallListener *listener)
-   : SyscallHandler(listener, S_READ_INT, true, true), m_gui(gui)
-{
-   m_syscallNo = S_READ_CHAR;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_STRING;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_FLOAT;
-   listener->registerHandler(this);
-   m_syscallNo = S_READ_DOUBLE;
-   listener->registerHandler(this);
-}
-
-void InputSyscallHandler::syscall(State *s, int status, int syscallNo, int valueOfa0) {
-   bool okay = false;
-   int max   = 2147483647; // max signed int as defined by Qt
-   int min   = -max;
-   
-   QString input;
-   
-   switch(syscallNo) {
-      case S_READ_INT:
-         input = "Input integer:";
-         break;
-      case S_READ_FLOAT:
-         input = "Input float:";
-         break;
-      case S_READ_DOUBLE:
-         input = "Input double:";
-         break;
-      case S_READ_CHAR:
-         input = "Input character:";
-         max = 256;
-         min = -127;
-         break;
-      case S_READ_STRING:
-         input = "Input string:";
-         break;
-      default:
-         break;
-   }
-   
-   m_gui->getOutputConsole()->update();
-
-   if (syscallNo == S_READ_INT || syscallNo == S_READ_CHAR) {
-      int result = QInputDialog::getInteger(NULL, "Syscall", input, 0, min, max, 1, &okay);
-
-      if (!okay)
-         result = 0;
-
-      s->setRegister((syscallNo == S_READ_CHAR ? a0 : v0), result);
-   } else if (syscallNo == S_READ_FLOAT || syscallNo == S_READ_DOUBLE) {
-      double result = QInputDialog::getDouble(NULL, "Syscall", input, 0, min, max, 1, &okay);
-
-      if (!okay)
-         result = 0;
-
-//      s->setRegister(, result);
-   } else { // syscallNo == S_READ_STRING
-      QString result = QInputDialog::getText(NULL, "Syscall", input);
-      
-      // a0 holds address of buffer
-      // a1 holds maximum length
-      
-      if (s->getRegister(a1) <= (unsigned)result.length())
-         result = result.left(s->getRegister(a1) - 1);
-      
-      const QByteArray &data = result.toAscii();
-      s->memcpy(valueOfa0, data.constData(), data.size());
-   }
-}
-
-void InputSyscallHandler::undoSyscall(int syscallNo) { Q_UNUSED(syscallNo); }
-void InputSyscallHandler::reset() { }
 

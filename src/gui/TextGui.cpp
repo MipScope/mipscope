@@ -39,7 +39,12 @@
 
 extern bool VERBOSE;
 
-TextGui::TextGui(QStringList args) : m_debugger(NULL), m_syscallListener(new SyscallListener(NULL)), m_output( new TextOutputConsole(m_syscallListener)) {
+TextGui::TextGui(QStringList args)
+: m_debugger(NULL),
+  m_syscallListener(NULL),
+  m_console(std::cin, std::cout, std::cerr),
+  m_spim_syscalls(&m_console, &m_syscallListener)
+{
    
    QString filename = args.at(1);
     
@@ -82,7 +87,7 @@ TextGui::TextGui(QStringList args) : m_debugger(NULL), m_syscallListener(new Sys
    // ... later, never mind, it should work no; just don't need the signals/slots
 
    
-   m_debugger = new Debugger(m_syscallListener, parseList);
+   m_debugger = new Debugger(&m_syscallListener, parseList);
 //   QObject::connect(m_debugger->getState(), SIGNAL(syscall(int, int)), this, SLOT(syscallReceived(int,int)));
    QObject::connect(m_debugger, SIGNAL(programTerminated(int)), this, SLOT(programTerminated(int)));
 }
@@ -98,7 +103,7 @@ void TextGui::executeProgram(QApplication* app) {
 
 // slot
 void TextGui::syscallReceived(int no, int valueOfa0) {
-   m_syscallListener->syscall(m_debugger->getState(), RUNNING, no, valueOfa0);
+   m_syscallListener.syscall(m_debugger->getState(), RUNNING, no, valueOfa0);
 }
 
 // slot
@@ -119,7 +124,7 @@ void TextGui::setupPlugins() {
 }
 
 SyscallListener *TextGui::getSyscallListener() {
-	return m_syscallListener;
+	return &m_syscallListener;
 }
 void TextGui::stopCurrentProgram() {
 	m_debugger->programStop();

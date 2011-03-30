@@ -62,14 +62,15 @@ enum MazeSyscalls {
  *    Main interface between MipScope and the Maze gui plugin.
  * Acts as a proxy between all syscalls and their handling.
  */
-class MazePlugin : public Plugin, public SyscallHandler {
+class MazePlugin : public Plugin, private SyscallHandler {
    
    public:
 		MazePlugin(UI *parent, bool textOnly = false);
       virtual void resetPlugin();
 
+      // From SyscallHandler:
       virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
-      virtual void undoSyscall(int syscallNo);
+      virtual void undo_syscall(int syscallNo);
       virtual void reset();
 		
 		QString getMazePath();

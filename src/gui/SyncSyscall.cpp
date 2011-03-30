@@ -112,7 +112,7 @@ void MainSyscallProxy::slot_syscall(SyscallHandler *inHandler, State *s, int sta
 
 void MainSyscallProxy::slot_undoSyscall(SyscallHandler *inHandler, int syscallNo)
 {
-   inHandler->undoSyscall(syscallNo);
+   inHandler->undo_syscall(syscallNo);
 }
 
 void MainSyscallProxy::slot_reset(SyscallHandler *inHandler)

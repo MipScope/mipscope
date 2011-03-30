@@ -35,6 +35,7 @@
 #include <QKeySequence>
 #include <QHash>
 #include "Utilities.H"
+#include "SPIMSyscalls.H"
 #include "UI.H"
 
 #define SETTINGS_FILE      "."PROJECT_NAME".cfg"
@@ -61,7 +62,6 @@ class TextEditor;
 class DirectoryListing;
 class StatementListing;
 class SyscallListener;
-class InputSyscallHandler;
 class ParseNode;
 class QFont;
 class Program;
@@ -165,7 +165,7 @@ class Gui : public QMainWindow, public UI {
       Options *m_options;
 
       // Global listener for syscalls
-      SyscallListener *m_syscallListener;
+      SyscallListener m_syscallListener;
 
       // MenuBar
       QMenu *m_fileMenu, *m_editMenu, *m_debugMenu;
@@ -244,7 +244,7 @@ class Gui : public QMainWindow, public UI {
       TextEditor *m_runningEditor;
       bool m_restarted;
       
-      InputSyscallHandler *m_inputSyscallHandler;
+      SPIMSyscalls m_spim_syscalls;
       PluginHandler *m_pluginHandler;
 
    private:  // methods

@@ -458,6 +458,6 @@ void State::breakError() {
 }
 
 void State::breakError(const QString &error) {
-   throw new BreakError(error, m_pc->getTextBlock());
+   throw BreakError(error, m_pc->getTextBlock());
 }
 

@@ -102,3 +102,7 @@ void Console::updateDisplay() {
    
 }
 
+void Console::setStrings(const QVector<QString>& strings)
+{
+	m_strings = strings;
+}

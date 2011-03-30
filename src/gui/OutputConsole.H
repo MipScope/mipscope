@@ -34,40 +34,46 @@
 #include <QObject>
 
 #include "Console.H"
-#include "SyscallHandler.H"
+#include "IOConsole.H"
 
 class Gui;
 class EditorPane;
 class OutputAction;
 class OutputHelper;
 
-class OutputConsole : public Console, 
-                      public SyscallHandler 
-{
-   public:
-      friend class NewOutputAction;
-      friend class ClearOutputAction;
-      
-      OutputConsole(Gui *parent, EditorPane *editorPane);
-      
-      void update();
-      void updateBatch();
-      
-      // @overridden from Console
-      void push(const QString &newOutput);
-      void pop();
+class OutputConsole : public Console, public IOConsole {
+public:
+	friend class NewOutputAction;
+	friend class ClearOutputAction;
 
-      // @overridden from SyscallHandler
-      virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
-      virtual void undoSyscall(int syscallNo);
-      virtual void reset();
+	OutputConsole(Gui *parent, EditorPane *editorPane);
       
-      void setStrings(QVector<QString> *strings);
+	void update();
+	void updateBatch();
+      
+	// @overridden from Console
+	void push(const QString &newOutput);
+	void pop();
+
+	// @overridden from IOConsole
+	virtual std::string	prompt_for_string (State*, int, std::string prompt_message, size_t max_length);
+	virtual int		prompt_for_int (State*, int, std::string prompt_message, int min, int max);
+	virtual double		prompt_for_double (State*, int, std::string prompt_message, double min, double max);
+	virtual void		output_string (State*, int, std::string message);
+	virtual void		clear_output (State*, int);
+
+	virtual void		reset ();
+	virtual void		undo_output ();
+	virtual bool		can_undo_output () const { return true; }
+
+
    
-   protected:
-      QVector<OutputAction*> m_outputActions;
-      OutputHelper *m_outputHelper;
-      int m_noUpdates; // pseudo-stack to only update once-per-batch
+private:
+	QVector<OutputAction*> m_outputActions;
+	OutputHelper *m_outputHelper;
+	int m_noUpdates; // pseudo-stack to only update once-per-batch
+
+	void update_output ();
 };
 
 class OutputHelper : public QObject {
@@ -86,17 +92,14 @@ class OutputHelper : public QObject {
 
 class OutputAction {
    public:
-      OutputAction(int syscallNo);
-      virtual ~OutputAction();
+      virtual ~OutputAction() { }
       
       virtual void undo(OutputConsole *output) = 0;
-
-      int m_syscallNo;
 };
 
 class NewOutputAction : public OutputAction {
    public:
-      NewOutputAction(OutputConsole *out, const QString &s, int syscallNo);
+      NewOutputAction(OutputConsole *out, const QString &s);
 
       virtual void undo(OutputConsole *output);
       
@@ -106,39 +109,12 @@ class NewOutputAction : public OutputAction {
 
 class ClearOutputAction : public OutputAction {
    public:
-      ClearOutputAction(OutputConsole *out, QVector<QString> strings);
-      virtual ~ClearOutputAction();
+      ClearOutputAction(OutputConsole *out, const QVector<QString>& strings);
 
       virtual void undo(OutputConsole *output);
 
    protected:
-      QVector<QString> *m_strings;
-};
-
-class TextOutputConsole : public SyscallHandler
-{
-     void handleInputSyscall(State *s, int status, int syscallNo, int valueOfa0);
-   public:
-      
-      TextOutputConsole(SyscallListener* listener);
-     
-      // @overridden from SyscallHandler
-      virtual void syscall(State *s, int status, int syscallNo, int valueOfa0);
-      virtual void undoSyscall(int);
-      virtual void reset(void);
-};
-
-class InputSyscallHandler : public SyscallHandler {
-   public:
-      InputSyscallHandler(Gui *gui, SyscallListener *listener);
-      
-      void syscall(State *s, int status, int syscallNo, int valueOfa0);
-
-      void undoSyscall(int syscallNo);
-      void reset();
-
-   protected:
-      Gui *m_gui;
+      QVector<QString> m_strings;
 };
 
 #endif // __OUTPUT_CONSOLE_H__

@@ -47,25 +47,20 @@
 // Main interface between MipScope and the Maze gui plugin.
 // --------------------------------------------------------
 MazePlugin::MazePlugin(UI *ui, bool textOnly) : 
-   Plugin(ui), SyscallHandler(ui->getSyscallListener(), S_MAZE_INIT, true, true), 
+   Plugin(ui),
    m_maze(NULL),
 	m_textOnly(textOnly)
 {
    SyscallListener *listener = ui->getSyscallListener();
 
    // Register this plugin as the default handler for all maze syscalls
-   m_syscallNo = S_MAZE_DEFEAT;
-   listener->registerHandler(this);
-   m_syscallNo = S_MAZE_VICTORY;
-   listener->registerHandler(this);
-   m_syscallNo = S_MAZE_IS_GOAL;
-   listener->registerHandler(this);
-   m_syscallNo = S_MAZE_NEIGHBOR;
-   listener->registerHandler(this);
-   m_syscallNo = S_MAZE_DRAW_ARROW;
-   listener->registerHandler(this);
-   m_syscallNo = S_MAZE_IS_SEARCHED;
-   listener->registerHandler(this);
+   listener->register_syscall(S_MAZE_INIT, this, true, true);
+   listener->register_syscall(S_MAZE_DEFEAT, this, true, true);
+   listener->register_syscall(S_MAZE_VICTORY, this, true, true);
+   listener->register_syscall(S_MAZE_IS_GOAL, this, true, true);
+   listener->register_syscall(S_MAZE_NEIGHBOR, this, true, true);
+   listener->register_syscall(S_MAZE_DRAW_ARROW, this, true, true);
+   listener->register_syscall(S_MAZE_IS_SEARCHED, this, true, true);
 }
 
 void MazePlugin::resetPlugin() {
@@ -117,7 +112,7 @@ void MazePlugin::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    }
 }
 
-void MazePlugin::undoSyscall(int syscallNo) {
+void MazePlugin::undo_syscall(int syscallNo) {
    switch(syscallNo) {
       case S_MAZE_INIT:
          resetPlugin();

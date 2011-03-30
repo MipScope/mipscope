@@ -27,11 +27,12 @@
 
 #include <QObject>
 #include "UI.H"
+#include "SyscallHandler.H"
+#include "SPIMSyscalls.H"
+#include "TextIOConsole.H"
 
 class QStringList;
 class Debugger;
-class SyscallListener;
-class TextOutputConsole;
 class QApplication;
 
 #define PROGRAM_TIMEOUT 30 // seconds
@@ -53,10 +54,11 @@ class TextGui : public QObject, public UI {
       
    private:
       Debugger* m_debugger;
-      SyscallListener* m_syscallListener;
-      TextOutputConsole* m_output;   
-		void setupPlugins();
+      SyscallListener m_syscallListener;
+      TextIOConsole m_console;
+      SPIMSyscalls m_spim_syscalls;
    
+      void setupPlugins();
 };
 
 #endif /*TEXTGUI_H_*/

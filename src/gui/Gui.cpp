@@ -53,15 +53,15 @@
 
 Gui::Gui(QStringList args) : QMainWindow(), 
    m_options(new Options(this)), 
-   m_syscallListener(new SyscallListener(this)), m_fileSaveAction(NULL), 
+   m_syscallListener(this), m_fileSaveAction(NULL), 
    m_fileSaveAllAction(NULL), m_debugRunAction(NULL), m_debugStepAction(NULL), 
    m_errors(NULL), m_editorPane(new EditorPane(this)), 
    m_lineNoPane(new LineNoPane(this, m_editorPane)), m_separatorAct(NULL), 
    m_mode(STOPPED), m_runningEditor(NULL), m_restarted(false), 
-   m_inputSyscallHandler(new InputSyscallHandler(this, m_syscallListener)), 
    m_pluginHandler(NULL)
 {
    QApplication::setStyle("plastique");
+
    
 
    // load files
@@ -77,6 +77,8 @@ Gui::Gui(QStringList args) : QMainWindow(),
    }
    
    setupGui();
+   m_spim_syscalls.set_io_console(m_output);
+   m_spim_syscalls.register_with(&m_syscallListener);
    setupPlugins();
    show();
    //cerr << "Gui: " << QThread::currentThreadId() << endl;
@@ -424,7 +426,7 @@ void Gui::ensureVisibility(QDockWidget *widget) {
 }
 
 SyscallListener *Gui::getSyscallListener() {
-   return m_syscallListener;
+   return &m_syscallListener;
 }
 
 RegisterView *Gui::getRegisterView() const {
@@ -638,7 +640,7 @@ void Gui::debugRunAction() {
         return;
         }*/
 
-      m_syscallListener->reset();
+      m_syscallListener.reset();
       m_registerView->reset();
       m_runningEditor = m_editorPane->m_activeEditor;
    }

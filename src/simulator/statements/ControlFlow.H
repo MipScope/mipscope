@@ -271,11 +271,12 @@ class Bgezal : public Bgez {
       virtual void execute(State *s, ParseList* parseList) const {
          int val0 = m_args->getValue(s, 0);
          
-         link(s); // stores the addr of the next instruction into $ra
-         
-         if (val0 >= 0)
+         if (val0 >= 0) {
+            link(s); // stores the addr of the next instruction into $ra
             s->setPC(parseList->getNodeForAddress(m_args->getValue(s, 1)));
-         else s->incrementPC();
+         } else {
+            s->incrementPC();
+         }
       }
       
       // @overridden from Statement
@@ -359,11 +360,12 @@ class Bltzal : public Blez {
       virtual void execute(State *s, ParseList* parseList) const {
          int val0 = m_args->getValue(s, 0);
          
-         link(s); // stores the addr of the next instruction into $ra
-         
-         if (val0 < 0) // only change from Blez
+         if (val0 < 0) { // only change from Blez
+            link(s); // stores the addr of the next instruction into $ra
             s->setPC(parseList->getNodeForAddress(m_args->getValue(s, 1)));
-         else s->incrementPC();
+         } else {
+            s->incrementPC();
+         }
       }
       
       // @overridden from Statement

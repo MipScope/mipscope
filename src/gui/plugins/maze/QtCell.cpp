@@ -105,20 +105,6 @@ void QtCell::updateCell() {
 // @overridden
 void QtCell::paintEvent(QPaintEvent *e) {
    QPainter p(this);
-   //cerr << rect().width() << ", " << rect().height() << endl;
-
-   /*const QRect &bounds = rect();
-   bool resizeH = (bounds.width() > r.width());
-   bool resizeV = (bounds.height() > r.height());
-
-   // ensure background pic always takes up whole frame, scaling if necessary
-   if (resizeH || resizeV) {
-      m_pixMap = QPixmap::fromImage(m_background.scaled(resizeH ? bounds.width() : r.width(), resizeV ? bounds.height() : r.height()));
-
-      r.setSize(m_pixMap.size());
-   }*/
-
-   //r.moveCenter(rect().center());
    
    MazeStatus status = m_cell->getMazeStatus();
    bool northWall = m_cell->hasWall(NORTH),southWall = m_cell->hasWall(SOUTH),
@@ -128,47 +114,6 @@ void QtCell::paintEvent(QPaintEvent *e) {
      p.drawPixmap((x), (y), (*MazeImages)[(exists) ? (wall) : (blank)]);
    
    int top=0, mid=8, bot = CELL_SIZE - 8;
-   /*int wallSize = CELL_SIZE - 16;
-   //p.fillRect(rect(), QBrush(QColor(255, 0, 0)));
-   
-   
-   const QBrush &wall=QBrush(QColor(145,95,35));
-   const QBrush &blank=(status == SEARCHED ? QBrush(QColor(220,86,232)) : QBrush(QColor(196,154,6)));
-   
-   // draw background
-   p.setPen(Qt::NoPen);
-   p.setRenderHint(QPainter::Antialiasing, false);
-   p.setBrush(blank);
-   p.fillRect(rect(), blank);
-   p.setBrush(wall);
-   
-   point me={m_col,m_row};
-   if (status==CURRENT)
-      p.drawPixmap(mid,mid,(*MazeImages)[I_CURRENT_GROUND]);
-   else if (m_parent->isGoal(me))
-      p.drawPixmap(mid,mid,(*MazeImages)[I_FLAG]);
-   
-   // draw walls and rounded corners
-   if (northWall)
-      p.drawRect(mid,top, wallSize, 8);
-   if (westWall)
-      p.drawRect(top,mid, 8, wallSize);
-   if (eastWall)
-      p.drawRect(bot,mid, 8, wallSize);
-   if (southWall)
-      p.drawRect(mid,bot, wallSize, 8);
-
-   p.setRenderHint(QPainter::Antialiasing, true);
-   int rad = 12;
-   
-   if (northWall||westWall)
-      p.drawEllipse(-4,-4,rad,rad);
-   if (northWall||eastWall)
-      p.drawEllipse(CELL_SIZE-3,-4,rad,rad);
-   if (southWall||westWall)
-      p.drawEllipse(-4,CELL_SIZE-3,rad,rad);
-   if (southWall||eastWall)
-      p.drawEllipse(CELL_SIZE-3,CELL_SIZE-3,rad,rad);*/
 
     // Without rounded corners
     if(status == SEARCHED || status == BACKTRACKED){

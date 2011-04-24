@@ -47,7 +47,7 @@ class Identifier {
       bool isAddress() const;
       AddressIdentifier *getAddressIdentifier() const;
       
-   protected:
+   private:
       QString m_id;
 };
 
@@ -66,10 +66,9 @@ class AddressIdentifier : public Identifier {
       // Returns the ParseNode containing the label which corresponds to this identifier
       ParseNode *getParseNode() const;
       
-   protected:
+   private:
       ParseNode *m_parseNode;
       int m_offset;
-      bool m_initialized; // true once setLabelParseNode() has been called
 };
 
 // for something like li $r0, 0x1e   -- storing the 0x1e -> 31 mapping
@@ -80,7 +79,7 @@ class ImmediateIdentifier : public Identifier {
       // Returns the value of this constant
       int getValue() const;
       
-   protected:
+   private:
       int m_value;
 };
 

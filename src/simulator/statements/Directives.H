@@ -281,7 +281,7 @@ class ByteDirective : public Directive {
          return "Initializes a block of one or more consecutive bytes in memory";
       }
       
-   protected:
+   private:
       unsigned char *m_values; // non-null if we have a list
 };
 
@@ -342,7 +342,7 @@ class HalfDirective : public Directive {
          return "Initializes a block of one or more consecutive half-words in memory";
       }
       
-   protected:
+   private:
       unsigned short *m_values;
 };
 
@@ -404,7 +404,7 @@ class WordDirective : public Directive {
          return "Initializes a block of one or more consecutive words in memory";
       }
       
-   protected:
+   private:
       unsigned int *m_values;
 };
 

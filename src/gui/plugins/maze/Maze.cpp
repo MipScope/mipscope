@@ -219,10 +219,11 @@ bool Maze::isGoal(point loc) // DEPRECIATED - kept around for backwards compatib
  */
 point Maze::roomAt(point curr,Direction dir){
    point nowhere = {-1,-1};
-	if(!validRoom(curr))
-      exitWithPopup("You passed an invalid cell id to get_neighbors",nowhere);
+
+   if (!validRoom(curr))
+     exitWithPopup("You passed an invalid cell id to get_neighbors",nowhere);
    
-   if(!validRoom(curr) || getCurrentCell()->hasWall(dir)){
+   if(getCell(curr.y, curr.x)->hasWall(dir)){
       return nowhere;
    }else{
       point end=curr;

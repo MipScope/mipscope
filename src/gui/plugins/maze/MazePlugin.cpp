@@ -217,7 +217,7 @@ int MazePlugin::init_maze(State *s) {
    point src = m_maze->getMazeSource();
 
    if(getenv("MAZE_DEBUG"))
-      cerr << "MAZE_DEBUG init_maze() -> " << src << endl;
+      cerr << "MAZE_DEBUG: init_maze() -> " << src << endl;
 
    return cellID(src);
 }
@@ -233,10 +233,10 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
    point roomP = cellLoc(room);
    point parentRoomP = cellLoc(parentRoom);
    if(getenv("MAZE_DEBUG"))
-      cerr << "MAZE_DEBUG: call draw_arrow(" << roomP << ", " << parentRoomP << ")" << endl;
+      cerr << "MAZE_DEBUG: call move_pascal_here(" << roomP << ")" << endl;
    
    if (m_maze == NULL)
-      maze_error(s, "MAZE: call to draw_arrow on uninitialized maze");
+      maze_error(s, "MAZE: call to move_pascal_here on uninitialized maze");
    
    /*printPoint(&parentRoomP);
    cerr << " -> ";
@@ -248,7 +248,7 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
    m_maze->moveCurrent(roomP);
 
    if(getenv("MAZE_DEBUG"))
-      cerr << "MAZE_DEBUG: draw_arrow() -> void" << endl;
+      cerr << "MAZE_DEBUG: move_pascal_here() -> void" << endl;
    if(getenv("MAZE_SLOW") && status == RUNNING) {
       
 		// Loop 1000 times, sleeping for 1000 milliseconds each time,

@@ -102,6 +102,27 @@ public:
       virtual void get_room_data (std::vector<int>&) const { }
 };
 
+class TreasureCell : public Cell {
+      int money;
+public:
+      TreasureCell(MazeStatus ms ,WallSet ws, int arg_money) : Cell(ms, ws), money(arg_money) { }
+      TreasureCell() { money = 0; }
+
+      virtual I_ORDER get_icon () const { return I_MONEY; }
+      virtual int get_room_type () const { return 1; }
+      virtual void get_room_data (std::vector<int>& data) const { data.push_back(money); }
+};
+
+class TrapCell : public Cell {
+public:
+      TrapCell(MazeStatus ms ,WallSet ws) : Cell(ms, ws) { }
+      TrapCell() { }
+
+      virtual I_ORDER get_icon () const { return I_SCYTHE; }
+      virtual int get_room_type () const { return 2; }
+      virtual void get_room_data (std::vector<int>&) const { }
+};
+
 class GoalCell : public Cell {
 public:
       GoalCell(MazeStatus ms ,WallSet ws) : Cell(ms, ws) { }

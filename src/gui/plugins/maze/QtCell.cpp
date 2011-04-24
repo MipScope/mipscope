@@ -84,6 +84,10 @@ QtCell::QtCell(MazeGui *parent, int i, int j, Cell *cell) :
       MazeImages->append(getPixmap(BACKTRACKED_GROUND));
 #define FLAG_IMAGE IMAGES "flag.png"
       MazeImages->append(getPixmap(FLAG_IMAGE));
+#define MONEY_IMAGE IMAGES "money.png"
+      MazeImages->append(getPixmap(MONEY_IMAGE));
+#define SCYTHE_IMAGE IMAGES "scythe.png"
+      MazeImages->append(getPixmap(SCYTHE_IMAGE));
    }
 
    setFixedSize(CELL_SIZE, CELL_SIZE);

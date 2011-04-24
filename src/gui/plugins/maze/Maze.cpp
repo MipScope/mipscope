@@ -134,7 +134,6 @@ void Maze::init(int width, int height) {
    }*/
    //These aren't set in this constructor
    sourceCol = -1;
-   destCol = -1;
    nodesVisited = 1;
    m_width = width;
    m_height = height;
@@ -205,11 +204,12 @@ int Maze::undoMove(point loc) {
    return 1;
 }
 
-int Maze::isGoal(point loc){
+bool Maze::isGoal(point loc) // DEPRECIATED - kept around for backwards compatibility
+{
 	if(!validRoom(loc))
-      exitWithPopup("You passed an invalid cell id to is_goal",0);
+		exitWithPopup("You passed an invalid cell id to is_goal",0);
 
-	return (loc.x == destCol && loc.y == 0);
+	return dynamic_cast<GoalCell*>(getCell(loc.y, loc.x));
 }
 
 /*

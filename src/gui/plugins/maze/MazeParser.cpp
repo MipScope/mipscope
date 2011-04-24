@@ -104,6 +104,7 @@ bool MazeParser::parse(const QString &fileName, Maze *maze) {
    //cerr << "mazeRow: " << mazeRow << endl;
 
 		for(mazeCol = 0, fileCol = 1; mazeCol < mazeWidth; mazeCol++, fileCol += 2){
+			bool is_goal = false;
          //cerr << "mazeCol: " << mazeCol << endl;
 			//cout << ' ' << mazeArrayAt(fileRow-1,fileCol)<< endl <<
 				//mazeArrayAt(fileRow,fileCol-1)<< 
@@ -120,7 +121,7 @@ bool MazeParser::parse(const QString &fileName, Maze *maze) {
 				walls |= NORTH;
 			}else if(northWall == '#'){
 				//Destinations should only be in the top row
-				if(mazeRow == 0) maze->setDest(mazeCol);
+				if(mazeRow == 0) is_goal = true;
 				else failLineNum("Misplaced Destination",fileRow);
 			}else if(northWall != ' '){
 				cout << "north" << endl;
@@ -167,14 +168,17 @@ bool MazeParser::parse(const QString &fileName, Maze *maze) {
 			}
 
          //cerr << "east: " << eastWall << endl;
-			Cell *cell = new Cell(status,walls);
+			Cell *cell;
+			if (is_goal)
+				cell = new GoalCell(status,walls);
+			else
+				cell = new NormalCell(status,walls);
 			//cout << walls << endl;
 			maze->setCell(mazeRow,mazeCol,cell);
 		}
 		//cout << "next row" << endl;
 	}
 	if(maze->getSource() == -1) fail("No source point specified");
-	if(maze->getDest() == -1) fail("No destination point specified");
 
    file.close();
 	//close(fd);

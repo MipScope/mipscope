@@ -396,14 +396,13 @@ std::vector<int> MazePlugin::get_room_data(State *s, int room_id)
 	if (m_maze == NULL)
 		maze_error(s, "MAZE: call to get_room_data on uninitialized maze");
 
-	/* BEGIN TEMP */
-	if (m_maze->isGoal(curr)) {
-		room_data.push_back(3);	// Goal
-	} else {
-		room_data.push_back(0);	// Normal room
-	}
-	/* END TEMP */
+	if (!m_maze->validRoom(curr))
+		maze_error(s, "MAZE: call to get_room_data on invalid room ID");
 
+	Cell*			cell = m_maze->getCell(curr.y, curr.x);
+	
+	// Add the type of the cell to the room data
+	room_data.push_back(cell->get_room_type());
 
    	// Add neighbors to the room data
 	point northRoom = m_maze->roomAt(curr,NORTH);
@@ -414,6 +413,9 @@ std::vector<int> MazePlugin::get_room_data(State *s, int room_id)
 	room_data.push_back(southRoom.x == -1 ? 0 : cellID(southRoom));
 	point eastRoom = m_maze->roomAt(curr,EAST);
 	room_data.push_back(eastRoom.x == -1 ? 0 : cellID(eastRoom));
+
+	// Add cell-specific data to the room data
+	cell->get_room_data(room_data);
    
 	if(getenv("MAZE_DEBUG")) {
 		cerr << "MAZE_DEBUG: get_room_data -> {";

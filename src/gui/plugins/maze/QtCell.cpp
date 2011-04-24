@@ -134,9 +134,7 @@ void QtCell::paintEvent(QPaintEvent *e) {
       addWallIfExists(bot,top,northWall||eastWall,I_CORNER_WALL,I_CORNER_BLANK);
       addWallIfExists(top,mid,westWall,I_VERTICAL_WALL,I_VERTICAL_BLANK);
       
-      point me={m_col,m_row};
-      addWallIfExists(mid,mid,(status==CURRENT), I_CURRENT_GROUND, 
-         (m_parent->isGoal(me)?I_FLAG:I_EMPTY_GROUND));
+      addWallIfExists(mid,mid,(status==CURRENT), I_CURRENT_GROUND, m_cell->get_icon());
 
       addWallIfExists(bot,mid,eastWall,I_VERTICAL_WALL,I_VERTICAL_BLANK);
       addWallIfExists(top,bot,southWall||westWall,I_CORNER_WALL,I_CORNER_BLANK);

@@ -35,7 +35,7 @@
 #define __MAZE_H__
 
 #include <QObject>
-//#include <vector>
+#include <vector>
 enum MazeStatus {EMPTY,SEARCHED,CURRENT,BACKTRACKED};
 #include "QtCell.H"
 //using namespace std;
@@ -59,6 +59,7 @@ class Cell {
       Cell(MazeStatus,WallSet);
       Cell();
       Cell& operator=(const Cell&);
+      virtual ~Cell () { }
       const char *to_s();
       bool hasWall(Direction);
       MazeStatus getMazeStatus(){return status;}
@@ -75,6 +76,10 @@ class Cell {
       void setOldStatus(MazeStatus s) { oldStatus = s; }
       bool isNode(){return node;}
       bool isDeadEnd(){return deadEnd;}
+
+      virtual I_ORDER get_icon () const = 0; // returns the icon for the cell
+      virtual int get_room_type () const = 0; // returns the integer ID as used in room data 
+      virtual void get_room_data (std::vector<int>&) const = 0; // puts the room data for this cell at the end of the given array (not including type ID and neighbors)
    
       QtCell *m_parent;
    protected:
@@ -85,6 +90,26 @@ class Cell {
       bool westWall;
       bool node;
       bool deadEnd;
+};
+
+class NormalCell : public Cell {
+public:
+      NormalCell(MazeStatus ms ,WallSet ws) : Cell(ms, ws) { }
+      NormalCell() { }
+
+      virtual I_ORDER get_icon () const { return I_EMPTY_GROUND; }
+      virtual int get_room_type () const { return 0; }
+      virtual void get_room_data (std::vector<int>&) const { }
+};
+
+class GoalCell : public Cell {
+public:
+      GoalCell(MazeStatus ms ,WallSet ws) : Cell(ms, ws) { }
+      GoalCell() { }
+
+      virtual I_ORDER get_icon () const { return I_FLAG; }
+      virtual int get_room_type () const { return 3; }
+      virtual void get_room_data (std::vector<int>&) const { }
 };
 
 class MazeGui;
@@ -99,8 +124,6 @@ class Maze {
          currCell.x = col;
          currCell.y = getHeight() - 1;
       }
-      int getDest(){return destCol;}
-      void setDest(int col){destCol = col;}
       Cell *getCell(int row, int col){return m_grid[row * m_width + col];}
       void setCell(int row, int col, Cell *cell){m_grid[row * m_width + col] = cell;}
       Cell *getCurrentCell(){return getCell(currCell.y, currCell.x); }
@@ -114,7 +137,7 @@ class Maze {
       int moveCurrent(point loc);
       int undoMove(point loc);
       point getMazeSource();
-      int isGoal(point);
+      bool isGoal(point); // depreciated
       point roomAt(point,Direction);
       int isSearched(point);
       bool validRoom(const point& p);
@@ -128,7 +151,6 @@ class Maze {
       //vector<vector<Cell> > grid;
       point currCell;
       int sourceCol;
-      int destCol;
       int nodesVisited;
       int m_width, m_height;
 };

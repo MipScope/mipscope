@@ -38,6 +38,7 @@
 #include "../../SyscallHandler.H"
 #include "Maze.H"
 #include <QStack>
+#include <vector>
 
 class Maze;
 class MazeUi;
@@ -49,10 +50,12 @@ enum MazeSyscalls {
    S_MAZE_INIT = 30,
    S_MAZE_DEFEAT = 31,
    S_MAZE_VICTORY = 32,
-   S_MAZE_IS_GOAL = 33,    // a0=room id
-   S_MAZE_NEIGHBOR = 34,   // a0=room id, a1=address of buf
-   S_MAZE_DRAW_ARROW = 35, // a0=room id, a1=parent room id  ; aka move pascal
-   S_MAZE_IS_SEARCHED = 36,// a0=room id, out: v0 = 1 for searched, 0 for unsearched
+   S_MAZE_IS_GOAL = 33,       // a0=room id
+   S_MAZE_NEIGHBOR = 34,      // a0=room id, a1=address of buf
+   S_MAZE_DRAW_ARROW = 35,    // a0=room id, a1=parent room id  ; aka move pascal
+   S_MAZE_IS_SEARCHED = 36,   // a0=room id, out: v0 = 1 for searched, 0 for unsearched
+   S_MAZE_READ_ROOM_DATA = 37,// a0=room id, a1=buffer, a2=buffer length
+   S_MAZE_VICTORY_MONEY = 38, // a0=money earned
 };
 
 
@@ -87,9 +90,11 @@ class MazePlugin : public Plugin, private SyscallHandler {
       int is_goal(State *s, int room);
       int is_searched(State *s, int room);
       void victory();
+      void victory_money(int money_earned);
       void defeat();
       void showEndMessage(const QString &str);
       void get_neighbors(State *s, int start, int* buf);
+      std::vector<int> get_room_data(State *s, int room_id);
 
       MazeUi *m_maze;
       QStack<int> m_searchStack;

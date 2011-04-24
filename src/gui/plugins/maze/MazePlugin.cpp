@@ -38,6 +38,7 @@
 #include "MazeTui.H"
 #include "MazeUi.H"
 #include <QtGui>
+#include <sstream>
 
 #ifdef Q_OS_WIN32
 // For Sleep()
@@ -61,6 +62,8 @@ MazePlugin::MazePlugin(UI *ui, bool textOnly) :
    listener->register_syscall(S_MAZE_NEIGHBOR, this, true, true);
    listener->register_syscall(S_MAZE_DRAW_ARROW, this, true, true);
    listener->register_syscall(S_MAZE_IS_SEARCHED, this, true, true);
+   listener->register_syscall(S_MAZE_READ_ROOM_DATA, this, true, true);
+   listener->register_syscall(S_MAZE_VICTORY_MONEY, this, true, true);
 }
 
 void MazePlugin::resetPlugin() {
@@ -106,6 +109,21 @@ void MazePlugin::syscall(State *s, int status, int syscallNo, int valueOfa0) {
          break;
       case S_MAZE_IS_SEARCHED:
          s->setRegister(v0, is_searched(s, valueOfa0));
+         break;
+      case S_MAZE_READ_ROOM_DATA:
+         {
+            std::vector<int> room_data(get_room_data(s, valueOfa0));
+            unsigned int addr = s->getRegister(a1);
+            unsigned int buffer_len = s->getRegister(a2);
+
+            for(unsigned int i = 0; buffer_len >= 4 && i < room_data.size(); ++i) {
+               s->setMemoryWord(addr + i*4, room_data[i]);
+	       buffer_len -= 4;
+	    }
+	 }
+         break;
+      case S_MAZE_VICTORY_MONEY:
+         victory_money(valueOfa0);
          break;
       default:
          break;
@@ -302,6 +320,21 @@ void MazePlugin::victory(){
 }
 
 /*
+ * declares victory, with an amount of money earned (ending the program but perhaps leaving the window open?)
+ */ 
+void MazePlugin::victory_money(int money){
+   if(getenv("MAZE_DEBUG"))
+      cerr << "MAZE_DEBUG: call victory_money(" << money << ")" << endl;
+   
+   std::ostringstream	message;
+   message << "Victory - You Earned $" << money << "!";
+   showEndMessage(QString::fromStdString(message.str()));
+
+   if(getenv("MAZE_DEBUG"))
+      cerr << "MAZE_DEBUG: victory_money() -> void" << endl;
+}
+
+/*
  * declares defeat (same deal?)
  */ 
 void MazePlugin::defeat(){
@@ -351,6 +384,48 @@ void MazePlugin::get_neighbors(State *s, int start, int* buf){
          << eastRoom  << ")" 
          << endl;
 }
+
+std::vector<int> MazePlugin::get_room_data(State *s, int room_id)
+{
+	point			curr = cellLoc(room_id);
+	std::vector<int>	room_data;
+
+	if(getenv("MAZE_DEBUG"))
+		cerr << "MAZE_DEBUG: call get_room_data(" << curr << ", <buf>, <len>)" << endl;
+   
+	if (m_maze == NULL)
+		maze_error(s, "MAZE: call to get_room_data on uninitialized maze");
+
+	/* BEGIN TEMP */
+	if (m_maze->isGoal(curr)) {
+		room_data.push_back(3);	// Goal
+	} else {
+		room_data.push_back(0);	// Normal room
+	}
+	/* END TEMP */
+
+
+   	// Add neighbors to the room data
+	point northRoom = m_maze->roomAt(curr,NORTH);
+	room_data.push_back(northRoom.x == -1 ? 0 : cellID(northRoom));
+	point westRoom = m_maze->roomAt(curr,WEST);
+	room_data.push_back( westRoom.x == -1 ? 0 : cellID(westRoom));
+	point southRoom = m_maze->roomAt(curr,SOUTH);
+	room_data.push_back(southRoom.x == -1 ? 0 : cellID(southRoom));
+	point eastRoom = m_maze->roomAt(curr,EAST);
+	room_data.push_back(eastRoom.x == -1 ? 0 : cellID(eastRoom));
+   
+	if(getenv("MAZE_DEBUG")) {
+		cerr << "MAZE_DEBUG: get_room_data -> {";
+		for (size_t i = 0; i < room_data.size(); ++i) {
+			if (i > 0) cerr << ", ";
+			cerr << room_data[i];
+		}
+		cerr << "}" << endl;
+	}
+	return room_data;
+}
+
 
 QString  MazePlugin::getMazePath() {
 	return m_lastMazeDir.isEmpty() ? QString("./") : m_lastMazeDir;\

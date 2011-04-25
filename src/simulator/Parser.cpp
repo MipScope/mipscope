@@ -844,35 +844,29 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
       case HALF: // Hardest cases; several formats
       case WORD: // ------------------------------
          {
+	    std::auto_ptr<IntegerDirectiveInitializer> init;
             int sizeInd  = text.indexOf(':'); // for value:size
             int commaInd = text.indexOf(','); // for value1, value2, ...
-            ImmediateIdentifier *imm = NULL;
 
             if (sizeInd < 0 || commaInd < 0) {
                if (sizeInd < 0) {
                   if (commaInd < 0) {  // value
-                     if ((imm = parseImmediate(text, list)) == NULL) {
+                     Identifier* value;
+                     if ((value = parseIdentifier(text, list)) == NULL) {
                         PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
                                     "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
                                     directives[type]), text, text.length());
                      }
                      
-                     int value = imm->getValue();
+                     if (VERBOSE) cerr << _tab << "Reserving 1 '" << directives[type] << "' with given values\n";
                      
-                     if (VERBOSE) cerr << _tab << "Reserving " << "1" << " '" << directives[type] << "' with initial value '" << value << "'\n";
-                     
-                     if (type == BYTE)
-                        directive = new ByteDirective(value);
-                     else if (type == HALF)
-                        directive = new HalfDirective(value);
-                     else if (type == WORD)
-                        directive = new WordDirective(value);
+                     init.reset(new SingleIntegerDirectiveInitializer(value));
                   } else {    // value1, value2, value3, ...
                      int noValues = 1;
                      int j = 0;
                      while((j = text.indexOf(',', j)) >= 0) { ++j; ++noValues; }
                      if (VERBOSE) cerr << _tab << noValues << " values found:\n";
-                     vector<int> values;
+                     vector<Identifier*> values;
                      int i = 0;
                      
                      // Parse a list of arguments
@@ -881,13 +875,14 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                         if (val.isEmpty())
                            break;
                         
-                        if ((imm = parseImmediate(val, list)) == NULL) {
+                        Identifier* value;
+                        if ((value = parseIdentifier(val, list)) == NULL) {
                            PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
                                        "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
                                        directives[type]), val, val.length());
                         }
                         
-                        values.push_back(imm->getValue());
+                        values.push_back(value);
                         ++i;
                      }
                      
@@ -897,42 +892,40 @@ ParseNode *Parser::parseDirective(QTextBlock *b, QString &text, AddressIdentifie
                                     directives[type]), text, text.length());
                      }
                      
-                     if (VERBOSE) cerr << _tab << "Reserving " << values.size() << " '" << directives[type] << "'s with values listed\n";
-                     
-                     if (type == BYTE)
-                        directive = new ByteDirective(values);
-                     else if (type == HALF)
-                        directive = new HalfDirective(values);
-                     else if (type == WORD)
-                        directive = new WordDirective(values);
+                     if (VERBOSE) cerr << _tab << "Reserving " << values.size() << " '" << directives[type] << "'s with given values\n";
+
+                     init.reset(new SingleIntegerDirectiveInitializer(values));
                   }
                } else {       // value:size
                   QString valueStr = text.left(sizeInd).simplified();
-                  if ((imm = parseImmediate(valueStr, list)) == NULL) {
+                  Identifier* value;
+                  if ((value = parseIdentifier(valueStr, list)) == NULL) {
                      PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
                                  "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]), 
                                  directives[type]), valueStr, valueStr.length());
                   }
-                  int value = imm->getValue(), size = 0;
                   QString sizeStr = text.right(text.length() - sizeInd - 1).simplified();
 
                   // ensure size is valid; allow zero-length arrays like .data x:0
-                  if ((imm = parseImmediate(sizeStr, list)) == NULL || ((size = imm->getValue()) < 0)) {
+                  int size = 0;
+                  ImmediateIdentifier* size_imm;
+                  if ((size_imm = parseImmediate(sizeStr, list)) == NULL || ((size = size_imm->getValue()) < 0)) {
                      PARSE_ERRORL(QString("invalid arguments to directive '%1'\n"
                                  "Syntax: '%2' value OR value:size OR val1, val2, ...").arg(QString(directives[type]),
                                  directives[type]), sizeStr, sizeStr.length());
                   }
                   
-                  if (VERBOSE) cerr << _tab << "Reserving " << size << " '" << directives[type] << "'s with value '" << value << "'\n";
-                  
-                  if (type == BYTE)
-                     directive = new ByteDirective(value, size);
-                  else if (type == HALF)
-                     directive = new HalfDirective(value, size);
-                  else if (type == WORD)
-                     directive = new WordDirective(value, size);
+                  if (VERBOSE) cerr << _tab << "Reserving " << size << " '" << directives[type] << "'s with given value\n";
+
+		  init.reset(new RepeatIntegerDirectiveInitializer(value, size));
                }
             }
+            if (type == BYTE)
+               directive = new ByteDirective(init);
+            else if (type == HALF)
+               directive = new HalfDirective(init);
+            else if (type == WORD)
+               directive = new WordDirective(init);
          }
          
          break;

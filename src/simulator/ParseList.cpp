@@ -397,7 +397,7 @@ bool ParseList::initialize(State *state) {
       }
       Statement *s = cur->getStatement();
       
-      if (s != NULL)
+      if (s != NULL && cur->isValid())
          s->initialize(cur, state);
    }
    
@@ -446,7 +446,7 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
 	    }
 	 }
          
-         if (s != NULL && currentState != NULL)
+         if (s != NULL && currentState != NULL && cur->isValid())
             s->initialize(newNode, currentState);
 
       } // foreach ParseNode waiting
@@ -559,7 +559,7 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
    
    newNode->setAddress(address);
    
-   if (s != NULL && currentState != NULL)
+   if (s != NULL && currentState != NULL && newNode->isValid())
       s->initialize(newNode, currentState);
    
    return semanticallyCorrect;

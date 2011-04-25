@@ -37,6 +37,8 @@
 #include <stdlib.h>
 #include <QString>
 #include <vector>
+#include <memory>
+#include <assert.h>
 using namespace std;
 
 // ----------------------------------
@@ -231,6 +233,53 @@ class GlobalDirective : public Directive {
       AddressIdentifier *m_label;
 };
 
+class IntegerDirectiveInitializer {
+public:
+	virtual ~IntegerDirectiveInitializer() { }
+
+	virtual size_t get_count () const = 0;
+
+	virtual void init_byte (State*, unsigned int address) = 0;
+	virtual void init_half (State*, unsigned int address) = 0;
+	virtual void init_word (State*, unsigned int address) = 0;
+
+	virtual void get_referenced_labels (std::vector<AddressIdentifier*>&) = 0;
+};
+
+class SingleIntegerDirectiveInitializer : public IntegerDirectiveInitializer {
+	std::vector<Identifier*>	m_values;
+
+	template<class Value> void init (State* s, unsigned int address);
+public:
+	explicit SingleIntegerDirectiveInitializer (Identifier* value) { m_values.push_back(value); }
+	explicit SingleIntegerDirectiveInitializer (const std::vector<Identifier*>& values) : m_values(values) { }
+	~SingleIntegerDirectiveInitializer ();
+
+	virtual size_t get_count () const { return m_values.size(); }
+
+	virtual void init_byte (State*, unsigned int address);
+	virtual void init_half (State*, unsigned int address);
+	virtual void init_word (State*, unsigned int address);
+	virtual void get_referenced_labels (std::vector<AddressIdentifier*>&);
+};
+
+class RepeatIntegerDirectiveInitializer : public IntegerDirectiveInitializer {
+	Identifier*	m_value;
+	size_t		m_count;
+
+	template<class Value> void init (State* s, unsigned int address);
+public:
+	RepeatIntegerDirectiveInitializer (Identifier* value, size_t count) : m_value(value), m_count(count) { }
+	~RepeatIntegerDirectiveInitializer ();
+
+	virtual size_t get_count () const { return m_count; }
+
+	virtual void init_byte (State*, unsigned int address);
+	virtual void init_half (State*, unsigned int address);
+	virtual void init_word (State*, unsigned int address);
+	virtual void get_referenced_labels (std::vector<AddressIdentifier*>&);
+};
+
 // --------------------------------------------
 // Directive .byte   value
 // Directive .byte   value:size
@@ -238,40 +287,19 @@ class GlobalDirective : public Directive {
 // --------------------------------------------
 class ByteDirective : public Directive {
    public:
-      ByteDirective(unsigned char value = 0, unsigned int no = 1) : Directive(no * sizeof(char)), m_values(NULL) {
-         if ((m_values = (unsigned char *)malloc(m_size)) == NULL) {
-            perror("malloc");
-            cerr << "\nERROR:  Ran out of memory!\n";
-            exit(1);
-         }
-         
-         memset(m_values, value, m_size);
-      }
+      ByteDirective () { }
 
-      ByteDirective(const vector<int> &values) : Directive(values.size() * sizeof(char)), m_values(NULL) {
-         if ((m_values = (unsigned char *)malloc(m_size)) == NULL) {
-            perror("malloc");
-            cerr << "\nERROR:  Ran out of memory!\n";
-            exit(1);
-         }
-
-         unsigned char *ptr = m_values;
-         
-         for(unsigned int i = 0; i < values.size(); i++)
-            *ptr++ = (unsigned char)values[i];
-      }
-      
-      virtual ~ByteDirective() {
-         safeFree(m_values);
-      }
+      explicit ByteDirective(std::auto_ptr<IntegerDirectiveInitializer> init)
+      : Directive(init->get_count() * sizeof(char)), m_init(init) { }
       
       // @overridden from Directive
       virtual void initialize(ParseNode *p, State *s) {
-         unsigned int address = (unsigned) p->getAddress();
-         
-         if (m_values != NULL)
-            s->memcpy(address, m_values, m_size);
-//         else s->memset(address, m_value, m_size);
+	 assert(m_init.get() != NULL);
+         m_init->init_byte(s, p->getAddress());
+      }
+      virtual void get_referenced_labels (std::vector<AddressIdentifier*>& l) {
+	 assert(m_init.get() != NULL);
+	 m_init->get_referenced_labels(l);
       }
       
       // @overridden from Statement
@@ -282,7 +310,7 @@ class ByteDirective : public Directive {
       }
       
    private:
-      unsigned char *m_values; // non-null if we have a list
+      std::auto_ptr<IntegerDirectiveInitializer>	m_init;
 };
 
 // --------------------------------------------
@@ -292,43 +320,19 @@ class ByteDirective : public Directive {
 // --------------------------------------------
 class HalfDirective : public Directive {
    public:
-      HalfDirective(unsigned short value = 0, unsigned short no = 1) : Directive(no * sizeof(short)), m_values(NULL) {
-         if ((m_values = (unsigned short *)malloc(m_size)) == NULL) {
-            perror("malloc");
-            cerr << "\nERROR:  Ran out of memory!\n";
-            exit(1);
-         }
-         
-         unsigned short *ptr = m_values;
-         for(unsigned int i = no; i--;)
-            *ptr++ = value;
-//         memset(m_values, value, no);
-      }
- 
-      HalfDirective(const vector<int> &values) : Directive(values.size() * sizeof(short)), m_values(NULL) {
-         if ((m_values = (unsigned short *)malloc(m_size)) == NULL) {
-            perror("malloc");
-            cerr << "\nERROR:  Ran out of memory!\n";
-            exit(1);
-         }
-         
-         unsigned short *ptr = m_values;
-         
-         for(unsigned int i = 0; i < values.size(); i++)
-            *ptr++ = (unsigned short)values[i];
-      }
-      
-      virtual ~HalfDirective() {
-         safeFree(m_values);
-      }
+      HalfDirective () { }
+
+      explicit HalfDirective(std::auto_ptr<IntegerDirectiveInitializer> init)
+      : Directive(init->get_count() * sizeof(short)), m_init(init) { }
       
       // @overridden from Directive
       virtual void initialize(ParseNode *p, State *s) {
-         unsigned int address = (unsigned) p->getAddress();
-//         assert(!(address & 1));
-         
-         if (m_values != NULL)
-            s->memcpy(address, m_values, m_size);
+	 assert(m_init.get() != NULL);
+         m_init->init_half(s, p->getAddress());
+      }
+      virtual void get_referenced_labels (std::vector<AddressIdentifier*>& l) {
+	 assert(m_init.get() != NULL);
+	 m_init->get_referenced_labels(l);
       }
       
       virtual unsigned int getPreferredAlignment() const {
@@ -343,7 +347,7 @@ class HalfDirective : public Directive {
       }
       
    private:
-      unsigned short *m_values;
+      std::auto_ptr<IntegerDirectiveInitializer>	m_init;
 };
 
 // --------------------------------------------
@@ -353,44 +357,19 @@ class HalfDirective : public Directive {
 // --------------------------------------------
 class WordDirective : public Directive {
    public:
-      WordDirective(unsigned int value = 0, unsigned int no = 1) : Directive(no * sizeof(int)), m_values(NULL) {
-         if ((m_values = (unsigned int *)malloc(m_size)) == NULL) {
-            perror("malloc");
-            cerr << "\nERROR:  Ran out of memory!\n";
-            exit(1);
-         }
-         
-         unsigned int *ptr = m_values;
-         for(unsigned int i = no; i--;)
-            *ptr++ = value;
-         
-//         memset(m_values, value, no);
-      }
-      
-      WordDirective(const vector<int> &values) : Directive(values.size() * sizeof(int)), m_values(NULL) {
-         if ((m_values = (unsigned int *)malloc(m_size)) == NULL) {
-            perror("malloc");
-            cerr << "\nERROR:  Ran out of memory!\n";
-            exit(1);
-         }
-         
-         unsigned int *ptr = m_values;
-         
-         for(unsigned int i = 0; i < values.size(); i++)
-            *ptr++ = (unsigned int)values[i];
-      }
-      
-      virtual ~WordDirective() {
-         safeFree(m_values);
-      }
+      WordDirective () { }
+
+      explicit WordDirective(std::auto_ptr<IntegerDirectiveInitializer> init)
+      : Directive(init->get_count() * sizeof(int)), m_init(init) { }
       
       // @overridden from Directive
       virtual void initialize(ParseNode *p, State *s) {
-         unsigned int address = (unsigned) p->getAddress();
-//         assert(!(address & 3));
-         
-         if (m_values != NULL)
-            s->memcpy(address, m_values, m_size);
+	 assert(m_init.get() != NULL);
+         m_init->init_word(s, p->getAddress());
+      }
+      virtual void get_referenced_labels (std::vector<AddressIdentifier*>& l) {
+	 assert(m_init.get() != NULL);
+	 m_init->get_referenced_labels(l);
       }
       
       virtual unsigned int getPreferredAlignment() const {
@@ -405,7 +384,7 @@ class WordDirective : public Directive {
       }
       
    private:
-      unsigned int *m_values;
+      std::auto_ptr<IntegerDirectiveInitializer>	m_init;
 };
 
 // ----------------------------------

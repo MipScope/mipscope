@@ -80,7 +80,7 @@ class Jal : public Instruction {
       Jal(StatementArgList *args = NULL) : Instruction(args) { }
       
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(ADDRESS | IMMEDIATE);
+         return args->matchesSyntax(PLAIN_REGISTER | IMMEDIATE | ADDRESS);
       }
       
       virtual int importance() const { return 90; }
@@ -128,6 +128,12 @@ class Jal : public Instruction {
  * DO NOT CHANGE THE ORDER BACK, REGARDLESS OF WHAT THE INTERNET OR HENNESSY AND
  * PATTERSON SAYS!  IT IS CORRECT NOW!
  *
+ * If only one argument is specified like this:
+ *
+ *	jalr rs
+ *
+ * Then rd defaults to $ra
+ *
  *  -- andrew (20 Nov 2010)
  */
 class Jalr : public Instruction {
@@ -135,7 +141,7 @@ class Jalr : public Instruction {
       Jalr(StatementArgList *args = NULL) : Instruction(args) { }
       
       virtual bool isSyntacticallyValid(StatementArgList *args) const {
-         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER);
+         return args->matchesSyntax(PLAIN_REGISTER, PLAIN_REGISTER | NONE);
       }
       
       virtual int importance() const { return 90; }
@@ -147,10 +153,19 @@ class Jalr : public Instruction {
       virtual void execute(State *s, ParseList* parseList) const {
          // Do not change the order of arguments -- it is correct!
          // (see comment above this class for details)
-         unsigned int registerNo = (*m_args)[0]->getRegister();
+         unsigned int linkRegister;
+	 unsigned int jumpDestination;
+         if (m_args->noArgs() == 2) {
+		 linkRegister = (*m_args)[0]->getRegister();
+		 jumpDestination = m_args->getValue(s, 1);
+	 } else {
+		 // Link register not specified - default to $ra
+		 linkRegister = ra;
+		 jumpDestination = m_args->getValue(s, 0);
+	 }
          
-         link(s, registerNo); // store the addr of the next instruction
-         s->setPC(parseList->getNodeForAddress(m_args->getValue(s, 1)));
+         link(s, linkRegister); // store the addr of the next instruction
+         s->setPC(parseList->getNodeForAddress(jumpDestination));
       }
       
       virtual bool autoIncrementPC() const { return false; }
@@ -158,9 +173,9 @@ class Jalr : public Instruction {
       virtual const char *getName() const { return "jalr"; }
       // Do not change the order of arguments -- it is correct!
       // (see comment above this class for details)
-      virtual const char *getSyntax() const { return "$instr, $dest"; }
+      virtual const char *getSyntax() const { return "$link, $dest OR $link"; }
       virtual const char *getDescription() const {
-         return "Unconditionally jumps to the address stored in register $dest. Save the address of the next instruction in register $instr.";
+         return "Unconditionally jumps to the address stored in register $dest. Save the address of the next instruction in register $link (default $ra).";
       }
 
       virtual int getType() const { return CONTROL_FLOW; }

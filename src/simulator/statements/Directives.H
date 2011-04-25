@@ -411,24 +411,24 @@ class WordDirective : public Directive {
 // ----------------------------------
 // Directive CONSTANT = imm
 // ----------------------------------
-ConstStatement::ConstStatement(AddressIdentifier *name, ImmediateIdentifier *value) : Statement(0), m_id(name), m_value(value)
+inline ConstStatement::ConstStatement(AddressIdentifier *name, ImmediateIdentifier *value) : Statement(0), m_id(name), m_value(value)
 { }
 
-bool ConstStatement::isInstruction() { return false; }
-bool ConstStatement::isDirective() { return false; }
+inline bool ConstStatement::isInstruction() { return false; }
+inline bool ConstStatement::isDirective() { return false; }
 
-AddressIdentifier *ConstStatement::getID() const {
+inline AddressIdentifier *ConstStatement::getID() const {
    return m_id;
 }
 
-ImmediateIdentifier *ConstStatement::getImmediate() const {
+inline ImmediateIdentifier *ConstStatement::getImmediate() const {
    return m_value;
 }
 
 // @overridden from Statement
-const char *ConstStatement::getName() const { return ""; }
-const char *ConstStatement::getSyntax() const { return ""; }
-const char *ConstStatement::getDescription() const { return ""; }
+inline const char *ConstStatement::getName() const { return ""; }
+inline const char *ConstStatement::getSyntax() const { return ""; }
+inline const char *ConstStatement::getDescription() const { return ""; }
 
 #endif // __DIRECTIVES_H__
 

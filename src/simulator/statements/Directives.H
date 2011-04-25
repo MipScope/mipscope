@@ -250,6 +250,10 @@ class SingleIntegerDirectiveInitializer : public IntegerDirectiveInitializer {
 	std::vector<Identifier*>	m_values;
 
 	template<class Value> void init (State* s, unsigned int address);
+
+	// Disallow copying and assignment, since we own the memory in m_values
+	SingleIntegerDirectiveInitializer (const SingleIntegerDirectiveInitializer&) { }
+	SingleIntegerDirectiveInitializer& operator= (const SingleIntegerDirectiveInitializer&) { return *this; }
 public:
 	explicit SingleIntegerDirectiveInitializer (Identifier* value) { m_values.push_back(value); }
 	explicit SingleIntegerDirectiveInitializer (const std::vector<Identifier*>& values) : m_values(values) { }
@@ -268,6 +272,10 @@ class RepeatIntegerDirectiveInitializer : public IntegerDirectiveInitializer {
 	size_t		m_count;
 
 	template<class Value> void init (State* s, unsigned int address);
+
+	// Disallow copying and assignment, since we own the memory for m_value
+	RepeatIntegerDirectiveInitializer (const RepeatIntegerDirectiveInitializer&) { }
+	RepeatIntegerDirectiveInitializer& operator= (const RepeatIntegerDirectiveInitializer&) { return *this; }
 public:
 	RepeatIntegerDirectiveInitializer (Identifier* value, size_t count) : m_value(value), m_count(count) { }
 	~RepeatIntegerDirectiveInitializer ();

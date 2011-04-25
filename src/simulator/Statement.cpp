@@ -152,6 +152,17 @@ void Instruction::insert(Instruction *instr) {
    instructionMap.insert(instr->getName(), instr);
 }
 
+void Instruction::get_referenced_labels (std::vector<AddressIdentifier*>& labels)
+{
+      for(int i = 0; i < m_args->noArgs(); i++) {
+         StatementArg *cur = (*m_args)[i];
+         
+         if (cur->hasAddressIdentifier()) {
+            labels.push_back(cur->getID()->getAddressIdentifier());
+	 }
+      }
+}
+
 InstructionMap instructionMap;
 void Instruction::InitializeInstructionMap() {
    // Arithmetic.H

@@ -433,26 +433,22 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
          
          // Find the reference to newNode's label in cur's arguments
          Statement *s = cur->getStatement();
+
+	 if (s != NULL) {
+            std::vector<AddressIdentifier*> labels;
+            s->get_referenced_labels(labels);
+
+            for (std::vector<AddressIdentifier*>::iterator it(labels.begin()); it != labels.end(); ++it) {
+                  if ((*it)->getID() == label->getID()) {
+                     (*it)->setLabelParseNode(newNode);
+		     // don't break out of the loop yet, because this label might be referenced more than once
+		  }
+	    }
+	 }
+         
          if (s != NULL && currentState != NULL)
             s->initialize(newNode, currentState);
-         
-         if (s != NULL && s->isInstruction()) {
-            StatementArgList *args = (static_cast<Instruction*>(s))->getArguments();
-            
-            // For each argument, check if it's a reference to newNode's label
-            for(int i = 0; i < args->noArgs(); i++) {
-               StatementArg *cur = (*args)[i];
-               
-               if (cur->hasAddressIdentifier()) {
-                  Identifier *addrID = cur->getID();
-                  const QString &id = addrID->getID();
-                  if (id == label->getID() && addrID->isAddress()) {
-                     (static_cast<AddressIdentifier*>(addrID))->setLabelParseNode(newNode);
-                     break;
-                  }
-               }
-            } // for
-         } // if statement is an instruction
+
       } // foreach ParseNode waiting
       
       m_semanticErrors.remove(label->getID());
@@ -463,14 +459,12 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
    bool semanticallyCorrect = true;
    
    // ensure any labels referenced by this instruction are defined
-   if (s != NULL && s->isInstruction()) {
-      StatementArgList *args = (static_cast<Instruction*>(s))->getArguments();
-      
-      for(int i = 0; i < args->noArgs(); i++) {
-         StatementArg *cur = (*args)[i];
-         
-         if (cur->hasAddressIdentifier()) {
-            const QString &id = cur->getID()->getID();
+   if (s != NULL) {
+      std::vector<AddressIdentifier*> labels;
+      s->get_referenced_labels(labels);
+
+      for (std::vector<AddressIdentifier*>::iterator it(labels.begin()); it != labels.end(); ++it) {
+            const QString &id = (*it)->getID();
 
             if (!m_labelMap.contains(id)) {
                // this node is referencing some label which currently doesn't exist
@@ -490,12 +484,11 @@ bool ParseList::insert(ParseNode *newNode, State *currentState) {
             } else { // This ParseNode references a label which has already been defined
 //               cerr << id.toStdString() << " set to " << m_labelMap[id]->getParseNode() << ",   parsing: " << newNode << endl;
                
-               cur->getID()->getAddressIdentifier()->setLabelParseNode(m_labelMap[id]->getParseNode());
+               (*it)->setLabelParseNode(m_labelMap[id]->getParseNode());
                
 //               cerr << "\t" << cur->getID()->getAddressIdentifier()->getParseNode() << endl;
 
             }
-         }
       } // for
    }
    

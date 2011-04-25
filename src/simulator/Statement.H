@@ -67,6 +67,11 @@ class Statement {
       static Directive   *getDirective(Statement *s);
       static Instruction *getInstruction(Statement *s);
       static ConstStatement *getConst(Statement *s);
+
+      // Populate the given vector with AddressIdentifiers for all of the labels
+      // referenced by this statement (could be arguments for instructions, or the
+      // initial values of directives
+      virtual void get_referenced_labels (std::vector<AddressIdentifier*>&) { }
       
    protected:
       unsigned int m_size; // in bytes  (4 for all instructions)
@@ -98,6 +103,8 @@ class Instruction : public Statement {
       virtual const char *getSyntax() const = 0;
       virtual const char *getDescription() const = 0;
       virtual int getType() const;
+
+      virtual void get_referenced_labels (std::vector<AddressIdentifier*>&);
       
    protected:
       // Store the address of the next instruction in registerNo

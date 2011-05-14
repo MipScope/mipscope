@@ -51,6 +51,7 @@ void SPIMSyscalls::register_with (SyscallListener* listener)
 
 	listener->register_syscall(S_PRINT_INT, this, io->can_undo_output(), false);
 	listener->register_syscall(S_PRINT_STRING, this, io->can_undo_output(), false);
+	listener->register_syscall(S_PRINT_CHAR, this, io->can_undo_output(), false);
 	listener->register_syscall(S_CLEAR_OUTPUT, this, io->can_undo_output(), false);
 	listener->register_syscall(S_PRINT_FLOAT, this, io->can_undo_output(), false);
 	listener->register_syscall(S_PRINT_DOUBLE, this, io->can_undo_output(), false);
@@ -73,6 +74,7 @@ void SPIMSyscalls::syscall (State* s, int status, int syscall, int valueOfa0)
 
 	case S_PRINT_INT:
 	case S_PRINT_STRING:
+	case S_PRINT_CHAR:
 	case S_PRINT_FLOAT:
 	case S_PRINT_DOUBLE:
 		output_syscall(s, status, syscall, valueOfa0);
@@ -162,6 +164,7 @@ void SPIMSyscalls::undo_syscall (int syscall)
 {
 	if (syscall == S_PRINT_INT ||
 			syscall == S_PRINT_STRING ||
+			syscall == S_PRINT_CHAR ||
 			syscall == S_CLEAR_OUTPUT ||
 			syscall == S_PRINT_FLOAT ||
 			syscall == S_PRINT_DOUBLE) {

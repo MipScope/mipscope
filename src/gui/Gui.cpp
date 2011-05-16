@@ -513,7 +513,8 @@ void Gui::closeEvent(QCloseEvent *event) {
 const char *ABOUT_TEXT = 
 "<html>"
 "<span style=\"font-size: 17pt;font-family: arial;font-weight:bold\">"PROJECT_NAME" version "PROJECT_VERSION"</span>"
-"<p><a href=\"http://mipscope.sourceforge.net\">http://mipscope.sourceforge.net</a></p>"
+"<p><a href=\"http://cs.brown.edu/courses/cs031/mipscope\">http://cs.brown.edu/courses/cs031/mipscope</a><br>"
+"<a href=\"http://github.com/AGWA/mipscope\">http://github.com/AGWA/mipscope</a></p>"
 "<span style=\"font-size: 12pt;font-family: arial;\">"
 "<p>"PROJECT_NAME" is an environment for learning MIPS r3000 / MIPS32 assembly programming.</p>"
 "<p>"PROJECT_NAME" includes an editor, a MIPS32 / r3000 simulator, and a visual, reversible debugger. "

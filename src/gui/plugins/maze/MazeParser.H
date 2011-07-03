@@ -1,16 +1,14 @@
 /*
- * MipScope <http://mipscope.sourceforge.net>
- * Copyright (C) 2007 Travis Fischer and Tim O'Donnell
- * 
- * Send bugs, features, ideas to
- * Travis Fischer (tfischer@cs.brown.edu) and Tim O'Donnell (tim@cs.brown.edu)
+ * Copyright (C) 2011 Andrew Ayer
  *
- * This program is free software; you can redistribute it and/or
+ * This file is part of MipScope <http://mipscope.cs.brown.edu>
+ *
+ * MipScope is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * MipScope is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -19,33 +17,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- *
  */
 
 /* ---------------------------------------------- *\
    file: MazeParser.H
-   auth: Travis Fischer, Tim O'Donnell
-   acct: tfischer, tim
-   date: 8/14/2007
-
-   This plugin was written for the Brown University 
-   Department of Computer Science (cs031).
+   auth: Andrew Ayer
+   date: 2011-07-03
 \* ---------------------------------------------- */
 #ifndef __MAZE_PARSER_H__
 #define __MAZE_PARSER_H__
 
-#include <QString>
-class Maze;
+#include <string>
+#include <iosfwd>
+#include "Maze.H"
 
-/* MazeParser:
- * -----------
- * 
- *    Parses .mze files
- */
 class MazeParser {
-   public:
-      static bool parse(const QString &fileName, Maze *maze);
+public:
+	struct Error {
+		int				lineno;
+		std::string			message;
+
+		Error (unsigned int l, const std::string& m) : lineno(l), message(m) { }
+		explicit Error (const std::string& m) : lineno(-1), message(m) { }
+	};
+
+	static void parse (std::istream&, Maze::Info&);
+
+	static void parse (const std::string& filename, Maze::Info&);
 };
 
 #endif // __MAZE_PARSER_H__
-

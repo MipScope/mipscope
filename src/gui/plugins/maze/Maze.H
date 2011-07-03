@@ -36,6 +36,7 @@
 
 #include <QObject>
 #include <vector>
+#include <map>
 enum MazeStatus {EMPTY,SEARCHED,CURRENT,BACKTRACKED};
 #include "QtCell.H"
 //using namespace std;
@@ -48,14 +49,48 @@ enum {NORTH= 1,SOUTH= 2,EAST= 4,WEST= 8};
 typedef int WallSet;
 typedef int Direction;
 
-typedef struct {
-   int x;
-   int y;
-} point;
+struct point {
+	int x;
+	int y;
+
+	point () { x = y = -1; }
+	point (int arg_x, int arg_y) : x(arg_x), y(arg_y) { }
+
+	bool operator< (const point& other) const
+	{
+		if (x < other.x) return true;
+		if (x > other.x) return false;
+		return y < other.y;
+	}
+
+	bool operator== (const point& other) const { return x == other.x && y == other.y; }
+};
 
 class Cell {
+public:
+	enum {
+		NORMAL = 0,
+		TREASURE = 1,
+		TRAP = 2,
+		GOAL = 3
+	};
+	static int	parse_type_string (const char*);
 
-   public:
+	// return the necessary number of arguments (see Info struct below) for the given type
+	static unsigned int type_nbr_arguments (int);
+
+	struct Info {
+		int				type;
+		WallSet				walls;
+		std::vector<std::string>	arguments;
+
+		Info () { walls = 0; type = NORMAL; }
+	};
+
+	static Cell*	new_cell (MazeStatus, const Info&);
+
+
+
       Cell(MazeStatus,WallSet);
       Cell();
       Cell& operator=(const Cell&);
@@ -98,7 +133,7 @@ public:
       NormalCell() { }
 
       virtual I_ORDER get_icon () const { return I_EMPTY_GROUND; }
-      virtual int get_room_type () const { return 0; }
+      virtual int get_room_type () const { return NORMAL; }
       virtual void get_room_data (std::vector<int>&) const { }
 };
 
@@ -109,7 +144,7 @@ public:
       TreasureCell() { money = 0; }
 
       virtual I_ORDER get_icon () const { return I_MONEY; }
-      virtual int get_room_type () const { return 1; }
+      virtual int get_room_type () const { return TREASURE; }
       virtual void get_room_data (std::vector<int>& data) const { data.push_back(money); }
 };
 
@@ -119,7 +154,7 @@ public:
       TrapCell() { }
 
       virtual I_ORDER get_icon () const { return I_SCYTHE; }
-      virtual int get_room_type () const { return 2; }
+      virtual int get_room_type () const { return TRAP; }
       virtual void get_room_data (std::vector<int>&) const { }
 };
 
@@ -129,24 +164,36 @@ public:
       GoalCell() { }
 
       virtual I_ORDER get_icon () const { return I_FLAG; }
-      virtual int get_room_type () const { return 3; }
+      virtual int get_room_type () const { return GOAL; }
       virtual void get_room_data (std::vector<int>&) const { }
 };
 
 class MazeGui;
+
 class Maze {
-   public:
+public:
+	struct Info {
+		unsigned int			width;
+		unsigned int			height;
+		point				start_point;
+		std::map<point, Cell::Info>	cells;
+
+		Info () { width = height = 0; }
+	};
+
       Maze(int,int);
       Maze() : nodesVisited(0) {}
       void init(int,int);
-      int getSource(){return sourceCol;}
-      void setSource(int col){
-         sourceCol = col; 
-         currCell.x = col;
-         currCell.y = getHeight() - 1;
+      void init(const Info&);
+      int getSource () const { return sourceCell.x; } // DEPRECIATED
+      void setSource (int col) { setSource(point(col, getHeight()-1)); } // DEPRECIATED
+      void setSource(point cell){
+         sourceCell = cell; 
+	 currCell = cell;
       }
       Cell *getCell(int row, int col){return m_grid[row * m_width + col];}
       void setCell(int row, int col, Cell *cell){m_grid[row * m_width + col] = cell;}
+      void setCell (point p, Cell* cell) { setCell(p.y, p.x, cell); }
       Cell *getCurrentCell(){return getCell(currCell.y, currCell.x); }
       point getCurrCellLoc(){return currCell;}
       const char *to_s();
@@ -157,11 +204,13 @@ class Maze {
 
       int moveCurrent(point loc);
       int undoMove(point loc);
-      point getMazeSource();
+      point getMazeSource() { return sourceCell; }
       bool isGoal(point); // depreciated
       point roomAt(point,Direction);
       int isSearched(point);
       bool validRoom(const point& p);
+
+      void load_maze_from_file (const std::string& filename);
 
    protected:
 		
@@ -171,7 +220,7 @@ class Maze {
       Cell **m_grid;
       //vector<vector<Cell> > grid;
       point currCell;
-      int sourceCol;
+      point sourceCell;
       int nodesVisited;
       int m_width, m_height;
 };

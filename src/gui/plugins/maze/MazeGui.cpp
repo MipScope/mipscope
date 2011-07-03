@@ -47,20 +47,22 @@ MazeGui::~MazeGui() { }
 
 
 
-bool MazeGui::loadFile() {
-	
-   const QString &fileName = QFileDialog::getOpenFileName(
-         m_gui,
-         tr("Choose a Maze file to open"),
-         m_plugin->getMazePath(),
-         tr("Maze files (*.mze);;All files (*)"));
+bool MazeGui::loadFile ()
+{
+	QString fileName = QFileDialog::getOpenFileName(
+				m_gui,
+				tr("Choose a Maze file to open"),
+				m_plugin->getMazePath(),
+				tr("Maze files (*.mze);;All files (*)"));
    
-   if (fileName.isEmpty())
-      return false;
+	if (fileName.isEmpty())
+		return false;
 	
 	m_plugin->setMazePath(fileName.left(fileName.lastIndexOf(QString("/"))));
 
-   return MazeParser::parse(fileName, this);
+	load_maze_from_file(fileName.toStdString());
+
+	return true;
 }
 
 void MazeGui::setupUI() {

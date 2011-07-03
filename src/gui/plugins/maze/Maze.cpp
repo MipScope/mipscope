@@ -34,6 +34,9 @@
 #include "../../../simulator/State.H"
 #include "QtCell.H"
 #include "MazeGui.H"
+#include "MazeParser.H"
+#include <string.h>
+#include <stdio.h>
 
 Cell::Cell(MazeStatus status,WallSet walls){
    this->status = status;
@@ -133,7 +136,6 @@ void Maze::init(int width, int height) {
       grid[i] = row;
    }*/
    //These aren't set in this constructor
-   sourceCol = -1;
    nodesVisited = 1;
    m_width = width;
    m_height = height;
@@ -146,14 +148,29 @@ void Maze::init(int width, int height) {
    //cerr << "Maze::init(" << getWidth() << ", " << getHeight() << ")\n";
 }
 
-/*
- * returns the starting point
- */
-point Maze::getMazeSource(){
-	//cout << "height " << maze->getHeight() << endl;
-	point p = {getSource(),getHeight()-1};
-	return p;
+void Maze::init (const Maze::Info& info)
+{
+	init(info.width, info.height);
+	setSource(info.start_point);
+
+	for (unsigned int x = 0; x < info.width; ++x) {
+		for (unsigned int y = 0; y < info.height; ++y) {
+			point	p(x, y);
+			Cell*	cell = 0;
+
+			std::map<point, Cell::Info>::const_iterator it(info.cells.find(p));
+			if (it != info.cells.end()) {
+				cell = Cell::new_cell(it->first == info.start_point ? CURRENT : EMPTY, it->second);
+			}
+
+			if (cell)
+				setCell(p, cell);
+			else
+				setCell(p, new NormalCell);
+		}
+	}
 }
+
 
 #define exitWithPopup(str,e) { cerr << str << endl; return (e); }
 
@@ -218,7 +235,7 @@ bool Maze::isGoal(point loc) // DEPRECIATED - kept around for backwards compatib
  * so the solver knows it's been looked at
  */
 point Maze::roomAt(point curr,Direction dir){
-   point nowhere = {-1,-1};
+   point nowhere(-1,-1);
 
    if (!validRoom(curr))
      exitWithPopup("You passed an invalid cell id to get_neighbors",nowhere);
@@ -260,15 +277,52 @@ bool Maze::validRoom(const point& p) {
 
 void Maze::onNodesVisitedChanged() {}
 
-/*
- * for debugging
- */
-char *dirName(int dir){
-   switch(dir){
-      case NORTH : return "North";
-      case SOUTH : return "South";
-      case EAST  : return "East";
-      case WEST  : return "West";
-      default    : return "North";
-   }
+int	Cell::parse_type_string (const char* s)
+{
+	if (strcasecmp(s, "treasure") == 0)
+		return TREASURE;
+	if (strcasecmp(s, "trap") == 0)
+		return TRAP;
+	if (strcasecmp(s, "goal") == 0)
+		return GOAL;
+	if (strcasecmp(s, "normal") == 0 || strcasecmp(s, "cell") == 0 || strcasecmp(s, "room") == 0)
+		return NORMAL;
+	return -1;
 }
+
+Cell*	Cell::new_cell (MazeStatus status, const Info& info)
+{
+	if (info.arguments.size() != type_nbr_arguments(info.type))
+		return 0;
+
+	switch (info.type) {
+	case NORMAL:
+		return new NormalCell(status, info.walls);
+	case TREASURE:
+		return new TreasureCell(status, info.walls, atoi(info.arguments[0].c_str()));
+	case TRAP:
+		return new TrapCell(status, info.walls);
+	case GOAL:
+		return new GoalCell(status, info.walls);
+	}
+	return 0;
+}
+
+unsigned int Cell::type_nbr_arguments (int t)
+{
+	switch (t) {
+	case NORMAL:	return 0;
+	case TREASURE:	return 1;
+	case TRAP:	return 0;
+	case GOAL:	return 0;
+	}
+	return 0;
+}
+
+void Maze::load_maze_from_file (const std::string& filename)
+{
+	Info info;
+	MazeParser::parse(filename, info);
+	init(info);
+}
+

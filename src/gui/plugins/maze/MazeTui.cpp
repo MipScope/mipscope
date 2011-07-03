@@ -43,22 +43,21 @@ MazeTui::~MazeTui() { }
 
 
 
-bool MazeTui::loadFile() {
-	
-	
-	cout <<endl << "Please enter maze filename: ";
-	std::string fileNameStd;
-	
-	cin >> fileNameStd;
-	
-   const QString &fileName = QString(fileNameStd.c_str()); //QString("/course/cs031/asgn/maze/test.mze");
-   
-   if (fileName.isEmpty())
-      return false;
-	
-	m_plugin->setMazePath(fileName.left(fileName.lastIndexOf(QString("/"))));
+bool MazeTui::loadFile ()
+{
+	cerr << endl << "Please enter maze filename: ";
 
-   return MazeParser::parse(fileName, this);
+	std::string file_name;
+	cin >> file_name;
+
+	if (file_name.empty())
+		return false;
+
+	m_plugin->setMazePath(QString::fromStdString(file_name.substr(0, file_name.find_last_of('/'))));
+
+	load_maze_from_file(file_name);
+
+	return true;
 }
 
 void MazeTui::setupUI() {}

@@ -39,16 +39,20 @@ MazeUi::~MazeUi() { }
 
 
 bool MazeUi::initializeMaze() {
-   bool success = false;
-
    //cerr << "init: " << QThread::currentThreadId() << endl;
    //cerr << "mine: " << (this->thread() == QThread::currentThread()) << endl;
-   if (getenv("MAZE_DEFAULT"))
-      success = MazeParser::parse(getenv("MAZE_DEFAULT"), this);
-   else success = loadFile();
 
-   if (success)
-      setupUI();
-
-   return success;
+	try {
+		if (const char* default_maze = getenv("MAZE_DEFAULT")) {
+			load_maze_from_file(default_maze);
+		} else {
+			if (!loadFile())
+				return false;
+		}
+		setupUI();
+		return true;
+	} catch (MazeParser::Error error) {
+		cerr << "Error parsing maze: " << error.message << endl;
+		return false;
+	}
 }

@@ -177,8 +177,7 @@ int cellID(point loc){
 point cellLoc(int id) {
    const int lowhalf_mask = (1 << halfint_shift) - 1;
    --id;	// We store it +1 because we can't use cellid 0
-   point p = {id >> halfint_shift, id & lowhalf_mask};
-   return p;
+   return point(id >> halfint_shift, id & lowhalf_mask);
 }
 
 static ostream& operator<< (ostream& s, const point& pt) {

@@ -57,8 +57,8 @@ class MazeGui : public QWidget, public MazeUi {
    protected:
       // @overridden
       virtual void closeEvent(QCloseEvent *event);
-		virtual bool loadFile();
-		virtual void onNodesVisitedChanged();
+      virtual bool loadFile();
+      virtual void onNodesVisitedChanged();
 
       void setupUI();
       

@@ -81,6 +81,10 @@ namespace {
 void MazePlugin::syscall(State *s, int status, int syscallNo, int valueOfa0) {
    Q_UNUSED(status);
 
+   if (syscallNo != S_MAZE_INIT && !m_maze) {
+      maze_error(s, "MAZE: maze not initialized");
+   }
+
    switch(syscallNo) {
       case S_MAZE_INIT:
          s->setRegister(v0, init_maze(s));
@@ -234,9 +238,6 @@ void MazePlugin::draw_arrow(State *s, int status, int room, int parentRoom) {
    if(getenv("MAZE_DEBUG"))
       cerr << "MAZE_DEBUG: call move_pascal_here(" << roomP << ")" << endl;
    
-   if (m_maze == NULL)
-      maze_error(s, "MAZE: call to move_pascal_here on uninitialized maze");
-   
    /*printPoint(&parentRoomP);
    cerr << " -> ";
    printPoint(&roomP);
@@ -284,9 +285,6 @@ int MazePlugin::is_goal(State *s, int room){
    if(getenv("MAZE_DEBUG"))
       cerr << "MAZE_DEBUG: call is_goal(" << roomP << ")" << endl;
    
-   if (m_maze == NULL)
-      maze_error(s, "MAZE: call to is_goal on uninitialized maze");
-
    int answer = m_maze->isGoal(cellLoc(room));
    
    if(getenv("MAZE_DEBUG"))
@@ -298,9 +296,6 @@ int MazePlugin::is_goal(State *s, int room){
 
 int MazePlugin::is_searched(State *s, int room){
    point roomP = cellLoc(room);
-
-   if (m_maze == NULL)
-      maze_error(s, "MAZE: call to is_searched on uninitialized maze");
 
    return m_maze->isSearched(roomP); 
 }
@@ -363,9 +358,6 @@ void MazePlugin::get_neighbors(State *s, int start, int* buf){
    if(getenv("MAZE_DEBUG"))
       cerr << "MAZE_DEBUG: call get_neighbors(" << curr << ", <buf>)" << endl;
    
-   if (m_maze == NULL)
-      maze_error(s, "MAZE: call to get_neighbors on uninitialized maze");
-
    point northRoom = m_maze->roomAt(curr,NORTH);
    buf[0] = northRoom.x == -1 ? 0 : cellID(northRoom);
    point westRoom = m_maze->roomAt(curr,WEST);
@@ -392,9 +384,6 @@ std::vector<int> MazePlugin::get_room_data(State *s, int room_id)
 	if(getenv("MAZE_DEBUG"))
 		cerr << "MAZE_DEBUG: call get_room_data(" << curr << ", <buf>, <len>)" << endl;
    
-	if (m_maze == NULL)
-		maze_error(s, "MAZE: call to get_room_data on uninitialized maze");
-
 	if (!m_maze->validRoom(curr))
 		maze_error(s, "MAZE: call to get_room_data on invalid room ID");
 

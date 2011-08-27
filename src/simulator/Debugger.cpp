@@ -127,17 +127,16 @@ void Debugger::runAnotherStep(void) {
 //      cerr << m_state->getPC() << ",  " << m_state->getPC()->getAddress() << endl;
 
       m_state->getPC()->execute(m_state, m_parseList, m_status);
+   } catch (const ExitSyscallHandlerCauseIAMTooLazyToWriteThisProperly& e) { // FIXME: this is a hack
+      // syscall 10 -> exit
+      m_terminationReason = T_COMPLETED;
+      setStatus(STOPPED);
    } catch (const StateException& e) {
       m_exception = e; // propogate exception up to gui
 
-      if (e.isEmpty()) { // syscall 10  -> exit
-         m_terminationReason = T_COMPLETED;
-         setStatus(STOPPED);
-      } else {
-         notifyPause(e);
-         setStatus(PAUSED);
-         std::cerr << "EXCEPTION:  " << e.toStdString() << endl << endl;
-      }
+      notifyPause(e);
+      setStatus(PAUSED);
+      std::cerr << "EXCEPTION:  " << e.toStdString() << endl << endl;
    }
    
    // We run this below as well, so we stop the program immediately

@@ -60,9 +60,9 @@ class Statement {
       // statements (for reference purposes)
       virtual int importance() const;
 
-      virtual bool isInstruction();
-      virtual bool isDirective();
-      virtual bool isPreprocessor(); // consts and #defines
+      virtual bool isInstruction() const;
+      virtual bool isDirective() const;
+      virtual bool isPreprocessor() const; // consts and #defines
       
       static Directive   *getDirective(Statement *s);
       static Instruction *getInstruction(Statement *s);

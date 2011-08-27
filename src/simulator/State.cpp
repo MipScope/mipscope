@@ -277,12 +277,8 @@ void State::getLastXInstructions(int no, QVector<ParseNode*> &instrs) const {
       if (action == NULL)
          return;
       
-      PCChangedAction *pcAction = NULL;
-      try { // see if we have a PCChangedAction
-         pcAction = dynamic_cast<PCChangedAction*>(action);
-      } catch(bad_alloc&) { }
-
-      if (pcAction != NULL) {
+      // see if we have a PCChangedAction
+      if (PCChangedAction* pcAction = dynamic_cast<PCChangedAction*>(action)) {
          instrs.push_back(pcAction->m_oldPC);
          if (--no <= 0)
             return;

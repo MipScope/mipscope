@@ -43,29 +43,19 @@ QString Identifier::getID() const {
 }
 
 bool Identifier::isImmediate() const {
-   ImmediateIdentifier *imm = NULL;
-   
-   try {
-      Identifier *i = const_cast<Identifier*>(this);
-      imm = dynamic_cast<ImmediateIdentifier*>(i);
-   } catch(bad_alloc&) { }
-
-   return (imm != NULL);
+   return dynamic_cast<const ImmediateIdentifier*>(this);
 }
 
 bool Identifier::isAddress() const {
    return (!isImmediate());
 }
 
-AddressIdentifier *Identifier::getAddressIdentifier() const {
-   AddressIdentifier *addr = NULL;
+const AddressIdentifier* Identifier::getAddressIdentifier() const {
+   return dynamic_cast<const AddressIdentifier*>(this);
+}
 
-   try {
-      Identifier *i = const_cast<Identifier*>(this);
-      addr = dynamic_cast<AddressIdentifier*>(i);
-   } catch(bad_alloc&) { }
-
-   return addr;
+AddressIdentifier* Identifier::getAddressIdentifier() {
+   return dynamic_cast<AddressIdentifier*>(this);
 }
 
 AddressIdentifier::AddressIdentifier(const QString &id, ParseNode *p) 

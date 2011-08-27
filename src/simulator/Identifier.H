@@ -45,7 +45,8 @@ class Identifier {
       
       bool isImmediate() const;
       bool isAddress() const;
-      AddressIdentifier *getAddressIdentifier() const;
+      const AddressIdentifier* getAddressIdentifier() const;
+      AddressIdentifier* getAddressIdentifier();
       
    private:
       QString m_id;

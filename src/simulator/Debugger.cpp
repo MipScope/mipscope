@@ -156,12 +156,9 @@ bool Debugger::checkProgramCompleted() {
    bool programCompleted = (pc == NULL);
 
    if (!programCompleted) {
-      try { // see if the current instruction is a Done instruction
-         Done *d = dynamic_cast<Done*>(pc->getStatement());
-
-         if (d != NULL)
-            programCompleted = true;
-      } catch(bad_alloc&) { } // no, it's not a done instruction
+      // see if the current instruction is a Done instruction
+      if (dynamic_cast<Done*>(pc->getStatement()))
+         programCompleted = true;
    }
    
    if (programCompleted) {

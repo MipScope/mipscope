@@ -63,28 +63,16 @@ void Statement::InitializeStatementMaps() {
 //   cerr << instructionMap.size() << ", " << directiveMap.size() << endl;
 }
 
-bool Statement::isInstruction() {
-   Instruction *instr = NULL;
-
-   try {
-      instr = dynamic_cast<Instruction*>(this);
-   } catch(std::bad_cast&) { }
-
-   return (instr != NULL);
+bool Statement::isInstruction() const {
+   return dynamic_cast<const Instruction*>(this);
 }
 
-bool Statement::isDirective() {
-   return (!isInstruction());
+bool Statement::isDirective() const {
+   return dynamic_cast<const Directive*>(this);
 }
 
-bool Statement::isPreprocessor() { // consts and #defines
-   ConstStatement *constSt = NULL;
-
-   try {
-      constSt = dynamic_cast<ConstStatement*>(this);
-   } catch(std::bad_cast&) { }
-
-   return (constSt != NULL);
+bool Statement::isPreprocessor() const { // consts and #defines
+   return dynamic_cast<const ConstStatement*>(this);
 }
 
 int Statement::importance() const {

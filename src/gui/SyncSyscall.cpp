@@ -34,6 +34,7 @@
 #include <QApplication>
 #include <QThread>
 #include "SyscallHandler.H"
+#include "../simulator/StateException.H"
 
 LocalSyscallProxy::LocalSyscallProxy(SyscallHandler *inHandler, QObject *mainProxy) :
    m_handler(inHandler)
@@ -46,7 +47,11 @@ LocalSyscallProxy::LocalSyscallProxy(SyscallHandler *inHandler, QObject *mainPro
 
 void LocalSyscallProxy::syscall(State *s, int status, int syscallNo, int valueOfa0)
 {
-   emit sig_syscall(m_handler, s, status, syscallNo, valueOfa0);
+   std::auto_ptr<SyscallError> error;
+   emit sig_syscall(m_handler, s, status, syscallNo, valueOfa0, &error);
+   if (error.get()) {
+      throw *error;
+   }
 }
 
 void LocalSyscallProxy::undoSyscall(int syscallNo)
@@ -84,8 +89,8 @@ void LocalSyscallProxy::connectTo(QObject *mainProxy)
    }
 
    // make the connections between this and the main thread proxy
-   connect(this, SIGNAL(sig_syscall(SyscallHandler*, State*, int, int, int)),
-         mainProxy, SLOT(slot_syscall(SyscallHandler*, State*, int, int, int)),
+   connect(this, SIGNAL(sig_syscall(SyscallHandler*, State*, int, int, int, std::auto_ptr<SyscallError>*)),
+         mainProxy, SLOT(slot_syscall(SyscallHandler*, State*, int, int, int, std::auto_ptr<SyscallError>*)),
          connectionKind);
 
    connect(this, SIGNAL(sig_undoSyscall(SyscallHandler*, int)),
@@ -104,10 +109,15 @@ MainSyscallProxy::MainSyscallProxy()
 }
 
 // the following three methods just relay the call to handler
-void MainSyscallProxy::slot_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0)
+void MainSyscallProxy::slot_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0, std::auto_ptr<SyscallError>* error)
 {
 //   cerr << "syscall: " << syscallNo << ", " << QThread::currentThreadId() << endl;
-   inHandler->syscall(s, status, syscallNo, valueOfa0);
+	try {
+		inHandler->syscall(s, status, syscallNo, valueOfa0);
+	} catch (const SyscallError& e) {
+		// Copy into the error argument so we can transfer the exception to the other thread
+		error->reset(new SyscallError(e));
+	}
 }
 
 void MainSyscallProxy::slot_undoSyscall(SyscallHandler *inHandler, int syscallNo)

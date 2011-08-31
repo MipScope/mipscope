@@ -71,7 +71,7 @@ namespace {
 	inline void maze_error (State* s, const char* str)
 	{
 		std::cerr << "Maze Error: " << str << std::endl;
-		s->breakError(str);
+		s->syscallError(str);
 	}
 }
 

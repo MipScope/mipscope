@@ -82,5 +82,11 @@ class BreakError : public StateException {
          : StateException(message, pc) { }
 };
 
+// This is the only exception that can safely be called from proxied syscalls:
+class SyscallError : public StateException {
+public:
+	SyscallError (const QString& message, QTextBlock* pc) : StateException(message, pc) { }
+};
+
 #endif // STATEEXCEPTION_H_
 

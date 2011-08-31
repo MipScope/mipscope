@@ -33,9 +33,11 @@
 #define _SYNCSYSCALL_H_
 
 #include <QObject>
+#include <memory>
 
 class State;
 class SyscallHandler;
+class SyscallError;
 
 // this class acts as a signal emitter in the current thread
 // its intended to be created, used once, then destroyed
@@ -55,7 +57,7 @@ class LocalSyscallProxy : public QObject
         void connectTo(QObject *mainProxy);
         
     signals:
-        void sig_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0);
+        void sig_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0, std::auto_ptr<SyscallError>*);
         void sig_undoSyscall(SyscallHandler *inHandler, int syscallNo);
         void sig_reset(SyscallHandler *inHandler);
         
@@ -73,7 +75,7 @@ class MainSyscallProxy : public QObject
         MainSyscallProxy();
         
     public slots:
-        void slot_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0);
+        void slot_syscall(SyscallHandler *inHandler, State *s, int status, int syscallNo, int valueOfa0, std::auto_ptr<SyscallError>*);
         void slot_undoSyscall(SyscallHandler *inHandler, int syscallNo);
         void slot_reset(SyscallHandler *inHandler);
 };

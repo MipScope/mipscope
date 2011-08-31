@@ -100,10 +100,12 @@ class State : public QObject {
       void setSyscallListener(SyscallListener *listener);
       void exit(); // syscall 10
 
-      // syscalls can tell debugger to break upon encountering
-      // an error
       void breakError();
       void breakError(const QString &error);
+
+      // syscalls can tell debugger to break upon encountering
+      // an error - this is the only safe way for proxied syscalls to raise an error
+      void syscallError(const QString &error);
       
    signals:
       //void syscall(int, int);

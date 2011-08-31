@@ -457,3 +457,7 @@ void State::breakError(const QString &error) {
    throw BreakError(error, m_pc->getTextBlock());
 }
 
+void State::syscallError(const QString &error) {
+   throw SyscallError(error, m_pc->getTextBlock());
+}
+

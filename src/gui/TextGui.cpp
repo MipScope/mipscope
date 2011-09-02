@@ -110,10 +110,10 @@ void TextGui::syscallReceived(int no, int valueOfa0) {
 void TextGui::programTerminated(int reason) {
    
    if (m_debugger->wait(PROGRAM_TIMEOUT * 1000)) {
-      cout << "\nProgram terminated normally.\n";
+      cerr << "\nProgram terminated normally.\n";
    }
    else {
-      cout << "\nExecution timed-out.\n";
+      cerr << "\nExecution timed-out.\n";
    }
    
    exit(0);

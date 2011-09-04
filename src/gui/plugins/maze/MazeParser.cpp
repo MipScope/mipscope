@@ -85,6 +85,9 @@ void	MazeParser::parse (std::istream& file, Maze::Info& maze)
 
 			Cell::Info&		cell(maze.cells[p]);
 
+			if (cell.type != Cell::NORMAL)
+				throw Error(lineno, "More than one item placed on a single cell");
+
 			cell.type = Cell::parse_type_string(type.c_str());
 
 			if (cell.type == -1)

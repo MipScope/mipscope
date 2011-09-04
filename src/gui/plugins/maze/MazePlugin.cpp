@@ -29,6 +29,7 @@
    date: 8/14/2007
 \* ---------------------------------------------- */
 #include "MazePlugin.H"
+#include "MazeParser.H"
 #include "../../Utilities.H"
 #include "../../UI.H"
 #include "../../Gui.H"
@@ -214,8 +215,15 @@ int MazePlugin::init_maze(State *s) {
 //   QEventLoop *eventLoop = new QEventLoop();
 //   eventLoop->exec();
 
-   if (!m_maze->initializeMaze())
-      return false;
+   try {
+      if (!m_maze->initializeMaze())
+	// open maze was canceled
+        return 0;
+   } catch (const MazeParser::Error& error) {
+      std::string message("Error parsing maze: ");
+      message += error.message;
+      maze_error(s, message.c_str());
+   } 
 
    point src = m_maze->getMazeSource();
 

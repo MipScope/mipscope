@@ -42,17 +42,13 @@ bool MazeUi::initializeMaze() {
    //cerr << "init: " << QThread::currentThreadId() << endl;
    //cerr << "mine: " << (this->thread() == QThread::currentThread()) << endl;
 
-	try {
-		if (const char* default_maze = getenv("MAZE_DEFAULT")) {
-			load_maze_from_file(default_maze);
-		} else {
-			if (!loadFile())
-				return false;
-		}
-		setupUI();
-		return true;
-	} catch (MazeParser::Error error) {
-		cerr << "Error parsing maze: " << error.message << endl;
-		return false;
+	if (const char* default_maze = getenv("MAZE_DEFAULT")) {
+		load_maze_from_file(default_maze);
+	} else {
+		if (!loadFile())
+			// canceled by user
+			return false;
 	}
+	setupUI();
+	return true;
 }

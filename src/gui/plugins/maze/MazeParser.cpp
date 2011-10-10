@@ -25,7 +25,6 @@
    date: 2011-07-03
 \* ---------------------------------------------- */
 #include "MazeParser.H"
-#include "../../Utilities.H"
 #include "Maze.H"
 #include <string>
 #include <map>

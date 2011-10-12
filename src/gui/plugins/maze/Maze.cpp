@@ -38,6 +38,11 @@
 #include <string.h>
 #include <stdio.h>
 
+// Windows does not have strcasecmp
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#endif
+
 Cell::Cell(MazeStatus status,WallSet walls){
    this->status = status;
    this->oldStatus=EMPTY;

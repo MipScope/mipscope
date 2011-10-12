@@ -37,7 +37,8 @@ std::string		TextIOConsole::prompt_for_string (State* state, int status, std::st
 {
 	std::string	input;
 	prompt_out << prompt_message << ": ";
-	std::getline(in, input);
+	if (!std::getline(in, input))
+		throw InputError();
 	return input.substr(0, max_length);
 }
 
@@ -46,6 +47,8 @@ int		TextIOConsole::prompt_for_int (State* state, int status, std::string prompt
 	int		input;
 	prompt_out << prompt_message << ": ";
 	in >> input;
+	if (!in)
+		throw InputError();
 	return input;
 }
 
@@ -54,6 +57,8 @@ double		TextIOConsole::prompt_for_double (State* state, int status, std::string 
 	double		input;
 	prompt_out << prompt_message << ": ";
 	in >> input;
+	if (!in)
+		throw InputError();
 	return input;
 }
 

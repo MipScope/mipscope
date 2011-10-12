@@ -121,7 +121,7 @@ void SPIMSyscalls::output_syscall (State* s, int status, int syscall, int valueO
 }
 
 void SPIMSyscalls::input_syscall (State* s, int status, int syscall, int valueOfa0)
-{
+try {
 	switch (syscall) {
 	case S_READ_INT:
 		s->setRegister(v0, io->prompt_for_int(s, status, "Input integer"));
@@ -144,12 +144,14 @@ void SPIMSyscalls::input_syscall (State* s, int status, int syscall, int valueOf
 		break;
 	}
 
+} catch (IOConsole::InputError) {
+	s->syscallError("Input error");
 }
 
 void SPIMSyscalls::read_string (State* s, int status, unsigned int buffer_address, size_t max_length)
 {
 	if (max_length == 0) {
-		s->breakError("read_string called with a max length ($a1) of 0");
+		s->syscallError("read_string called with a max length ($a1) of 0");
 		return;
 	}
 

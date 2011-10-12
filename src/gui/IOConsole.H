@@ -52,6 +52,9 @@ public:
 	// You can call undo_output multiple times to undo the last several outputs
 	virtual void		undo_output () = 0;
 	virtual bool		can_undo_output () const = 0;
+
+	// Exception may be thrown if the user aborts input
+	class InputError { };
 };
 
 

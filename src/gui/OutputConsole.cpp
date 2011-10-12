@@ -83,24 +83,33 @@ void OutputConsole::update_output ()
 std::string	OutputConsole::prompt_for_string (State* state, int status, std::string prompt_message, size_t max_length)
 {
 	m_gui->getOutputConsole()->update();
-	QString result = QInputDialog::getText(NULL, "Syscall", prompt_message.c_str());
+	bool okay = false;
+	QString result = QInputDialog::getText(NULL, "Syscall", prompt_message.c_str(), QLineEdit::Normal, "", &okay);
+	if (!okay)
+		throw InputError();
 	return result.toStdString().substr(0, max_length);
 }
 
 int		OutputConsole::prompt_for_int (State* state, int status, std::string prompt_message, int min, int max)
 {
+	m_gui->getOutputConsole()->update();
 	bool okay = false;
 	int result = QInputDialog::getInteger(NULL, "Syscall", prompt_message.c_str(), 0, min, max, 1, &okay);
+	if (!okay)
+		throw InputError();
 
-	return okay ? result : 0;
+	return result;
 }
 
 double		OutputConsole::prompt_for_double (State* state, int status, std::string prompt_message, double min, double max)
 {
+	m_gui->getOutputConsole()->update();
 	bool okay = false;
 	double result = QInputDialog::getDouble(NULL, "Syscall", prompt_message.c_str(), 0, min, max, 1, &okay);
+	if (!okay)
+		throw InputError();
 
-	return okay ? result : 0.0;
+	return result;
 }
 
 

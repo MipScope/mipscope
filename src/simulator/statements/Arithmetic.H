@@ -932,7 +932,7 @@ class Or : public Instruction {
       virtual const char *getName() const { return "or"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Stores in $dest the logical OR of $src1 and &lt;src2&gt.";
+         return "Stores in $dest the logical OR of $src1 and &lt;src2&gt;.";
       }
 };
 
@@ -958,7 +958,7 @@ class Ori : public Or {
       virtual const char *getName() const { return "ori"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;immediate&gt;"; }
       virtual const char *getDescription() const {
-         return "Stores in $dest the logical OR of $src1 and &lt;immediate&gt.";
+         return "Stores in $dest the logical OR of $src1 and &lt;immediate&gt;.";
       }
 };
 
@@ -992,7 +992,7 @@ class Rem : public Instruction {
       virtual const char *getName() const { return "rem"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Stores in $dest the remainder of the signed register $src1 divided by &lt;src2&gt";
+         return "Stores in $dest the remainder of the signed register $src1 divided by &lt;src2&gt;";
       }
 };
 
@@ -1027,7 +1027,7 @@ class Remu : public Instruction {
       virtual const char *getName() const { return "remu"; }
       virtual const char *getSyntax() const { return "$dest, $src1, &lt;src2&gt;"; }
       virtual const char *getDescription() const {
-         return "Stores in $dest the remainder of the unsigned register $src1 divided by &lt;src2&gt";
+         return "Stores in $dest the remainder of the unsigned register $src1 divided by &lt;src2&gt;";
       }
 };
 

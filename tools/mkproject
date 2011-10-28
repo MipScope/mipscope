@@ -2,10 +2,7 @@
 
 QMAKE=`which qmake-qt4 2>/dev/null` || QMAKE=`which qmake`
 PRO_FILE=mipscope.pro
+PRO_EXTRA_FILE=$PRO_FILE.append
 
 $QMAKE -project -o $PRO_FILE
-cat >> $PRO_FILE <<-!
-QT += opengl
-OBJECTS_DIR = obj
-MOC_DIR     = obj
-!
+cat >> $PRO_FILE < $PRO_EXTRA_FILE

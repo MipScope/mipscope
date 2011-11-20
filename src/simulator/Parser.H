@@ -41,7 +41,6 @@ class StatementArg;
 class Identifier;
 class AddressIdentifier;
 class ImmediateIdentifier;
-extern const char *const Registers[];
 
 // Controls how much debugging output gets sent to cerr (set via command-line)
 extern bool VERBOSE;

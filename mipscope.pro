@@ -9,7 +9,6 @@ DEPENDPATH += . \
               src/simulator \
               src/gui/chip \
               src/gui/images \
-              src/gui/OpenGL \
               src/gui/plugins \
               src/gui/table \
               src/simulator/statements \
@@ -21,7 +20,6 @@ INCLUDEPATH += . \
                src/gui \
                src/simulator \
                src/gui/plugins \
-               src/gui/OpenGL \
                src/gui/chip \
                src/gui/table \
                src/simulator/statements \
@@ -74,8 +72,6 @@ HEADERS += src/gui/BackgroundWidget.H \
            src/gui/chip/chip.h \
            src/gui/chip/scene.h \
            src/gui/chip/view.h \
-           src/gui/OpenGL/Shape.H \
-           src/gui/OpenGL/Sphere.H \
            src/gui/plugins/PluginHandler.H \
            src/gui/table/MemBlock.H \
            src/gui/table/TableView.H \
@@ -132,8 +128,6 @@ SOURCES += src/gui/BackgroundWidget.cpp \
            src/gui/chip/chip.cpp \
            src/gui/chip/scene.cpp \
            src/gui/chip/view.cpp \
-           src/gui/OpenGL/Shape.cpp \
-           src/gui/OpenGL/Sphere.cpp \
            src/gui/plugins/PluginHandler.cpp \
            src/gui/table/MemBlock.cpp \
            src/gui/table/TableView.cpp \
@@ -149,7 +143,6 @@ RESOURCES += src/gui/images/images.qrc \
              src/gui/chip/images/memoryImages.qrc \
              src/gui/images/22x22/icons.qrc \
              src/gui/plugins/maze/images/mazeImages.qrc
-QT += opengl
 OBJECTS_DIR = obj
 MOC_DIR     = obj
 

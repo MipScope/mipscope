@@ -36,7 +36,6 @@
 #include "../simulator/Debugger.H"
 #include "../simulator/typedefs.H"
 #include <math.h>
-#include "OpenGL/Sphere.H"
 
 #include "chip/view.h"
 #include "chip/chip.h"

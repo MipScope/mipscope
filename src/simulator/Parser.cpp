@@ -347,6 +347,8 @@ StatementArg *Parser::parseArg(QString text, ParseList *list) {
          if (!okay || registerNo < zero || registerNo >= pc)
             PARSE_ERRORL(QString("invalid register: '%1'").arg(reg), reg, reg.length());
 
+      } else if (reg == "$fp") { // special alias - not in the registerAliases table
+         registerNo = 30;
       } else { // attempt to determine between aliases
          bool found = false;
          

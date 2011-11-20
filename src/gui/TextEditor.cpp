@@ -1473,6 +1473,8 @@ int TextEditor::attemptRegisterParse(QString &text) {
       registerNo = reg.toInt(&okay, 10);
       if (!okay || registerNo < zero || registerNo >= pc)
          return -1;
+   } else if (reg == "$fp") { // special alias - not in the registerAliases table
+      registerNo = 30;
    } else { // determine between aliases
       bool found = false;
 

@@ -133,6 +133,7 @@ const char *const Registers[] = {
    "\\$ra",            // $ra
    
    "\\$sp",            // $sp
+   "\\$fp",            // $fp
 
    NULL
 };
